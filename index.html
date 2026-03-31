@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Al-Qur'an - Monokrom Premium</title>
-    <!-- Font Asli Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* ================= VARIABLES & THEME ================= */
         :root {
             --bg-color: #ffffff;
             --surface-color: #fcfcfc;
@@ -21,11 +19,7 @@
             --border-color: #eaeaea;
             --accent-color: #000000;
             --nav-bg: rgba(255, 255, 255, 0.85);
-            
-            --font-sans: 'Inter', sans-serif;
-            --font-arabic: 'Amiri', serif;
-            
-            /* Font Scale Factor dinamis */
+            --error-color: #ef4444;
             --font-scale: 1; 
         }
 
@@ -43,7 +37,6 @@
             }
         }
 
-        /* ================= RESET & BASE ================= */
         html {
             scroll-behavior: smooth;
         }
@@ -52,16 +45,13 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            /* Anti Tap Highlight (Biru) di HP */
             -webkit-tap-highlight-color: transparent; 
-            /* Mencegah Teks Terseleksi / Blok saat ditekan lama */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
         }
 
-        /* Pengecualian: Input text harus bisa diseleksi dan diketik */
         input {
             -webkit-user-select: auto;
             -moz-user-select: auto;
@@ -70,7 +60,7 @@
         }
 
         body {
-            font-family: var(--font-sans);
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             line-height: 1.6;
@@ -88,21 +78,25 @@
             outline: none; 
         }
 
-        button:focus, input:focus {
-            outline: none;
-        }
-
-        /* ================= ANIMATIONS ================= */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes toastSlideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(100px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
         .fade-in {
             animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
         }
 
-        /* ================= LAYOUT & NAV ================= */
         header {
             position: sticky;
             top: 0;
@@ -140,7 +134,7 @@
             border: 1px solid var(--border-color);
             background-color: var(--surface-color);
             color: var(--text-main);
-            font-family: var(--font-sans);
+            font-family: 'Inter', sans-serif;
             font-size: 0.95rem;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
@@ -173,10 +167,8 @@
             min-height: calc(100vh - 75px);
         }
 
-        /* ================= COMPONENTS ================= */
         .hidden { display: none !important; }
 
-        /* Loader */
         .loader-container {
             display: flex;
             flex-direction: column;
@@ -200,7 +192,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Surah Grid */
         .surah-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -215,6 +206,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 1rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
@@ -231,6 +223,8 @@
             display: flex;
             align-items: center;
             gap: 1.25rem;
+            flex: 1;
+            min-width: 0;
         }
 
         .surah-number {
@@ -246,6 +240,7 @@
             font-weight: 600;
             transform: rotate(45deg);
             transition: all 0.3s ease;
+            flex-shrink: 0;
         }
 
         .surah-number span {
@@ -258,11 +253,18 @@
             border-color: var(--accent-color);
         }
 
+        .surah-details {
+            min-width: 0;
+        }
+
         .surah-details h3 {
             font-size: 1.15rem;
             font-weight: 600;
             margin-bottom: 0.25rem;
             letter-spacing: -0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .surah-details p {
@@ -270,15 +272,20 @@
             color: var(--text-muted);
             letter-spacing: 0.3px;
             font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .surah-arabic-name {
-            font-family: var(--font-arabic);
+            font-family: 'Amiri', serif;
             font-size: 1.6rem;
             color: var(--text-main);
+            flex-shrink: 0;
+            min-width: 90px;
+            text-align: right;
         }
 
-        /* Detail View Toolbar */
         .detail-toolbar {
             display: flex;
             justify-content: space-between;
@@ -305,6 +312,36 @@
             background-color: var(--accent-color);
             color: var(--bg-color);
             transform: translateX(-4px);
+        }
+
+        .tools-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lock-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .lock-btn:hover, .lock-btn:active {
+            background-color: var(--surface-hover);
+            border-color: var(--accent-color);
+        }
+
+        .lock-btn.locked {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border-color: var(--accent-color);
         }
 
         .zoom-controls {
@@ -336,18 +373,30 @@
             font-weight: 600;
             font-size: 1rem;
             color: var(--text-main);
-            transition: all 0.2s ease;
+            transition: background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        transform 0.15s ease-out;
         }
 
-        .zoom-btn:hover, .zoom-btn:active {
-            background-color: var(--accent-color);
-            color: var(--bg-color);
+        .zoom-btn:active {
+            transform: scale(0.9);
+        }
+
+        .zoom-btn.pressed {
+            background-color: var(--accent-color) !important;
+            color: var(--bg-color) !important;
+        }
+
+        @media (hover: hover) {
+            .zoom-btn:hover {
+                background-color: var(--surface-hover);
+            }
         }
 
         .surah-header-detail {
             text-align: center;
             padding-bottom: 2.5rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.5rem;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -366,27 +415,25 @@
         }
 
         .bismillah {
-            font-family: var(--font-arabic);
+            font-family: 'Amiri', serif;
             font-size: calc(2.8rem * var(--font-scale));
             font-weight: 400;
-            margin-top: 2rem;
+            margin-top: 1rem;
             color: var(--text-main);
             line-height: 1.5;
-            /* Dihapus transisinya agar tidak lag saat dirubah ukurannya */
         }
 
-        /* Ayah List */
         .ayah-list {
             display: flex;
             flex-direction: column;
-            gap: 3rem;
+            gap: 1.5rem;
         }
 
         .ayah-item {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            padding-bottom: 3rem;
+            gap: 1rem;
+            padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -398,7 +445,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: 2.5rem;
+            gap: 1.5rem;
         }
 
         .ayah-number-badge {
@@ -417,24 +464,23 @@
         }
 
         .ayah-arabic {
-            font-family: var(--font-arabic);
+            font-family: 'Amiri', serif;
             font-size: calc(2.4rem * var(--font-scale));
             line-height: 2.2;
             text-align: right;
             direction: rtl;
             color: var(--text-main);
             flex-grow: 1;
-            /* Dihapus transisinya agar ringan/tidak lag */
         }
 
         .ayah-translations {
-            padding-left: calc(40px + 2.5rem);
+            padding-left: calc(40px + 1.5rem);
         }
 
         .ayah-latin {
             font-size: calc(1.05rem * var(--font-scale));
             color: var(--text-main);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             font-style: italic;
             line-height: 1.6;
             font-weight: 500;
@@ -446,7 +492,133 @@
             line-height: 1.8;
         }
 
-        /* Responsive */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-box {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: modalSlideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        .modal-box h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-box p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .input-group input {
+            flex: 1;
+            min-width: 0;
+            width: 100%;
+            padding: 12px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background-color: var(--surface-color);
+            color: var(--text-main);
+            font-size: 1rem;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .input-group span {
+            font-weight: 600;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background-color: var(--surface-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-cancel:hover {
+            background-color: var(--surface-hover);
+        }
+
+        .btn-apply {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+        }
+
+        .btn-apply:hover {
+            opacity: 0.9;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            animation: toastSlideUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .toast.error {
+            background-color: var(--error-color);
+            color: #ffffff;
+        }
+
         @media (max-width: 768px) {
             header {
                 flex-direction: column;
@@ -479,7 +651,7 @@
             .ayah-top {
                 flex-direction: column-reverse;
                 align-items: flex-end;
-                gap: 1.5rem;
+                gap: 1rem;
             }
 
             .ayah-number-badge {
@@ -515,82 +687,131 @@
     </header>
 
     <main>
-        <!-- Loader -->
         <div id="loader" class="loader-container fade-in">
             <div class="spinner"></div>
             <p id="loader-text">Memuat Data...</p>
         </div>
 
-        <!-- View: List Surah -->
         <div id="view-list" class="hidden">
             <div class="surah-grid fade-in" id="surah-grid"></div>
         </div>
 
-        <!-- View: Detail Surah -->
         <div id="view-detail" class="hidden">
             <div class="fade-in">
-                <!-- Toolbar Detail: Tombol Kembali & Zoom -->
                 <div class="detail-toolbar">
                     <button class="back-btn" onclick="showListView()">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         Kembali
                     </button>
-                    <div class="zoom-controls">
-                        <button class="zoom-btn" onclick="adjustZoom(-10)" title="Perkecil Teks">A-</button>
-                        <span class="zoom-value" id="zoom-value">30</span>
-                        <button class="zoom-btn" onclick="adjustZoom(10)" title="Perbesar Teks">A+</button>
+                    
+                    <div class="tools-right">
+                        <button class="lock-btn" id="lock-btn" onclick="handleLockToggle()">
+                            <svg id="icon-unlock" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+                            <svg id="icon-lock" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </button>
+
+                        <div class="zoom-controls">
+                            <button id="btn-zoom-out" class="zoom-btn" onclick="handleZoomPress('out', -10)">A-</button>
+                            <span class="zoom-value" id="zoom-value">30</span>
+                            <button id="btn-zoom-in" class="zoom-btn" onclick="handleZoomPress('in', 10)">A+</button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="surah-header-detail" id="surah-header-detail">
-                    <!-- Diisi via JS -->
-                </div>
-                <div class="ayah-list" id="ayah-list">
-                    <!-- Diisi via JS -->
-                </div>
+                <div class="surah-header-detail" id="surah-header-detail"></div>
+                <div class="ayah-list" id="ayah-list"></div>
             </div>
         </div>
     </main>
 
+    <div id="modal-lock" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h3>Mode Hafalan</h3>
+            <p>Masukkan rentang ayat yang ingin difokuskan. Ayat lainnya akan disembunyikan.</p>
+            <div class="input-group">
+                <input type="number" id="input-start-ayah" placeholder="Awal" min="1" inputmode="numeric">
+                <span>-</span>
+                <input type="number" id="input-end-ayah" placeholder="Akhir" min="1" inputmode="numeric">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn btn-cancel" onclick="closeModal()">Batal</button>
+                <button class="modal-btn btn-apply" onclick="applyLock()">Terapkan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span id="toast-message"></span>
+    </div>
+
     <script>
-        /**
-         * Pengaturan Ukuran Font (Zoom) dengan Skala 0 - 100
-         */
-        // 30 adalah nilai default (skala 1.0)
         let currentZoomLevel = parseInt(localStorage.getItem('quranZoomLevel'));
-        if (isNaN(currentZoomLevel)) {
-            currentZoomLevel = 30; 
-        }
+        if (isNaN(currentZoomLevel)) currentZoomLevel = 30; 
 
         function applyZoom() {
-            // Konversi level (0-100) ke pengali CSS. 
-            // Jika 0 = 0.7x, 30 = 1.0x, 100 = 1.7x
             const scale = 0.7 + (currentZoomLevel / 100);
             document.documentElement.style.setProperty('--font-scale', scale);
-            
             const zoomValueEl = document.getElementById('zoom-value');
-            if (zoomValueEl) {
-                zoomValueEl.textContent = currentZoomLevel;
-            }
+            if (zoomValueEl) zoomValueEl.textContent = currentZoomLevel;
         }
 
         function adjustZoom(change) {
             currentZoomLevel += change;
-            
-            // Batasan nilai zoom 0 sampai 100
             if (currentZoomLevel < 0) currentZoomLevel = 0;
             if (currentZoomLevel > 100) currentZoomLevel = 100;
-            
             applyZoom();
             localStorage.setItem('quranZoomLevel', currentZoomLevel);
         }
 
-        // Terapkan zoom saat awal dimuat
+        let zoomTimerOut, zoomTimerIn;
+        function handleZoomPress(type, change) {
+            adjustZoom(change);
+            
+            const btnOut = document.getElementById('btn-zoom-out');
+            const btnIn = document.getElementById('btn-zoom-in');
+            
+            clearTimeout(zoomTimerOut);
+            clearTimeout(zoomTimerIn);
+            
+            if (type === 'out') {
+                btnOut.classList.add('pressed');
+                btnIn.classList.remove('pressed');
+                zoomTimerOut = setTimeout(() => btnOut.classList.remove('pressed'), 3000);
+            } else {
+                btnIn.classList.add('pressed');
+                btnOut.classList.remove('pressed');
+                zoomTimerIn = setTimeout(() => btnIn.classList.remove('pressed'), 3000);
+            }
+        }
+
         applyZoom();
 
-        /**
-         * Pemetaan Data Nama & Arti Surah Bahasa Indonesia Asli
-         */
+        let allSurahs = [];
+        let currentSurahTotalAyahs = 0;
+        let isLocked = false;
+
+        const API_BASE = 'https://api.alquran.cloud/v1';
+
+        const elLoader = document.getElementById('loader');
+        const elLoaderText = document.getElementById('loader-text');
+        const elViewList = document.getElementById('view-list');
+        const elViewDetail = document.getElementById('view-detail');
+        const elSurahGrid = document.getElementById('surah-grid');
+        const elSearchInput = document.getElementById('search-input');
+        const elSearchContainer = document.getElementById('search-container');
+        const elSurahHeaderDetail = document.getElementById('surah-header-detail');
+        const elAyahList = document.getElementById('ayah-list');
+        
+        const modalLock = document.getElementById('modal-lock');
+        const inputStartAyah = document.getElementById('input-start-ayah');
+        const inputEndAyah = document.getElementById('input-end-ayah');
+        const lockBtn = document.getElementById('lock-btn');
+        const iconUnlock = document.getElementById('icon-unlock');
+        const iconLock = document.getElementById('icon-lock');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
         const indoSurahMeta = {
             1: { name: "Al-Fatihah", translation: "Pembukaan" },
             2: { name: "Al-Baqarah", translation: "Sapi Betina" },
@@ -708,40 +929,17 @@
             114: { name: "An-Nas", translation: "Manusia" }
         };
 
-        // State & DOM Elements
-        let allSurahs = [];
-        const elLoader = document.getElementById('loader');
-        const elLoaderText = document.getElementById('loader-text');
-        const elViewList = document.getElementById('view-list');
-        const elViewDetail = document.getElementById('view-detail');
-        const elSurahGrid = document.getElementById('surah-grid');
-        const elSearchInput = document.getElementById('search-input');
-        const elSearchContainer = document.getElementById('search-container');
-        const elSurahHeaderDetail = document.getElementById('surah-header-detail');
-        const elAyahList = document.getElementById('ayah-list');
-
-        const API_BASE = 'https://api.alquran.cloud/v1';
-
         document.addEventListener('DOMContentLoaded', fetchAllSurahs);
 
-        // Pencarian Cerdas (Fuzzy Search)
-        const normalizeText = (text) => {
-            return text.toLowerCase().replace(/[^a-z0-9]/g, '');
-        };
+        const normalizeText = (text) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
 
         elSearchInput.addEventListener('input', (e) => {
             const keyword = normalizeText(e.target.value);
-            
             const filtered = allSurahs.filter(s => {
                 const normalizedName = normalizeText(s.indoName);
                 const normalizedTranslation = normalizeText(s.indoTranslation);
-                const normalizedArabic = normalizeText(s.name);
-                
-                return normalizedName.includes(keyword) || 
-                       normalizedTranslation.includes(keyword) ||
-                       normalizedArabic.includes(keyword);
+                return normalizedName.includes(keyword) || normalizedTranslation.includes(keyword) || normalizeText(s.name).includes(keyword);
             });
-            
             renderSurahList(filtered);
         });
 
@@ -758,6 +956,8 @@
 
         function showListView() {
             hideLoader();
+            resetLockState();
+            
             elViewList.classList.remove('hidden');
             elViewDetail.classList.add('hidden');
             elSearchContainer.style.display = 'block';
@@ -770,8 +970,6 @@
             elViewDetail.classList.remove('hidden');
             elSearchContainer.style.display = 'none';
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Terapkan ulang angka zoom jika elemennya baru dimunculkan
             applyZoom();
         }
 
@@ -782,28 +980,21 @@
                 const data = await response.json();
                 
                 if (data.code === 200) {
-                    allSurahs = data.data.map(surah => {
-                        return {
-                            ...surah,
-                            indoName: indoSurahMeta[surah.number].name,
-                            indoTranslation: indoSurahMeta[surah.number].translation
-                        };
-                    });
-                    
+                    allSurahs = data.data.map(surah => ({
+                        ...surah,
+                        indoName: indoSurahMeta[surah.number].name,
+                        indoTranslation: indoSurahMeta[surah.number].translation
+                    }));
                     renderSurahList(allSurahs);
                     showListView();
-                } else {
-                    throw new Error("Gagal mengambil data dari API.");
-                }
+                } else throw new Error("Gagal mengambil API.");
             } catch (error) {
-                console.error(error);
-                elLoaderText.textContent = "Terjadi kesalahan koneksi. Silakan muat ulang halaman.";
+                elLoaderText.textContent = "Koneksi terganggu. Silakan muat ulang.";
             }
         }
 
         function renderSurahList(surahs) {
             elSurahGrid.innerHTML = '';
-            
             if(surahs.length === 0) {
                 elSurahGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">Surah tidak ditemukan.</p>';
                 return;
@@ -813,7 +1004,6 @@
                 const card = document.createElement('div');
                 card.className = 'surah-card';
                 card.onclick = () => fetchSurahDetail(surah.number, surah);
-                
                 card.innerHTML = `
                     <div class="surah-info-left">
                         <div class="surah-number"><span>${surah.number}</span></div>
@@ -824,7 +1014,6 @@
                     </div>
                     <div class="surah-arabic-name">${surah.name}</div>
                 `;
-                
                 elSurahGrid.appendChild(card);
             });
         }
@@ -844,15 +1033,13 @@
                 const dataLat = await resLat.json();
 
                 if (dataAr.code === 200 && dataId.code === 200 && dataLat.code === 200) {
+                    currentSurahTotalAyahs = surahMeta.numberOfAyahs;
                     renderSurahDetail(surahMeta, dataAr.data.ayahs, dataId.data.ayahs, dataLat.data.ayahs);
                     showDetailView();
-                } else {
-                    throw new Error("Gagal mengambil detail ayat.");
-                }
+                } else throw new Error("Gagal memuat ayat.");
 
             } catch (error) {
-                console.error(error);
-                alert("Gagal memuat ayat. Periksa koneksi internet Anda.");
+                alert("Gagal memuat. Periksa koneksi internet.");
                 showListView();
             }
         }
@@ -871,16 +1058,13 @@
             
             ayahsAr.forEach((ayah, index) => {
                 let arabicText = ayah.text;
-                
-                if (index === 0 && !isFatihahOrTawbah) {
-                    arabicText = arabicText.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '').trim();
-                }
+                if (index === 0 && !isFatihahOrTawbah) arabicText = arabicText.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '').trim();
 
                 const latinText = ayahsLat[index].text;
                 const indoText = ayahsId[index].text;
 
                 const ayahHTML = `
-                    <div class="ayah-item">
+                    <div class="ayah-item" data-ayah="${ayah.numberInSurah}">
                         <div class="ayah-top">
                             <div class="ayah-number-badge">${ayah.numberInSurah}</div>
                             <div class="ayah-arabic">${arabicText}</div>
@@ -894,8 +1078,89 @@
                 elAyahList.insertAdjacentHTML('beforeend', ayahHTML);
             });
         }
+
+        function handleLockToggle() {
+            if (isLocked) {
+                unlockAyahs();
+            } else {
+                inputStartAyah.value = '';
+                inputEndAyah.value = '';
+                modalLock.classList.remove('hidden');
+            }
+        }
+
+        function applyLock() {
+            const start = parseInt(inputStartAyah.value);
+            const end = parseInt(inputEndAyah.value);
+
+            if (isNaN(start) || isNaN(end) || start > end || start < 1) {
+                showToast("Rentang ayat tidak valid.", true);
+                return;
+            }
+
+            if (end > currentSurahTotalAyahs) {
+                showToast(`Gagal: Hanya ada ${currentSurahTotalAyahs} ayat.`, true);
+                return;
+            }
+
+            const allRenderedAyahs = document.querySelectorAll('.ayah-item');
+            allRenderedAyahs.forEach(el => {
+                const ayahNum = parseInt(el.getAttribute('data-ayah'));
+                if (ayahNum >= start && ayahNum <= end) {
+                    el.style.display = 'flex';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            isLocked = true;
+            lockBtn.classList.add('locked');
+            iconUnlock.classList.add('hidden');
+            iconLock.classList.remove('hidden');
+
+            closeModal();
+            showToast(`Menampilkan Ayat ${start} - ${end}`);
+        }
+
+        function unlockAyahs() {
+            const allRenderedAyahs = document.querySelectorAll('.ayah-item');
+            allRenderedAyahs.forEach(el => {
+                el.style.display = 'flex';
+            });
+            
+            resetLockState();
+            showToast("Semua ayat ditampilkan.");
+        }
+
+        function resetLockState() {
+            isLocked = false;
+            lockBtn.classList.remove('locked');
+            iconUnlock.classList.remove('hidden');
+            iconLock.classList.add('hidden');
+        }
+
+        function closeModal() {
+            modalLock.classList.add('hidden');
+        }
+
+        let toastTimeout;
+        function showToast(message, isError = false) {
+            clearTimeout(toastTimeout);
+            toastMessage.textContent = message;
+            
+            if (isError) {
+                toast.classList.add('error');
+            } else {
+                toast.classList.remove('error');
+            }
+
+            toast.classList.remove('hidden');
+            
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
     </script>
 </body>
 </html>
-
-
