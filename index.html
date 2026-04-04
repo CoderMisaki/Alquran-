@@ -15,7 +15,7 @@
             --surface-hover: #f5f5f5;
             --text-main: #111111;
             --text-muted: #666666;
-            --text-faint: #999999;
+            --text-faint: #cccccc;
             --border-color: #eaeaea;
             --accent-color: #000000;
             --nav-bg: rgba(255, 255, 255, 0.85);
@@ -30,7 +30,7 @@
                 --surface-hover: #1a1a1a;
                 --text-main: #f5f5f5;
                 --text-muted: #a3a3a3;
-                --text-faint: #777777;
+                --text-faint: #444444;
                 --border-color: #262626;
                 --accent-color: #ffffff;
                 --nav-bg: rgba(10, 10, 10, 0.85);
@@ -67,11 +67,6 @@
             color: inherit; outline: none; 
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         @keyframes slideInRight {
             from { opacity: 0; transform: translateX(25px); }
             to { opacity: 1; transform: translateX(0); }
@@ -93,8 +88,31 @@
             100% { background-color: var(--surface-color); transform: scale(1); }
         }
 
-        .fade-in {
-            animation: fadeIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        @keyframes fadeInOpacity {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in-opacity {
+            animation: fadeInOpacity 0.3s ease-out forwards;
+        }
+
+        .tap-effect {
+            transition: transform 0.15s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .tap-effect:active {
+            transform: scale(0.9) !important;
+            background-color: var(--text-main) !important;
+            color: var(--bg-color) !important;
+            border-color: var(--text-main) !important;
+            transition: none !important; 
+        }
+
+        .tap-effect:active * {
+            color: var(--bg-color) !important;
+            stroke: var(--bg-color) !important;
+            transition: none !important;
         }
 
         header {
@@ -123,10 +141,8 @@
             width: 40px; height: 40px; border-radius: 50%;
             border: 1px solid var(--border-color);
             background-color: var(--surface-color);
-            transition: all 0.3s ease; flex-shrink: 0;
         }
 
-        .juz-filter-btn:hover { border-color: var(--accent-color); }
         .juz-filter-btn.active { background-color: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color); }
 
         .search-container { position: relative; flex: 1; min-width: 0; }
@@ -233,119 +249,104 @@
             color: var(--text-main); flex-shrink: 0; min-width: 70px; text-align: right;
         }
 
-        /* --- TATA LETAK TOOLBAR SEJAJAR 100% --- */
-        
         .sticky-back-wrapper {
             position: sticky;
-            top: 90px;
+            top: 90px; 
             z-index: 90;
-            height: 0; /* Membuat wrapper tidak memakan tinggi vertikal agar elemen selanjutnya menumpuk rata */
-            pointer-events: none; 
-            display: flex;
-            align-items: flex-start;
+            height: 0; 
+            pointer-events: none;
         }
 
-        .detail-tools-row {
-            display: flex;
-            justify-content: flex-end;
-            align-items: flex-start;
-            height: 38px; /* TINGGI PATOKAN UNTUK SEMUA TOMBOL */
-            margin-bottom: 2.5rem;
-            pointer-events: none; 
-        }
-
-        /* --- TOMBOL KEMBALI KIRI (STICKY) --- */
         .back-btn-ui {
-            pointer-events: auto;
             display: inline-flex;
             align-items: center;
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-            height: 38px; /* Tinggi sama persis dengan tools-right */
-            padding: 3px;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        /* EFEK KETIKA DITAHAN JADI PUTIH */
-        .back-btn-ui:active {
-            background-color: #ffffff !important;
-            border-color: #e0e0e0 !important;
-        }
-        .back-btn-ui:active .back-main-btn,
-        .back-btn-ui:active .back-toggle-btn {
-            color: #000000 !important;
-        }
-        .back-btn-ui:active svg {
-            stroke: #000000 !important;
+            gap: 6px;
+            pointer-events: auto;
         }
 
         .back-main-btn {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            height: 100%;
-            padding: 0 10px 0 6px;
-            font-size: 0.85rem;
+            height: 32px;
+            padding: 0 12px 0 10px;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            font-size: 0.82rem;
             font-weight: 600;
             color: var(--text-main);
-            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.2s;
             overflow: hidden;
             white-space: nowrap;
-            width: 82px; /* Lebar statis untuk animasi smooth */
+            max-width: 120px;
+            opacity: 1;
+            transition: max-width 0.3s ease, padding 0.3s ease, opacity 0.2s ease, margin 0.3s ease, border-color 0.3s, background-color 0.3s;
         }
 
         .back-toggle-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background-color: transparent;
-            color: var(--text-muted);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background-color: var(--surface-color);
+            border: 1.5px solid var(--text-faint); 
+            color: var(--text-main);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease, border-color 0.3s, background-color 0.3s;
             flex-shrink: 0;
         }
 
-        .back-toggle-btn:hover { background-color: var(--surface-hover); color: var(--text-main); }
-
-        /* MODE TERTUTUP (COLLAPSED) */
-        .back-btn-ui.collapsed {
-            border-radius: 50%;
-            padding: 3px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.08);
-        }
         .back-btn-ui.collapsed .back-main-btn {
-            width: 0;
-            padding: 0;
+            max-width: 0;
+            padding-left: 0;
+            padding-right: 0;
             opacity: 0;
-            pointer-events: none;
+            border: none;
+            margin-right: -6px; 
+            box-shadow: none;
         }
+
         .back-btn-ui.collapsed .back-toggle-btn {
             transform: rotate(180deg);
-            color: var(--text-main);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
         }
 
-        /* --- ALAT KANAN (NORMAL SCROLL) --- */
-        .tools-right { 
-            display: flex; align-items: center; gap: 8px; 
+        .detail-tools-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            height: 32px;
+            margin-bottom: 2.5rem;
+            gap: 6px;
+            pointer-events: none;
+        }
+
+        .detail-tools-row > * {
             pointer-events: auto;
-            height: 38px; /* TINGGI PATOKAN SAMA */
+        }
+
+        .nav-surah-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 50%;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main); 
+            flex-shrink: 0;
         }
 
         .lock-btn {
             display: flex; align-items: center; justify-content: center;
-            width: 38px; height: 38px; border-radius: 50%; /* Diperkecil */
+            width: 32px; height: 32px; border-radius: 50%;
             background-color: var(--surface-color);
             border: 1px solid var(--border-color);
-            color: var(--text-main); transition: all 0.3s ease;
+            color: var(--text-main); 
+            flex-shrink: 0;
         }
 
-        .lock-btn:hover, .lock-btn:active {
-            background-color: var(--surface-hover); border-color: var(--accent-color);
-        }
         .lock-btn.locked {
             background-color: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color);
         }
@@ -354,27 +355,23 @@
             display: flex; align-items: center; gap: 4px;
             background-color: var(--surface-color);
             border: 1px solid var(--border-color);
-            border-radius: 30px; padding: 3px;
-            height: 38px; /* Diperkecil */
+            border-radius: 30px; padding: 2px;
+            height: 32px;
+            flex-shrink: 0;
         }
 
         .zoom-value {
-            font-size: 0.85rem; font-weight: 600;
-            color: var(--text-muted); width: 26px;
+            font-size: 0.8rem; font-weight: 600;
+            color: var(--text-muted); width: 22px;
             text-align: center; font-variant-numeric: tabular-nums;
         }
 
         .zoom-btn {
-            width: 30px; height: 30px; border-radius: 50%;
+            width: 26px; height: 26px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 0.95rem; color: var(--text-main);
-            transition: all 0.2s;
+            font-weight: 600; font-size: 0.85rem; color: var(--text-main);
         }
 
-        .zoom-btn:active { transform: scale(0.9); }
-        .zoom-btn.pressed { background-color: var(--accent-color) !important; color: var(--bg-color) !important; }
-
-        /* --- KONTEN SURAH --- */
         .surah-header-detail {
             text-align: center; padding-bottom: 2rem;
             margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);
@@ -435,7 +432,6 @@
             color: var(--text-muted); line-height: 1.8;
         }
 
-        /* --- MODAL & TOAST --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px);
@@ -476,19 +472,16 @@
         .juz-btn {
             border: 1px solid var(--border-color); border-radius: 8px;
             padding: 10px 0; font-size: 0.9rem; font-weight: 600;
-            background-color: var(--surface-color); transition: all 0.2s;
+            background-color: var(--surface-color);
         }
 
-        .juz-btn:hover { border-color: var(--accent-color); }
         .juz-btn.selected { background-color: var(--accent-color); color: var(--bg-color); }
 
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
-        .modal-btn { padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; transition: all 0.2s; }
+        .modal-btn { padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; border: none;}
         .btn-cancel { background-color: var(--surface-color); color: var(--text-main); border: 1px solid var(--border-color); }
-        .btn-cancel:hover { background-color: var(--surface-hover); }
         .btn-apply { background-color: var(--accent-color); color: var(--bg-color); }
-        .btn-apply:hover { opacity: 0.9; }
 
         .toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
@@ -515,7 +508,6 @@
             .bismillah { font-size: calc(2rem * var(--font-scale)); }
             .juz-grid { grid-template-columns: repeat(4, 1fr); }
             
-            /* Mobile adjustment for sticky top since header height is taller */
             .sticky-back-wrapper { top: 125px; } 
         }
     </style>
@@ -525,8 +517,8 @@
     <header id="main-header">
         <div class="logo">Al-Qur'an</div>
         <div class="header-right" id="header-right">
-            <button class="juz-filter-btn" id="btn-open-juz" onclick="openJuzModal()" title="Filter by Juz">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            <button class="juz-filter-btn tap-effect" id="btn-open-juz" onclick="openJuzModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             </button>
             <div class="search-container" id="search-container">
                 <input type="text" id="search-input" class="search-input" placeholder="Cari surah..." autocomplete="off">
@@ -536,7 +528,7 @@
     </header>
 
     <main>
-        <div id="loader" class="loader-container fade-in">
+        <div id="loader" class="loader-container fade-in-opacity">
             <div class="spinner"></div>
             <p id="loader-text">Memuat Data...</p>
         </div>
@@ -545,38 +537,40 @@
             <div class="surah-grid" id="surah-grid"></div>
         </div>
 
-        <div id="view-detail" class="hidden fade-in">
+        <div id="view-detail" class="hidden fade-in-opacity">
             
-            <!-- Sticky Wrapper Ditaruh Langsung di Bawah view-detail Agar Mengikuti Sepanjang Surah -->
             <div class="sticky-back-wrapper">
                 <div class="back-btn-ui" id="back-btn-ui">
-                    <button class="back-main-btn" onclick="showListView()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    <button class="back-main-btn tap-effect" onclick="showListView()">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         <span>Kembali</span>
                     </button>
-                    <button class="back-toggle-btn" onclick="toggleBackButton(event)" title="Sembunyikan/Tampilkan">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    <button class="back-toggle-btn tap-effect" onclick="toggleBackButton()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                     </button>
                 </div>
             </div>
 
-            <!-- Normal Tools Row -->
             <div class="detail-tools-row">
-                <div class="tools-right">
-                    <button class="lock-btn" id="lock-btn" onclick="handleLockToggle()">
-                        <svg id="icon-unlock" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
-                        <svg id="icon-lock" class="hidden" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                    </button>
+                <button class="nav-surah-btn tap-effect" id="btn-prev-surah" onclick="navigateSurah(-1)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <button class="nav-surah-btn tap-effect" id="btn-next-surah" onclick="navigateSurah(1)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
 
-                    <div class="zoom-controls">
-                        <button id="btn-zoom-out" class="zoom-btn" onclick="handleZoomPress('out', -10)">A-</button>
-                        <span class="zoom-value" id="zoom-value">30</span>
-                        <button id="btn-zoom-in" class="zoom-btn" onclick="handleZoomPress('in', 10)">A+</button>
-                    </div>
+                <button class="lock-btn tap-effect" id="lock-btn" onclick="handleLockToggle()">
+                    <svg id="icon-unlock" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+                    <svg id="icon-lock" class="hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </button>
+
+                <div class="zoom-controls">
+                    <button id="btn-zoom-out" class="zoom-btn tap-effect" onclick="handleZoomPress('out', -10)">A-</button>
+                    <span class="zoom-value" id="zoom-value">30</span>
+                    <button id="btn-zoom-in" class="zoom-btn tap-effect" onclick="handleZoomPress('in', 10)">A+</button>
                 </div>
             </div>
 
-            <!-- Konten Utama Surah -->
             <div class="surah-header-detail" id="surah-header-detail"></div>
             <div class="ayah-list" id="ayah-list"></div>
         </div>
@@ -592,8 +586,8 @@
                 <input type="number" id="input-end-ayah" placeholder="Akhir" min="1" inputmode="numeric">
             </div>
             <div class="modal-actions">
-                <button class="modal-btn btn-cancel" onclick="closeModal('modal-lock')">Batal</button>
-                <button class="modal-btn btn-apply" onclick="applyLock()">Terapkan</button>
+                <button class="modal-btn btn-cancel tap-effect" onclick="closeModal('modal-lock')">Batal</button>
+                <button class="modal-btn btn-apply tap-effect" onclick="applyLock()">Terapkan</button>
             </div>
         </div>
     </div>
@@ -604,8 +598,8 @@
             <p>Pilih Juz untuk menampilkan surah terkait.</p>
             <div class="juz-grid" id="juz-grid-container"></div>
             <div class="modal-actions">
-                <button class="modal-btn btn-cancel" onclick="resetJuzFilter()">Hapus Filter</button>
-                <button class="modal-btn btn-apply" onclick="closeModal('modal-juz')">Tutup</button>
+                <button class="modal-btn btn-cancel tap-effect" onclick="resetJuzFilter()">Hapus Filter</button>
+                <button class="modal-btn btn-apply tap-effect" onclick="closeModal('modal-juz')">Tutup</button>
             </div>
         </div>
     </div>
@@ -653,7 +647,9 @@
         applyZoom();
 
         let allSurahs = [];
+        let currentJuzData = null;
         let currentSurahTotalAyahs = 0;
+        let currentOpenedSurah = null; 
         let isLocked = false;
         let activeJuzFilter = null;
 
@@ -823,29 +819,31 @@
             const keyword = elSearchInput.value;
             const normKeyword = normalizeForSearch(keyword);
             const rawKeyword = keyword.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-            let filtered = allSurahs;
-
-            if (activeJuzFilter) {
-                const allowedSurahs = juzMap[activeJuzFilter] || [];
-                filtered = filtered.filter(s => allowedSurahs.includes(s.number));
-            }
-
             const isSearching = keyword.trim().length > 0;
 
-            if (isSearching) {
-                filtered = filtered.filter(s => {
-                    const normName = normalizeForSearch(s.indoName);
-                    const rawName = s.indoName.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const rawTrans = s.indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    
-                    return normName.includes(normKeyword) || 
-                           rawName.includes(rawKeyword) || 
-                           rawTrans.includes(rawKeyword);
-                });
+            if (activeJuzFilter && currentJuzData) {
+                let filtered = currentJuzData;
+                if (isSearching) {
+                    filtered = filtered.filter(s => {
+                        const normName = normalizeForSearch(s.meta.indoName);
+                        const rawName = s.meta.indoName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        const rawTrans = s.meta.indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        return normName.includes(normKeyword) || rawName.includes(rawKeyword) || rawTrans.includes(rawKeyword);
+                    });
+                }
+                renderJuzSurahList(filtered, animateSlide, isSearching);
+            } else {
+                let filtered = allSurahs;
+                if (isSearching) {
+                    filtered = filtered.filter(s => {
+                        const normName = normalizeForSearch(s.indoName);
+                        const rawName = s.indoName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        const rawTrans = s.indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        return normName.includes(normKeyword) || rawName.includes(rawKeyword) || rawTrans.includes(rawKeyword);
+                    });
+                }
+                renderSurahList(filtered, animateSlide, isSearching);
             }
-
-            renderSurahList(filtered, animateSlide, isSearching);
         }
 
         elSearchInput.addEventListener('input', () => applySearchAndFilter(false));
@@ -864,6 +862,7 @@
         function showListView(animateSlide = true) {
             hideLoader();
             resetLockState();
+            currentOpenedSurah = null;
             
             const btnUI = document.getElementById('back-btn-ui');
             if(btnUI) btnUI.classList.remove('collapsed');
@@ -882,15 +881,46 @@
             elViewList.classList.add('hidden');
             elViewDetail.classList.remove('hidden');
             elHeaderRight.style.display = 'none';
+            updateNavButtonsVisibility();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             applyZoom();
         }
 
-        function toggleBackButton(event) {
-            event.stopPropagation();
+        function toggleBackButton() {
             const btn = document.getElementById('back-btn-ui');
             if(btn) {
                 btn.classList.toggle('collapsed');
+            }
+        }
+
+        function updateNavButtonsVisibility() {
+            const btnPrev = document.getElementById('btn-prev-surah');
+            const btnNext = document.getElementById('btn-next-surah');
+
+            if (currentOpenedSurah && !activeJuzFilter) {
+                btnPrev.style.display = 'flex';
+                btnNext.style.display = 'flex';
+                
+                btnPrev.style.opacity = currentOpenedSurah > 1 ? '1' : '0.3';
+                btnPrev.style.pointerEvents = currentOpenedSurah > 1 ? 'auto' : 'none';
+
+                btnNext.style.opacity = currentOpenedSurah < 114 ? '1' : '0.3';
+                btnNext.style.pointerEvents = currentOpenedSurah < 114 ? 'auto' : 'none';
+            } else {
+                btnPrev.style.display = 'none';
+                btnNext.style.display = 'none';
+            }
+        }
+
+        function navigateSurah(direction) {
+            if (!currentOpenedSurah || activeJuzFilter) return;
+            const target = currentOpenedSurah + direction;
+            if (target >= 1 && target <= 114) {
+                const meta = allSurahs.find(s => s.number === target) || {
+                    number: target, indoName: indoSurahMeta[target].name,
+                    indoTranslation: indoSurahMeta[target].translation, numberOfAyahs: 0
+                };
+                fetchSurahDetail(target, meta);
             }
         }
 
@@ -910,6 +940,50 @@
                 } else throw new Error("Gagal mengambil API.");
             } catch (error) {
                 elLoaderText.textContent = "Koneksi terganggu. Silakan muat ulang.";
+            }
+        }
+
+        async function fetchJuzAndShowCards(juzNumber) {
+            showLoader(`Memuat Juz ${juzNumber}...`);
+            try {
+                const [resAr, resId, resLat] = await Promise.all([
+                    fetch(`${API_BASE}/juz/${juzNumber}/quran-uthmani`),
+                    fetch(`${API_BASE}/juz/${juzNumber}/id.indonesian`),
+                    fetch(`${API_BASE}/juz/${juzNumber}/en.transliteration`)
+                ]);
+                const dataAr = await resAr.json();
+                const dataId = await resId.json();
+                const dataLat = await resLat.json();
+
+                const surahsInJuz = {};
+                dataAr.data.ayahs.forEach((ayah, idx) => {
+                    const surahNum = ayah.surah.number;
+                    if (!surahsInJuz[surahNum]) {
+                        surahsInJuz[surahNum] = {
+                            meta: {
+                                ...ayah.surah,
+                                indoName: indoSurahMeta[surahNum].name,
+                                indoTranslation: indoSurahMeta[surahNum].translation,
+                                juzStartAyah: ayah.numberInSurah,
+                                juzEndAyah: ayah.numberInSurah
+                            },
+                            ayahsAr: [],
+                            ayahsId: [],
+                            ayahsLat: []
+                        };
+                    }
+                    surahsInJuz[surahNum].meta.juzEndAyah = ayah.numberInSurah;
+                    surahsInJuz[surahNum].ayahsAr.push(ayah);
+                    surahsInJuz[surahNum].ayahsId.push(dataId.data.ayahs[idx]);
+                    surahsInJuz[surahNum].ayahsLat.push(dataLat.data.ayahs[idx]);
+                });
+
+                currentJuzData = Object.values(surahsInJuz);
+                showListView(true); 
+
+            } catch (err) {
+                alert("Gagal memuat Juz. Periksa koneksi internet.");
+                resetJuzFilter();
             }
         }
 
@@ -950,6 +1024,49 @@
             }
         }
 
+        function renderJuzSurahList(juzSurahs, animateSlide, isSearching) {
+            elSurahGrid.innerHTML = '';
+            if(juzSurahs.length === 0) {
+                elSurahGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">Surah tidak ditemukan.</p>';
+                return;
+            }
+
+            juzSurahs.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = `surah-card ${animateSlide ? 'animate-slide' : ''}`;
+                
+                if (animateSlide) {
+                    card.style.animationDelay = `${index * 0.02}s`;
+                }
+
+                card.onclick = () => {
+                    currentSurahTotalAyahs = item.ayahsAr.length;
+                    currentOpenedSurah = null; 
+                    renderJuzSpecificSurahDetail(item.meta, item.ayahsAr, item.ayahsId, item.ayahsLat);
+                    showDetailView();
+                };
+                
+                card.innerHTML = `
+                    <div class="surah-info-left">
+                        <div class="surah-number"><span>${item.meta.number}</span></div>
+                        <div class="surah-details">
+                            <h3>${item.meta.indoName}</h3>
+                            <p>${item.meta.indoTranslation} • Ayat ${item.meta.juzStartAyah}-${item.meta.juzEndAyah}</p>
+                        </div>
+                    </div>
+                    <div class="surah-arabic-name">${item.meta.name}</div>
+                `;
+                elSurahGrid.appendChild(card);
+            });
+
+            if(isSearching && juzSurahs.length === 1 && !animateSlide) {
+                const card = elSurahGrid.querySelector('.surah-card');
+                if(card) {
+                    setTimeout(() => { card.classList.add('flash-highlight'); }, 10);
+                }
+            }
+        }
+
         async function fetchSurahDetail(surahNumber, surahMeta) {
             try {
                 showLoader(`Memuat Surah ${surahMeta.indoName}...`);
@@ -966,6 +1083,7 @@
 
                 if (dataAr.code === 200 && dataId.code === 200 && dataLat.code === 200) {
                     currentSurahTotalAyahs = surahMeta.numberOfAyahs;
+                    currentOpenedSurah = surahNumber;
                     renderSurahDetail(surahMeta, dataAr.data.ayahs, dataId.data.ayahs, dataLat.data.ayahs);
                     showDetailView();
                 } else throw new Error("Gagal memuat ayat.");
@@ -1011,12 +1129,54 @@
             });
         }
 
+        function renderJuzSpecificSurahDetail(meta, ayahsAr, ayahsId, ayahsLat) {
+            const isFatihahOrTawbah = meta.number === 1 || meta.number === 9;
+            
+            let bismillahHtml = '';
+            if (meta.juzStartAyah === 1 && !isFatihahOrTawbah) {
+                bismillahHtml = `<div class="bismillah">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>`;
+            }
+
+            elSurahHeaderDetail.innerHTML = `
+                <h2>${meta.indoName}</h2>
+                <p>Juz ${activeJuzFilter} • Ayat ${meta.juzStartAyah} - ${meta.juzEndAyah}</p>
+                ${bismillahHtml}
+            `;
+
+            elAyahList.innerHTML = '';
+            
+            ayahsAr.forEach((ayah, index) => {
+                let arabicText = ayah.text;
+                
+                if (ayah.numberInSurah === 1 && !isFatihahOrTawbah) {
+                    arabicText = arabicText.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '').trim();
+                }
+
+                const latinText = ayahsLat[index].text;
+                const indoText = ayahsId[index].text;
+
+                const ayahHTML = `
+                    <div class="ayah-item" data-ayah="${ayah.numberInSurah}">
+                        <div class="ayah-top">
+                            <div class="ayah-number-badge">${ayah.numberInSurah}</div>
+                            <div class="ayah-arabic">${arabicText}</div>
+                        </div>
+                        <div class="ayah-translations">
+                            <div class="ayah-latin">${latinText}</div>
+                            <div class="ayah-indo">${indoText}</div>
+                        </div>
+                    </div>
+                `;
+                elAyahList.insertAdjacentHTML('beforeend', ayahHTML);
+            });
+        }
+
         function setupJuzGrid() {
             const container = document.getElementById('juz-grid-container');
             container.innerHTML = '';
             for(let i = 1; i <= 30; i++) {
                 const btn = document.createElement('button');
-                btn.className = 'juz-btn';
+                btn.className = 'juz-btn tap-effect';
                 btn.textContent = `Juz ${i}`;
                 btn.onclick = () => selectJuz(i);
                 container.appendChild(btn);
@@ -1032,16 +1192,16 @@
             activeJuzFilter = juz;
             document.getElementById('btn-open-juz').classList.add('active');
             updateJuzButtons();
-            applySearchAndFilter(true); 
             closeModal('modal-juz');
-            showToast(`Menampilkan Juz ${juz}`);
+            fetchJuzAndShowCards(juz);
         }
 
         function resetJuzFilter() {
             activeJuzFilter = null;
+            currentJuzData = null;
             document.getElementById('btn-open-juz').classList.remove('active');
             updateJuzButtons();
-            applySearchAndFilter(true); 
+            showListView(true); 
             closeModal('modal-juz');
             showToast(`Menampilkan Semua Surah`);
         }
@@ -1070,16 +1230,24 @@
                 showToast("Rentang ayat tidak valid.", true); return;
             }
 
-            if (end > currentSurahTotalAyahs) {
-                showToast(`Gagal: Hanya ada ${currentSurahTotalAyahs} ayat.`, true); return;
-            }
-
             const allRenderedAyahs = document.querySelectorAll('.ayah-item');
+            let hasMatch = false;
+
             allRenderedAyahs.forEach(el => {
                 const ayahNum = parseInt(el.getAttribute('data-ayah'));
-                if (ayahNum >= start && ayahNum <= end) el.style.display = 'flex';
-                else el.style.display = 'none';
+                if (ayahNum >= start && ayahNum <= end) {
+                    el.style.display = 'flex';
+                    hasMatch = true;
+                } else {
+                    el.style.display = 'none';
+                }
             });
+
+            if (!hasMatch) {
+                showToast(`Ayat ${start} - ${end} tidak ada di halaman ini.`, true);
+                unlockAyahs();
+                return;
+            }
 
             isLocked = true;
             lockBtn.classList.add('locked');
