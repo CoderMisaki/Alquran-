@@ -93,6 +93,10 @@
             to { opacity: 1; }
         }
 
+        @keyframes collapseCard {
+            to { height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; border: 0; opacity: 0; }
+        }
+
         .fade-in-opacity {
             animation: fadeInOpacity 0.3s ease-out forwards;
         }
@@ -127,8 +131,9 @@
         }
 
         .logo {
-            font-size: 1.4rem; font-weight: 700;
-            letter-spacing: -0.5px;
+            font-family: 'Amiri', serif;
+            font-size: 1.8rem; font-weight: 700;
+            letter-spacing: normal;
         }
 
         .header-right {
@@ -145,10 +150,10 @@
 
         .juz-filter-btn.active { background-color: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color); }
 
-        .search-container { position: relative; flex: 1; min-width: 0; }
+        .search-container { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
 
         .search-input {
-            width: 100%; padding: 0.65rem 1.2rem 0.65rem 2.8rem;
+            width: 100%; padding: 0.65rem 2.8rem 0.65rem 2.8rem;
             border-radius: 30px; border: 1px solid var(--border-color);
             background-color: var(--surface-color);
             color: var(--text-main); font-size: 0.95rem;
@@ -164,10 +169,30 @@
         .search-icon {
             position: absolute; left: 14px; top: 50%;
             transform: translateY(-50%); width: 18px; height: 18px;
-            stroke: var(--text-muted); transition: stroke 0.3s ease;
+            stroke: var(--text-muted); transition: stroke 0.3s ease; pointer-events: none;
+        }
+        
+        .search-clear-btn {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%); width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center;
+            background-color: var(--text-faint); color: var(--bg-color);
+            border-radius: 50%; cursor: pointer; transition: background-color 0.2s;
         }
 
-        .search-input:focus + .search-icon { stroke: var(--text-main); }
+        .search-clear-btn:hover { background-color: var(--text-muted); }
+        .search-input:focus ~ .search-icon { stroke: var(--text-main); }
+
+        .progress-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 2px;
+            background: transparent; z-index: 9999; pointer-events: none;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+
+        .progress-bar {
+            height: 100%; background-color: var(--accent-color); width: 0%;
+            transition: width 0.1s ease-out;
+        }
 
         main {
             padding: 2rem 5%; max-width: 1200px;
@@ -179,35 +204,80 @@
         .loader-container {
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            height: 50vh; gap: 1.5rem; color: var(--text-muted);
-        }
-        
-        .spinner {
-            width: 40px; height: 40px;
-            border: 2px solid var(--border-color); border-top-color: var(--accent-color);
-            border-radius: 50%; animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            height: 50vh; width: 100%;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        #load {
+            position: relative; width: 280px; height: 36px;
+            overflow: visible; cursor: default;
+        }
+
+        #load div {
+            position: absolute; width: 20px; height: 36px; opacity: 0;
+            font-family: Helvetica, Arial, sans-serif; font-weight: bold; font-size: 1.2rem;
+            animation: move 2s linear infinite;
+            transform: rotate(180deg);
+            color: var(--accent-color);
+        }
+
+        #load div:nth-child(2) { animation-delay: 0.2s; }
+        #load div:nth-child(3) { animation-delay: 0.4s; }
+        #load div:nth-child(4) { animation-delay: 0.6s; }
+        #load div:nth-child(5) { animation-delay: 0.8s; }
+        #load div:nth-child(6) { animation-delay: 1s; }
+        #load div:nth-child(7) { animation-delay: 1.2s; }
+
+        @keyframes move {
+            0% { left: 0; opacity: 0; }
+            35% { left: 41%; transform: rotate(0deg); opacity: 1; }
+            65% { left: 59%; transform: rotate(0deg); opacity: 1; }
+            100% { left: 100%; transform: rotate(-180deg); opacity: 0; }
+        }
+
+        .cr-card-effect {
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s;
+            transform-origin: center center; will-change: transform;
+        }
+
+        .cr-collapsing {
+            animation: collapseCard 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+            pointer-events: none;
+        }
+
+        .continue-reading-card {
+            background: linear-gradient(135deg, var(--surface-color), var(--bg-color));
+            border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color);
+            border-radius: 12px; padding: 0.9rem 1.1rem; margin-bottom: 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            overflow: hidden; touch-action: pan-y; 
+        }
+        
+        .cr-info { display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
+        .cr-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .cr-surah-name { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+        .cr-ayah-info { font-size: 0.8rem; color: var(--text-muted); }
+        .cr-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            background-color: var(--accent-color); color: var(--bg-color);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            pointer-events: none;
+        }
+        .cr-icon svg { transform: translateX(1.5px); }
 
         .surah-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;
         }
 
         .surah-card {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 14px; padding: 1.15rem;
-            display: flex; align-items: center;
-            justify-content: space-between; gap: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            opacity: 1; transform: translateX(0);
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 1.15rem; display: flex; align-items: center;
+            justify-content: space-between; gap: 0.8rem; cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); opacity: 1; transform: translateX(0);
         }
 
         .surah-card.animate-slide {
-            opacity: 0;
-            animation: slideInRight 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+            opacity: 0; animation: slideInRight 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
         }
 
         .surah-card.flash-highlight { animation: flashHighlight 0.6s ease-out forwards; }
@@ -250,141 +320,83 @@
         }
 
         .sticky-back-wrapper {
-            position: sticky;
-            top: 90px; 
-            z-index: 90;
-            height: 0; 
-            pointer-events: none;
+            position: sticky; top: 90px; z-index: 90; height: 0; pointer-events: none;
         }
 
         .back-btn-ui {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            pointer-events: auto;
+            display: inline-flex; align-items: center; gap: 6px; pointer-events: auto;
         }
 
         .back-main-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            height: 32px;
-            padding: 0 12px 0 10px;
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--text-main);
-            overflow: hidden;
-            white-space: nowrap;
-            max-width: 120px;
-            opacity: 1;
+            display: inline-flex; align-items: center; gap: 6px;
+            height: 32px; padding: 0 12px 0 10px; background-color: var(--surface-color);
+            border: 1px solid var(--border-color); border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04); font-size: 0.82rem; font-weight: 600; color: var(--text-main);
+            overflow: hidden; white-space: nowrap; max-width: 120px; opacity: 1;
             transition: max-width 0.3s ease, padding 0.3s ease, opacity 0.2s ease, margin 0.3s ease, border-color 0.3s, background-color 0.3s;
         }
 
         .back-toggle-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--surface-color);
-            border: 1.5px solid var(--text-faint); 
-            color: var(--text-main);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-            transition: transform 0.3s ease, border-color 0.3s, background-color 0.3s;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 50%;
+            background-color: var(--surface-color); border: 1.5px solid var(--text-faint); 
+            color: var(--text-main); box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease, border-color 0.3s, background-color 0.3s; flex-shrink: 0;
         }
 
         .back-btn-ui.collapsed .back-main-btn {
-            max-width: 0;
-            padding-left: 0;
-            padding-right: 0;
-            opacity: 0;
-            border: none;
-            margin-right: -6px; 
-            box-shadow: none;
+            max-width: 0; padding-left: 0; padding-right: 0; opacity: 0; border: none;
+            margin-right: -6px; box-shadow: none;
         }
 
         .back-btn-ui.collapsed .back-toggle-btn {
-            transform: rotate(180deg);
-            border-color: var(--accent-color);
-            color: var(--accent-color);
+            transform: rotate(180deg); border-color: var(--accent-color); color: var(--accent-color);
         }
 
         .detail-tools-row {
-            display: flex;
-            justify-content: flex-end;
-            align-items: flex-start;
-            height: 32px;
-            margin-bottom: 2.5rem;
-            gap: 6px;
-            pointer-events: none;
+            display: flex; justify-content: flex-end; align-items: flex-start;
+            height: 32px; margin-bottom: 2.5rem; gap: 6px; pointer-events: none;
         }
 
-        .detail-tools-row > * {
-            pointer-events: auto;
-        }
+        .detail-tools-row > * { pointer-events: auto; }
 
-        .nav-surah-btn {
+        .nav-surah-btn, .lock-btn {
             display: flex; align-items: center; justify-content: center;
             width: 32px; height: 32px; border-radius: 50%;
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-main); 
-            flex-shrink: 0;
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            color: var(--text-main); flex-shrink: 0;
         }
 
-        .lock-btn {
-            display: flex; align-items: center; justify-content: center;
-            width: 32px; height: 32px; border-radius: 50%;
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-main); 
-            flex-shrink: 0;
-        }
-
-        .lock-btn.locked {
-            background-color: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color);
-        }
+        .lock-btn.locked { background-color: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color); }
 
         .zoom-controls {
             display: flex; align-items: center; gap: 4px;
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 30px; padding: 2px;
-            height: 32px;
-            flex-shrink: 0;
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 30px; padding: 2px; height: 32px; flex-shrink: 0;
         }
 
         .zoom-value {
-            font-size: 0.8rem; font-weight: 600;
-            color: var(--text-muted); width: 22px;
-            text-align: center; font-variant-numeric: tabular-nums;
+            font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+            width: 22px; text-align: center; font-variant-numeric: tabular-nums;
         }
 
         .zoom-btn {
-            width: 26px; height: 26px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 0.85rem; color: var(--text-main);
+            width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.85rem; color: var(--text-main); transition: background-color 0.2s, transform 0.2s;
         }
 
+        .zoom-btn.pressed { background-color: var(--border-color); transform: scale(0.85); }
+
         .surah-header-detail {
-            text-align: center; padding-bottom: 2rem;
-            margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);
+            text-align: center; padding-bottom: 2rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);
         }
 
         .surah-header-detail h2 {
-            font-size: 2.2rem; font-weight: 700;
-            margin-bottom: 0.3rem; letter-spacing: -1px;
+            font-size: 2.2rem; font-weight: 700; margin-bottom: 0.3rem; letter-spacing: -1px;
         }
 
         .surah-header-detail p {
-            color: var(--text-muted); font-size: 0.95rem;
-            margin-bottom: 1.2rem; font-weight: 500;
+            color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.2rem; font-weight: 500;
         }
 
         .bismillah {
@@ -398,26 +410,24 @@
             display: flex; flex-direction: column; gap: 1rem;
             padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);
         }
-
+        
+        .ayah-item.flash-highlight { animation: flashHighlight 1s ease-out forwards; border-radius: 10px; padding: 1rem; }
         .ayah-item:last-child { border-bottom: none; }
 
         .ayah-top {
-            display: flex; justify-content: space-between;
-            align-items: flex-start; gap: 1.5rem;
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem;
         }
 
         .ayah-number-badge {
-            flex-shrink: 0; width: 36px; height: 36px;
-            border-radius: 50%; border: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.85rem; font-weight: 600;
+            flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid var(--border-color); display: flex; align-items: center;
+            justify-content: center; font-size: 0.85rem; font-weight: 600;
             color: var(--text-main); background-color: var(--surface-color);
         }
 
         .ayah-arabic {
             font-family: 'Amiri', serif; font-size: calc(2.2rem * var(--font-scale));
-            line-height: 2.2; text-align: right; direction: rtl;
-            color: var(--text-main); flex-grow: 1;
+            line-height: 2.2; text-align: right; direction: rtl; color: var(--text-main); flex-grow: 1;
         }
 
         .ayah-translations { padding-left: calc(36px + 1.5rem); }
@@ -428,8 +438,7 @@
         }
 
         .ayah-indo {
-            font-size: calc(0.95rem * var(--font-scale));
-            color: var(--text-muted); line-height: 1.8;
+            font-size: calc(0.95rem * var(--font-scale)); color: var(--text-muted); line-height: 1.8;
         }
 
         .modal-overlay {
@@ -442,8 +451,7 @@
         .modal-box {
             background-color: var(--bg-color); border: 1px solid var(--border-color);
             border-radius: 20px; padding: 2rem; width: 100%; max-width: 380px;
-            max-height: 80vh; overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             animation: modalSlideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
         }
 
@@ -470,15 +478,13 @@
         }
 
         .juz-btn {
-            border: 1px solid var(--border-color); border-radius: 8px;
-            padding: 10px 0; font-size: 0.9rem; font-weight: 600;
-            background-color: var(--surface-color);
+            border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 0;
+            font-size: 0.9rem; font-weight: 600; background-color: var(--surface-color);
         }
 
         .juz-btn.selected { background-color: var(--accent-color); color: var(--bg-color); }
 
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-
         .modal-btn { padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; border: none;}
         .btn-cancel { background-color: var(--surface-color); color: var(--text-main); border: 1px solid var(--border-color); }
         .btn-apply { background-color: var(--accent-color); color: var(--bg-color); }
@@ -499,7 +505,6 @@
                 flex-direction: column; align-items: center; 
                 height: auto; padding: 1rem 5% 1.25rem; gap: 1.25rem; 
             }
-            .logo { font-size: 1.5rem; text-align: center; }
             .header-right { max-width: 100%; width: 100%; }
             .ayah-top { flex-direction: column-reverse; align-items: flex-end; gap: 1rem; }
             .ayah-number-badge { align-self: flex-start; }
@@ -507,7 +512,6 @@
             .ayah-arabic { font-size: calc(1.8rem * var(--font-scale)); width: 100%; line-height: 2; }
             .bismillah { font-size: calc(2rem * var(--font-scale)); }
             .juz-grid { grid-template-columns: repeat(4, 1fr); }
-            
             .sticky-back-wrapper { top: 125px; } 
         }
     </style>
@@ -515,25 +519,51 @@
 <body>
 
     <header id="main-header">
-        <div class="logo">Al-Qur'an</div>
+        <div class="logo arabic-logo">القرآن الكريم</div>
         <div class="header-right" id="header-right">
             <button class="juz-filter-btn tap-effect" id="btn-open-juz" onclick="openJuzModal()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             </button>
             <div class="search-container" id="search-container">
-                <input type="text" id="search-input" class="search-input" placeholder="Cari surah..." autocomplete="off">
                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="search-input" class="search-input" placeholder="Cari nomor, nama surah, atau kata..." autocomplete="off">
+                <div class="search-clear-btn hidden" id="search-clear" onclick="clearSearch()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
             </div>
         </div>
     </header>
 
+    <div id="reading-progress-container" class="progress-container">
+        <div id="reading-progress-bar" class="progress-bar"></div>
+    </div>
+
     <main>
         <div id="loader" class="loader-container fade-in-opacity">
-            <div class="spinner"></div>
-            <p id="loader-text">Memuat Data...</p>
+            <div id="load">
+              <div>G</div>
+              <div>N</div>
+              <div>I</div>
+              <div>D</div>
+              <div>A</div>
+              <div>O</div>
+              <div>L</div>
+            </div>
         </div>
 
         <div id="view-list" class="hidden">
+            
+            <div id="continue-reading" class="continue-reading-card cr-card-effect hidden">
+                <div class="cr-info">
+                    <span class="cr-label">Lanjutkan Terakhir Dibaca</span>
+                    <h3 id="cr-surah-name" class="cr-surah-name">Surah</h3>
+                    <p id="cr-ayah-info" class="cr-ayah-info">Ayat</p>
+                </div>
+                <div class="cr-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                </div>
+            </div>
+
             <div class="surah-grid" id="surah-grid"></div>
         </div>
 
@@ -541,7 +571,7 @@
             
             <div class="sticky-back-wrapper">
                 <div class="back-btn-ui" id="back-btn-ui">
-                    <button class="back-main-btn tap-effect" onclick="showListView()">
+                    <button class="back-main-btn tap-effect" onclick="showListView(false)">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         <span>Kembali</span>
                     </button>
@@ -610,6 +640,14 @@
     </div>
 
     <script>
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
         let currentZoomLevel = parseInt(localStorage.getItem('quranZoomLevel'));
         if (isNaN(currentZoomLevel)) currentZoomLevel = 30; 
 
@@ -637,30 +675,29 @@
             clearTimeout(zoomTimerOut); clearTimeout(zoomTimerIn);
             if (type === 'out') {
                 btnOut.classList.add('pressed'); btnIn.classList.remove('pressed');
-                zoomTimerOut = setTimeout(() => btnOut.classList.remove('pressed'), 300);
+                zoomTimerOut = setTimeout(() => btnOut.classList.remove('pressed'), 200);
             } else {
                 btnIn.classList.add('pressed'); btnOut.classList.remove('pressed');
-                zoomTimerIn = setTimeout(() => btnIn.classList.remove('pressed'), 300);
+                zoomTimerIn = setTimeout(() => btnIn.classList.remove('pressed'), 200);
             }
         }
-
         applyZoom();
 
         let allSurahs = [];
         let currentJuzData = null;
-        let currentSurahTotalAyahs = 0;
         let currentOpenedSurah = null; 
         let isLocked = false;
         let activeJuzFilter = null;
+        let ayahObserver = null;
 
         const API_BASE = 'https://api.alquran.cloud/v1';
 
         const elLoader = document.getElementById('loader');
-        const elLoaderText = document.getElementById('loader-text');
         const elViewList = document.getElementById('view-list');
         const elViewDetail = document.getElementById('view-detail');
         const elSurahGrid = document.getElementById('surah-grid');
         const elSearchInput = document.getElementById('search-input');
+        const elSearchClear = document.getElementById('search-clear');
         const elHeaderRight = document.getElementById('header-right');
         const elSurahHeaderDetail = document.getElementById('surah-header-detail');
         const elAyahList = document.getElementById('ayah-list');
@@ -675,181 +712,89 @@
         const toastMessage = document.getElementById('toast-message');
 
         const indoSurahMeta = {
-            1: { name: "Al-Fatihah", translation: "Pembukaan" },
-            2: { name: "Al-Baqarah", translation: "Sapi Betina" },
-            3: { name: "Ali 'Imran", translation: "Keluarga 'Imran" },
-            4: { name: "An-Nisa'", translation: "Wanita" },
-            5: { name: "Al-Ma'idah", translation: "Jamuan (Hidangan)" },
-            6: { name: "Al-An'am", translation: "Binatang Ternak" },
-            7: { name: "Al-A'raf", translation: "Tempat yang Tertinggi" },
-            8: { name: "Al-Anfal", translation: "Rampasan Perang" },
-            9: { name: "At-Taubah", translation: "Pengampunan" },
-            10: { name: "Yunus", translation: "Nabi Yunus" },
-            11: { name: "Hud", translation: "Nabi Hud" },
-            12: { name: "Yusuf", translation: "Nabi Yusuf" },
-            13: { name: "Ar-Ra'd", translation: "Guruh (Petir)" },
-            14: { name: "Ibrahim", translation: "Nabi Ibrahim" },
-            15: { name: "Al-Hijr", translation: "Gunung Al-Hijr" },
-            16: { name: "An-Nahl", translation: "Lebah" },
-            17: { name: "Al-Isra'", translation: "Perjalanan Malam" },
-            18: { name: "Al-Kahf", translation: "Penghuni Gua" },
-            19: { name: "Maryam", translation: "Maryam" },
-            20: { name: "Taha", translation: "Taha" },
-            21: { name: "Al-Anbiya'", translation: "Nabi-Nabi" },
-            22: { name: "Al-Hajj", translation: "Haji" },
-            23: { name: "Al-Mu'minun", translation: "Orang-Orang Mukmin" },
-            24: { name: "An-Nur", translation: "Cahaya" },
-            25: { name: "Al-Furqan", translation: "Pembeda" },
-            26: { name: "Asy-Syu'ara'", translation: "Penyair" },
-            27: { name: "An-Naml", translation: "Semut" },
-            28: { name: "Al-Qasas", translation: "Kisah-Kisah" },
-            29: { name: "Al-'Ankabut", translation: "Laba-Laba" },
-            30: { name: "Ar-Rum", translation: "Bangsa Romawi" },
-            31: { name: "Luqman", translation: "Keluarga Luqman" },
-            32: { name: "As-Sajdah", translation: "Sajdah" },
-            33: { name: "Al-Ahzab", translation: "Golongan yang Bersekutu" },
-            34: { name: "Saba'", translation: "Kaum Saba'" },
-            35: { name: "Fathir", translation: "Pencipta" },
-            36: { name: "Yasin", translation: "Yasin" },
-            37: { name: "As-Saffat", translation: "Barisan-Barisan" },
-            38: { name: "Shad", translation: "Shad" },
-            39: { name: "Az-Zumar", translation: "Rombongan-Rombongan" },
-            40: { name: "Ghafir", translation: "Maha Pengampun" },
-            41: { name: "Fussilat", translation: "Yang Dijelaskan" },
-            42: { name: "Asy-Syura", translation: "Musyawarah" },
-            43: { name: "Az-Zukhruf", translation: "Perhiasan" },
-            44: { name: "Ad-Dukhan", translation: "Kabut" },
-            45: { name: "Al-Jatsiyah", translation: "Yang Berlutut" },
-            46: { name: "Al-Ahqaf", translation: "Bukit-Bukit Pasir" },
-            47: { name: "Muhammad", translation: "Nabi Muhammad" },
-            48: { name: "Al-Fath", translation: "Kemenangan" },
-            49: { name: "Al-Hujurat", translation: "Kamar-Kamar" },
-            50: { name: "Qaf", translation: "Qaf" },
-            51: { name: "Az-Zariyat", translation: "Angin yang Menerbangkan" },
-            52: { name: "At-Thur", translation: "Bukit" },
-            53: { name: "An-Najm", translation: "Bintang" },
-            54: { name: "Al-Qamar", translation: "Bulan" },
-            55: { name: "Ar-Rahman", translation: "Maha Pemurah" },
-            56: { name: "Al-Waqi'ah", translation: "Hari Kiamat" },
-            57: { name: "Al-Hadid", translation: "Besi" },
-            58: { name: "Al-Mujadilah", translation: "Gugatan" },
-            59: { name: "Al-Hasyr", translation: "Pengusiran" },
-            60: { name: "Al-Mumtahanah", translation: "Wanita yang Diuji" },
-            61: { name: "As-Saff", translation: "Barisan" },
-            62: { name: "Al-Jumu'ah", translation: "Hari Jumat" },
-            63: { name: "Al-Munafiqun", translation: "Orang Munafik" },
-            64: { name: "At-Taghabun", translation: "Hari Dinampakkan Kesalahan" },
-            65: { name: "At-Thalaq", translation: "Talak" },
-            66: { name: "At-Tahrim", translation: "Mengharamkan" },
-            67: { name: "Al-Mulk", translation: "Kerajaan" },
-            68: { name: "Al-Qalam", translation: "Pena" },
-            69: { name: "Al-Haqqah", translation: "Hari Kiamat" },
-            70: { name: "Al-Ma'arij", translation: "Tempat Naik" },
-            71: { name: "Nuh", translation: "Nabi Nuh" },
-            72: { name: "Al-Jinn", translation: "Jin" },
-            73: { name: "Al-Muzzammil", translation: "Orang yang Berselimut" },
-            74: { name: "Al-Muddassir", translation: "Orang yang Berkemul" },
-            75: { name: "Al-Qiyamah", translation: "Hari Kiamat" },
-            76: { name: "Al-Insan", translation: "Manusia" },
-            77: { name: "Al-Mursalat", translation: "Malaikat yang Diutus" },
-            78: { name: "An-Naba'", translation: "Berita Besar" },
-            79: { name: "An-Nazi'at", translation: "Malaikat yang Mencabut" },
-            80: { name: "'Abasa", translation: "Bermuka Masam" },
-            81: { name: "At-Takwir", translation: "Menggulung" },
-            82: { name: "Al-Infitar", translation: "Terbelah" },
-            83: { name: "Al-Mutaffifin", translation: "Orang yang Curang" },
-            84: { name: "Al-Insyiqaq", translation: "Terbelah" },
-            85: { name: "Al-Buruj", translation: "Gugusan Bintang" },
-            86: { name: "At-Tariq", translation: "Yang Datang di Malam Hari" },
-            87: { name: "Al-A'la", translation: "Yang Paling Tinggi" },
-            88: { name: "Al-Ghasyiyah", translation: "Hari Pembalasan" },
-            89: { name: "Al-Fajr", translation: "Fajar" },
-            90: { name: "Al-Balad", translation: "Negeri" },
-            91: { name: "Asy-Syams", translation: "Matahari" },
-            92: { name: "Al-Lail", translation: "Malam" },
-            93: { name: "Adh-Dhuha", translation: "Waktu Duha" },
-            94: { name: "Al-Insyirah", translation: "Melapangkan" },
-            95: { name: "At-Tin", translation: "Buah Tin" },
-            96: { name: "Al-'Alaq", translation: "Segumpal Darah" },
-            97: { name: "Al-Qadr", translation: "Kemuliaan" },
-            98: { name: "Al-Bayyinah", translation: "Pembuktian" },
-            99: { name: "Az-Zalzalah", translation: "Kegoncangan" },
-            100: { name: "Al-'Adiyat", translation: "Kuda yang Berlari Kencang" },
-            101: { name: "Al-Qari'ah", translation: "Hari Kiamat" },
-            102: { name: "At-Takatsur", translation: "Bermegah-Megahan" },
-            103: { name: "Al-'Asr", translation: "Masa/Waktu" },
-            104: { name: "Al-Humazah", translation: "Pengumpat" },
-            105: { name: "Al-Fil", translation: "Gajah" },
-            106: { name: "Quraisy", translation: "Suku Quraisy" },
-            107: { name: "Al-Ma'un", translation: "Barang Berguna" },
-            108: { name: "Al-Kausar", translation: "Nikmat yang Banyak" },
-            109: { name: "Al-Kafirun", translation: "Orang-Orang Kafir" },
-            110: { name: "An-Nasr", translation: "Pertolongan" },
-            111: { name: "Al-Lahab", translation: "Gejolak Api" },
-            112: { name: "Al-Ikhlas", translation: "Ikhlas" },
-            113: { name: "Al-Falaq", translation: "Waktu Subuh" },
-            114: { name: "An-Nas", translation: "Manusia" }
-        };
-
-        const juzMap = {
-            1: [1,2], 2: [2], 3: [2,3], 4: [3,4], 5: [4], 6: [4,5], 7: [5,6], 8: [6,7], 9: [7,8], 10: [8,9],
-            11: [9,10,11], 12: [11,12], 13: [12,13,14], 14: [15,16], 15: [17,18], 16: [18,19,20], 17: [21,22],
-            18: [23,24,25], 19: [25,26,27], 20: [27,28,29], 21: [29,30,31,32,33], 22: [33,34,35,36], 23: [36,37,38,39],
-            24: [39,40,41], 25: [41,42,43,44,45], 26: [46,47,48,49,50,51], 27: [51,52,53,54,55,56,57],
-            28: [58,59,60,61,62,63,64,65,66], 29: [67,68,69,70,71,72,73,74,75,76,77],
-            30: Array.from({length: 37}, (_, i) => i + 78)
+            1: { name: "Al-Fatihah", translation: "Pembukaan" }, 2: { name: "Al-Baqarah", translation: "Sapi Betina" }, 3: { name: "Ali 'Imran", translation: "Keluarga 'Imran" }, 4: { name: "An-Nisa'", translation: "Wanita" }, 5: { name: "Al-Ma'idah", translation: "Jamuan (Hidangan)" },
+            6: { name: "Al-An'am", translation: "Binatang Ternak" }, 7: { name: "Al-A'raf", translation: "Tempat yang Tertinggi" }, 8: { name: "Al-Anfal", translation: "Rampasan Perang" }, 9: { name: "At-Taubah", translation: "Pengampunan" }, 10: { name: "Yunus", translation: "Nabi Yunus" },
+            11: { name: "Hud", translation: "Nabi Hud" }, 12: { name: "Yusuf", translation: "Nabi Yusuf" }, 13: { name: "Ar-Ra'd", translation: "Guruh (Petir)" }, 14: { name: "Ibrahim", translation: "Nabi Ibrahim" }, 15: { name: "Al-Hijr", translation: "Gunung Al-Hijr" },
+            16: { name: "An-Nahl", translation: "Lebah" }, 17: { name: "Al-Isra'", translation: "Perjalanan Malam" }, 18: { name: "Al-Kahf", translation: "Penghuni Gua" }, 19: { name: "Maryam", translation: "Maryam" }, 20: { name: "Taha", translation: "Taha" },
+            21: { name: "Al-Anbiya'", translation: "Nabi-Nabi" }, 22: { name: "Al-Hajj", translation: "Haji" }, 23: { name: "Al-Mu'minun", translation: "Orang-Orang Mukmin" }, 24: { name: "An-Nur", translation: "Cahaya" }, 25: { name: "Al-Furqan", translation: "Pembeda" },
+            26: { name: "Asy-Syu'ara'", translation: "Penyair" }, 27: { name: "An-Naml", translation: "Semut" }, 28: { name: "Al-Qasas", translation: "Kisah-Kisah" }, 29: { name: "Al-'Ankabut", translation: "Laba-Laba" }, 30: { name: "Ar-Rum", translation: "Bangsa Romawi" },
+            31: { name: "Luqman", translation: "Keluarga Luqman" }, 32: { name: "As-Sajdah", translation: "Sajdah" }, 33: { name: "Al-Ahzab", translation: "Golongan yang Bersekutu" }, 34: { name: "Saba'", translation: "Kaum Saba'" }, 35: { name: "Fathir", translation: "Pencipta" },
+            36: { name: "Yasin", translation: "Yasin" }, 37: { name: "As-Saffat", translation: "Barisan-Barisan" }, 38: { name: "Shad", translation: "Shad" }, 39: { name: "Az-Zumar", translation: "Rombongan-Rombongan" }, 40: { name: "Ghafir", translation: "Maha Pengampun" },
+            41: { name: "Fussilat", translation: "Yang Dijelaskan" }, 42: { name: "Asy-Syura", translation: "Musyawarah" }, 43: { name: "Az-Zukhruf", translation: "Perhiasan" }, 44: { name: "Ad-Dukhan", translation: "Kabut" }, 45: { name: "Al-Jatsiyah", translation: "Yang Berlutut" },
+            46: { name: "Al-Ahqaf", translation: "Bukit-Bukit Pasir" }, 47: { name: "Muhammad", translation: "Nabi Muhammad" }, 48: { name: "Al-Fath", translation: "Kemenangan" }, 49: { name: "Al-Hujurat", translation: "Kamar-Kamar" }, 50: { name: "Qaf", translation: "Qaf" },
+            51: { name: "Az-Zariyat", translation: "Angin yang Menerbangkan" }, 52: { name: "At-Thur", translation: "Bukit" }, 53: { name: "An-Najm", translation: "Bintang" }, 54: { name: "Al-Qamar", translation: "Bulan" }, 55: { name: "Ar-Rahman", translation: "Maha Pemurah" },
+            56: { name: "Al-Waqi'ah", translation: "Hari Kiamat" }, 57: { name: "Al-Hadid", translation: "Besi" }, 58: { name: "Al-Mujadilah", translation: "Gugatan" }, 59: { name: "Al-Hasyr", translation: "Pengusiran" }, 60: { name: "Al-Mumtahanah", translation: "Wanita yang Diuji" },
+            61: { name: "As-Saff", translation: "Barisan" }, 62: { name: "Al-Jumu'ah", translation: "Hari Jumat" }, 63: { name: "Al-Munafiqun", translation: "Orang Munafik" }, 64: { name: "At-Taghabun", translation: "Hari Dinampakkan Kesalahan" }, 65: { name: "At-Thalaq", translation: "Talak" },
+            66: { name: "At-Tahrim", translation: "Mengharamkan" }, 67: { name: "Al-Mulk", translation: "Kerajaan" }, 68: { name: "Al-Qalam", translation: "Pena" }, 69: { name: "Al-Haqqah", translation: "Hari Kiamat" }, 70: { name: "Al-Ma'arij", translation: "Tempat Naik" },
+            71: { name: "Nuh", translation: "Nabi Nuh" }, 72: { name: "Al-Jinn", translation: "Jin" }, 73: { name: "Al-Muzzammil", translation: "Orang yang Berselimut" }, 74: { name: "Al-Muddassir", translation: "Orang yang Berkemul" }, 75: { name: "Al-Qiyamah", translation: "Hari Kiamat" },
+            76: { name: "Al-Insan", translation: "Manusia" }, 77: { name: "Al-Mursalat", translation: "Malaikat yang Diutus" }, 78: { name: "An-Naba'", translation: "Berita Besar" }, 79: { name: "An-Nazi'at", translation: "Malaikat yang Mencabut" }, 80: { name: "'Abasa", translation: "Bermuka Masam" },
+            81: { name: "At-Takwir", translation: "Menggulung" }, 82: { name: "Al-Infitar", translation: "Terbelah" }, 83: { name: "Al-Mutaffifin", translation: "Orang yang Curang" }, 84: { name: "Al-Insyiqaq", translation: "Terbelah" }, 85: { name: "Al-Buruj", translation: "Gugusan Bintang" },
+            86: { name: "At-Tariq", translation: "Yang Datang di Malam Hari" }, 87: { name: "Al-A'la", translation: "Yang Paling Tinggi" }, 88: { name: "Al-Ghasyiyah", translation: "Hari Pembalasan" }, 89: { name: "Al-Fajr", translation: "Fajar" }, 90: { name: "Al-Balad", translation: "Negeri" },
+            91: { name: "Asy-Syams", translation: "Matahari" }, 92: { name: "Al-Lail", translation: "Malam" }, 93: { name: "Adh-Dhuha", translation: "Waktu Duha" }, 94: { name: "Al-Insyirah", translation: "Melapangkan" }, 95: { name: "At-Tin", translation: "Buah Tin" },
+            96: { name: "Al-'Alaq", translation: "Segumpal Darah" }, 97: { name: "Al-Qadr", translation: "Kemuliaan" }, 98: { name: "Al-Bayyinah", translation: "Pembuktian" }, 99: { name: "Az-Zalzalah", translation: "Kegoncangan" }, 100: { name: "Al-'Adiyat", translation: "Kuda yang Berlari Kencang" },
+            101: { name: "Al-Qari'ah", translation: "Hari Kiamat" }, 102: { name: "At-Takatsur", translation: "Bermegah-Megahan" }, 103: { name: "Al-'Asr", translation: "Masa/Waktu" }, 104: { name: "Al-Humazah", translation: "Pengumpat" }, 105: { name: "Al-Fil", translation: "Gajah" },
+            106: { name: "Quraisy", translation: "Suku Quraisy" }, 107: { name: "Al-Ma'un", translation: "Barang Berguna" }, 108: { name: "Al-Kausar", translation: "Nikmat yang Banyak" }, 109: { name: "Al-Kafirun", translation: "Orang-Orang Kafir" }, 110: { name: "An-Nasr", translation: "Pertolongan" },
+            111: { name: "Al-Lahab", translation: "Gejolak Api" }, 112: { name: "Al-Ikhlas", translation: "Ikhlas" }, 113: { name: "Al-Falaq", translation: "Waktu Subuh" }, 114: { name: "An-Nas", translation: "Manusia" }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchAllSurahs();
             setupJuzGrid();
+            setupContinueReadingSwipe();
+            initAyahObserver();
         });
 
-        const normalizeForSearch = (str) => {
+        const smartNormalize = (str) => {
             let s = str.toLowerCase().replace(/[^a-z0-9]/g, ''); 
-            s = s.replace(/^(al|at|ar|as|an|ad|az|asy|adh|ash|aq|th|ab|am)/, ''); 
-            s = s.replace(/ts/g, 's').replace(/sy/g, 's').replace(/dh/g, 'd')
-                 .replace(/kh/g, 'h').replace(/dz/g, 'z').replace(/th/g, 't')
-                 .replace(/sh/g, 's').replace(/q/g, 'k').replace(/y/g, 'i'); 
+            s = s.replace(/q/g, 'k').replace(/th/g, 't').replace(/sh/g, 's').replace(/sy/g, 's')
+                 .replace(/kh/g, 'h').replace(/dz/g, 'z').replace(/o/g, 'a').replace(/e/g, 'i');
             s = s.replace(/(.)\1+/g, '$1'); 
             return s;
         };
 
         function applySearchAndFilter(animateSlide = false) {
-            const keyword = elSearchInput.value;
-            const normKeyword = normalizeForSearch(keyword);
-            const rawKeyword = keyword.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const isSearching = keyword.trim().length > 0;
+            const keyword = elSearchInput.value.trim();
+            const isSearching = keyword.length > 0;
 
-            if (activeJuzFilter && currentJuzData) {
-                let filtered = currentJuzData;
-                if (isSearching) {
-                    filtered = filtered.filter(s => {
-                        const normName = normalizeForSearch(s.meta.indoName);
-                        const rawName = s.meta.indoName.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        const rawTrans = s.meta.indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        return normName.includes(normKeyword) || rawName.includes(rawKeyword) || rawTrans.includes(rawKeyword);
-                    });
-                }
-                renderJuzSurahList(filtered, animateSlide, isSearching);
-            } else {
-                let filtered = allSurahs;
-                if (isSearching) {
-                    filtered = filtered.filter(s => {
-                        const normName = normalizeForSearch(s.indoName);
-                        const rawName = s.indoName.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        const rawTrans = s.indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        return normName.includes(normKeyword) || rawName.includes(rawKeyword) || rawTrans.includes(rawKeyword);
-                    });
-                }
-                renderSurahList(filtered, animateSlide, isSearching);
+            if (isSearching) elSearchClear.classList.remove('hidden');
+            else elSearchClear.classList.add('hidden');
+
+            let sourceData = (activeJuzFilter && currentJuzData) ? currentJuzData : allSurahs;
+            let filtered = sourceData;
+
+            if (isSearching) {
+                const rawKey = keyword.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const normKey = smartNormalize(keyword);
+
+                filtered = sourceData.filter(s => {
+                    const metaObj = (activeJuzFilter && currentJuzData) ? s.meta : s;
+                    if (!isNaN(keyword) && metaObj.number === parseInt(keyword)) return true;
+                    if (metaObj.name && metaObj.name.includes(keyword)) return true;
+
+                    const rawName = metaObj.indoName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const rawTrans = metaObj.indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const normName = smartNormalize(metaObj.indoName);
+                    const normTrans = smartNormalize(metaObj.indoTranslation);
+                    
+                    return rawName.includes(rawKey) || rawTrans.includes(rawKey) || 
+                           normName.includes(normKey) || normTrans.includes(normKey);
+                });
             }
+
+            if (activeJuzFilter && currentJuzData) renderJuzSurahList(filtered, animateSlide, isSearching);
+            else renderSurahList(filtered, animateSlide, isSearching);
         }
 
-        elSearchInput.addEventListener('input', () => applySearchAndFilter(false));
+        elSearchInput.addEventListener('input', debounce(() => applySearchAndFilter(false), 250));
 
-        function showLoader(text = "Memuat...") {
-            elLoaderText.textContent = text;
+        function clearSearch() {
+            elSearchInput.value = '';
+            elSearchClear.classList.add('hidden');
+            applySearchAndFilter(false);
+            elSearchInput.focus();
+        }
+
+        function showLoader() {
             elLoader.classList.remove('hidden');
             elViewList.classList.add('hidden');
             elViewDetail.classList.add('hidden');
@@ -859,20 +804,26 @@
             elLoader.classList.add('hidden');
         }
 
-        function showListView(animateSlide = true) {
+        function showListView(clearSearchQuery = true) {
             hideLoader();
             resetLockState();
             currentOpenedSurah = null;
+            document.getElementById('reading-progress-container').style.opacity = '0';
             
             const btnUI = document.getElementById('back-btn-ui');
             if(btnUI) btnUI.classList.remove('collapsed');
+
+            if(clearSearchQuery) {
+                elSearchInput.value = '';
+                elSearchClear.classList.add('hidden');
+            }
 
             elViewList.classList.remove('hidden');
             elViewDetail.classList.add('hidden');
             elHeaderRight.style.display = 'flex';
             
-            elSurahGrid.innerHTML = '';
-            applySearchAndFilter(animateSlide); 
+            checkLastRead();
+            applySearchAndFilter(!clearSearchQuery); 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -884,20 +835,23 @@
             updateNavButtonsVisibility();
             window.scrollTo({ top: 0, behavior: 'smooth' });
             applyZoom();
+            
+            if (ayahObserver) ayahObserver.disconnect();
+            
+            const ayahs = document.querySelectorAll('.ayah-item');
+            ayahs.forEach(el => ayahObserver.observe(el));
         }
 
         function toggleBackButton() {
             const btn = document.getElementById('back-btn-ui');
-            if(btn) {
-                btn.classList.toggle('collapsed');
-            }
+            if(btn) btn.classList.toggle('collapsed');
         }
 
         function updateNavButtonsVisibility() {
             const btnPrev = document.getElementById('btn-prev-surah');
             const btnNext = document.getElementById('btn-next-surah');
 
-            if (currentOpenedSurah && !activeJuzFilter) {
+            if (currentOpenedSurah) {
                 btnPrev.style.display = 'flex';
                 btnNext.style.display = 'flex';
                 
@@ -913,20 +867,134 @@
         }
 
         function navigateSurah(direction) {
-            if (!currentOpenedSurah || activeJuzFilter) return;
+            if (!currentOpenedSurah) return;
+            if (activeJuzFilter) {
+                activeJuzFilter = null;
+                document.getElementById('btn-open-juz').classList.remove('active');
+            }
             const target = currentOpenedSurah + direction;
             if (target >= 1 && target <= 114) {
                 const meta = allSurahs.find(s => s.number === target) || {
                     number: target, indoName: indoSurahMeta[target].name,
-                    indoTranslation: indoSurahMeta[target].translation, numberOfAyahs: 0
+                    indoTranslation: indoSurahMeta[target].translation, numberOfAyahs: 0, revelationType: 'Meccan'
                 };
                 fetchSurahDetail(target, meta);
             }
         }
 
+        function initAyahObserver() {
+            ayahObserver = new IntersectionObserver((entries) => {
+                if(!currentOpenedSurah) return;
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const ayahNum = entry.target.getAttribute('data-ayah');
+                        localStorage.setItem('lastReadSurah', currentOpenedSurah);
+                        localStorage.setItem('lastReadAyah', ayahNum);
+                    }
+                });
+            }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
+        }
+
+        function checkLastRead() {
+            const lastSurah = localStorage.getItem('lastReadSurah');
+            const lastAyah = localStorage.getItem('lastReadAyah');
+            const crBanner = document.getElementById('continue-reading');
+            
+            if (lastSurah && allSurahs.length > 0) {
+                const meta = allSurahs.find(s => s.number == parseInt(lastSurah));
+                if(meta) {
+                    document.getElementById('cr-surah-name').textContent = meta.indoName;
+                    document.getElementById('cr-ayah-info').textContent = `Ayat ke-${lastAyah || 1}`;
+                    crBanner.classList.remove('hidden', 'cr-collapsing');
+                    crBanner.style.transform = '';
+                    crBanner.style.opacity = '1';
+                    return;
+                }
+            }
+            crBanner.classList.add('hidden');
+        }
+
+        function setupContinueReadingSwipe() {
+            const crCard = document.getElementById('continue-reading');
+            let startX = 0, currentX = 0, isDragging = false;
+            
+            crCard.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isDragging = false; 
+                crCard.style.transition = 'none';
+            }, {passive: true});
+            
+            crCard.addEventListener('touchmove', (e) => {
+                currentX = e.touches[0].clientX;
+                let diff = currentX - startX;
+                if(Math.abs(diff) > 10) isDragging = true;
+
+                if(isDragging && diff < 0) {
+                    crCard.style.transform = `translateX(${diff}px)`;
+                    crCard.style.opacity = Math.max(0.2, 1 + (diff / 150));
+                }
+            }, {passive: true});
+            
+            crCard.addEventListener('touchend', (e) => {
+                if(!isDragging) {
+                    resumeReading();
+                    return;
+                }
+                let diff = currentX - startX;
+                crCard.style.transition = 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                
+                if(diff < -80) {
+                    crCard.style.transform = 'translateX(-100%)';
+                    crCard.style.opacity = '0';
+                    setTimeout(() => {
+                        crCard.classList.add('cr-collapsing');
+                        setTimeout(() => {
+                            crCard.classList.add('hidden');
+                            localStorage.removeItem('lastReadSurah');
+                            localStorage.removeItem('lastReadAyah');
+                        }, 400);
+                    }, 100);
+                } else {
+                    crCard.style.transform = '';
+                    crCard.style.opacity = '1';
+                }
+            });
+
+            crCard.addEventListener('click', (e) => {
+                if(!isDragging) resumeReading();
+            });
+        }
+
+        function resumeReading() {
+            const lastSurah = localStorage.getItem('lastReadSurah');
+            const lastAyah = localStorage.getItem('lastReadAyah');
+            if(lastSurah && allSurahs.length > 0) {
+                const meta = allSurahs.find(s => s.number == lastSurah);
+                if(meta) fetchSurahDetail(parseInt(lastSurah), meta, parseInt(lastAyah));
+            }
+        }
+
+        let progressTimeout;
+        window.addEventListener('scroll', () => {
+            if (!elViewDetail.classList.contains('hidden')) {
+                const barContainer = document.getElementById('reading-progress-container');
+                barContainer.style.opacity = '1';
+
+                const winScroll = window.pageYOffset || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = height > 0 ? (winScroll / height) * 100 : 100;
+                document.getElementById('reading-progress-bar').style.width = scrolled + "%";
+
+                clearTimeout(progressTimeout);
+                progressTimeout = setTimeout(() => {
+                    barContainer.style.opacity = '0';
+                }, 2000);
+            }
+        }, {passive: true});
+
         async function fetchAllSurahs() {
             try {
-                showLoader("Memuat Daftar Surah...");
+                showLoader();
                 const response = await fetch(`${API_BASE}/surah`);
                 const data = await response.json();
                 
@@ -939,12 +1007,12 @@
                     showListView(true);
                 } else throw new Error("Gagal mengambil API.");
             } catch (error) {
-                elLoaderText.textContent = "Koneksi terganggu. Silakan muat ulang.";
+                showToast("Koneksi terganggu. Silakan muat ulang.", true);
             }
         }
 
         async function fetchJuzAndShowCards(juzNumber) {
-            showLoader(`Memuat Juz ${juzNumber}...`);
+            showLoader();
             try {
                 const [resAr, resId, resLat] = await Promise.all([
                     fetch(`${API_BASE}/juz/${juzNumber}/quran-uthmani`),
@@ -965,11 +1033,10 @@
                                 indoName: indoSurahMeta[surahNum].name,
                                 indoTranslation: indoSurahMeta[surahNum].translation,
                                 juzStartAyah: ayah.numberInSurah,
-                                juzEndAyah: ayah.numberInSurah
+                                juzEndAyah: ayah.numberInSurah,
+                                revelationType: ayah.surah.revelationType
                             },
-                            ayahsAr: [],
-                            ayahsId: [],
-                            ayahsLat: []
+                            ayahsAr: [], ayahsId: [], ayahsLat: []
                         };
                     }
                     surahsInJuz[surahNum].meta.juzEndAyah = ayah.numberInSurah;
@@ -979,10 +1046,10 @@
                 });
 
                 currentJuzData = Object.values(surahsInJuz);
-                showListView(true); 
+                showListView(false); 
 
             } catch (err) {
-                alert("Gagal memuat Juz. Periksa koneksi internet.");
+                showToast("Gagal memuat Juz. Periksa koneksi internet.", true);
                 resetJuzFilter();
             }
         }
@@ -990,17 +1057,14 @@
         function renderSurahList(surahs, animateSlide, isSearching) {
             elSurahGrid.innerHTML = '';
             if(surahs.length === 0) {
-                elSurahGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">Surah tidak ditemukan.</p>';
+                elSurahGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">Pencarian tidak ditemukan.</p>';
                 return;
             }
 
             surahs.forEach((surah, index) => {
                 const card = document.createElement('div');
                 card.className = `surah-card ${animateSlide ? 'animate-slide' : ''}`;
-                
-                if (animateSlide) {
-                    card.style.animationDelay = `${index * 0.02}s`;
-                }
+                if (animateSlide) card.style.animationDelay = `${index * 0.02}s`;
 
                 card.onclick = () => fetchSurahDetail(surah.number, surah);
                 card.innerHTML = `
@@ -1015,32 +1079,21 @@
                 `;
                 elSurahGrid.appendChild(card);
             });
-
-            if(isSearching && surahs.length === 1 && !animateSlide) {
-                const card = elSurahGrid.querySelector('.surah-card');
-                if(card) {
-                    setTimeout(() => { card.classList.add('flash-highlight'); }, 10);
-                }
-            }
         }
 
         function renderJuzSurahList(juzSurahs, animateSlide, isSearching) {
             elSurahGrid.innerHTML = '';
             if(juzSurahs.length === 0) {
-                elSurahGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">Surah tidak ditemukan.</p>';
+                elSurahGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">Pencarian tidak ditemukan.</p>';
                 return;
             }
 
             juzSurahs.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = `surah-card ${animateSlide ? 'animate-slide' : ''}`;
-                
-                if (animateSlide) {
-                    card.style.animationDelay = `${index * 0.02}s`;
-                }
+                if (animateSlide) card.style.animationDelay = `${index * 0.02}s`;
 
                 card.onclick = () => {
-                    currentSurahTotalAyahs = item.ayahsAr.length;
                     currentOpenedSurah = null; 
                     renderJuzSpecificSurahDetail(item.meta, item.ayahsAr, item.ayahsId, item.ayahsLat);
                     showDetailView();
@@ -1058,19 +1111,17 @@
                 `;
                 elSurahGrid.appendChild(card);
             });
-
-            if(isSearching && juzSurahs.length === 1 && !animateSlide) {
-                const card = elSurahGrid.querySelector('.surah-card');
-                if(card) {
-                    setTimeout(() => { card.classList.add('flash-highlight'); }, 10);
-                }
-            }
         }
 
-        async function fetchSurahDetail(surahNumber, surahMeta) {
+        async function fetchSurahDetail(surahNumber, surahMeta, scrollToAyah = null) {
             try {
-                showLoader(`Memuat Surah ${surahMeta.indoName}...`);
+                showLoader();
+                resetLockState();
                 
+                localStorage.setItem('lastReadSurah', surahNumber);
+                if(scrollToAyah) localStorage.setItem('lastReadAyah', scrollToAyah);
+                else localStorage.setItem('lastReadAyah', 1);
+
                 const [resAr, resId, resLat] = await Promise.all([
                     fetch(`${API_BASE}/surah/${surahNumber}/quran-uthmani`),
                     fetch(`${API_BASE}/surah/${surahNumber}/id.indonesian`),
@@ -1082,33 +1133,69 @@
                 const dataLat = await resLat.json();
 
                 if (dataAr.code === 200 && dataId.code === 200 && dataLat.code === 200) {
-                    currentSurahTotalAyahs = surahMeta.numberOfAyahs;
                     currentOpenedSurah = surahNumber;
                     renderSurahDetail(surahMeta, dataAr.data.ayahs, dataId.data.ayahs, dataLat.data.ayahs);
                     showDetailView();
+
+                    if(scrollToAyah) {
+                        setTimeout(() => {
+                            const targetEl = document.querySelector(`.ayah-item[data-ayah="${scrollToAyah}"]`);
+                            if(targetEl) {
+                                targetEl.scrollIntoView({behavior: 'smooth', block: 'center'});
+                                targetEl.classList.add('flash-highlight');
+                                setTimeout(() => targetEl.classList.remove('flash-highlight'), 1200);
+                            }
+                        }, 300);
+                    }
+
                 } else throw new Error("Gagal memuat ayat.");
 
             } catch (error) {
-                alert("Gagal memuat. Periksa koneksi internet.");
+                showToast("Gagal memuat. Periksa koneksi internet.", true);
                 showListView();
             }
         }
 
+        function cleanBismillah(arabicText, surahNumber) {
+    
+    if (surahNumber === 1 || surahNumber === 9) return arabicText;
+    
+    const words = arabicText.split(/\s+/);
+    
+    if (words.length > 4) {
+        
+        const firstWordClean = words[0].replace(/[^\u0621-\u064A]/g, '');
+        
+        
+        if (firstWordClean === 'بسم') {
+            
+            return words.slice(4).join(' ').trim();
+        }
+    }
+    
+    return arabicText;
+}
+
+
         function renderSurahDetail(meta, ayahsAr, ayahsId, ayahsLat) {
             const isFatihahOrTawbah = meta.number === 1 || meta.number === 9;
             const bismillahHtml = !isFatihahOrTawbah ? `<div class="bismillah">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>` : '';
+            const revType = meta.revelationType && meta.revelationType.toLowerCase() === 'meccan' ? 'Makkiyah' : 'Madaniyah';
 
             elSurahHeaderDetail.innerHTML = `
                 <h2>${meta.indoName}</h2>
-                <p>${meta.indoTranslation} • ${meta.revelationType === 'Meccan' ? 'Makkiyah' : 'Madaniyah'} • ${meta.numberOfAyahs} Ayat</p>
+                <p>Surah ke-${meta.number} dari 114 • ${revType} • ${meta.numberOfAyahs} Ayat</p>
                 ${bismillahHtml}
             `;
 
             elAyahList.innerHTML = '';
-            
+
             ayahsAr.forEach((ayah, index) => {
                 let arabicText = ayah.text;
-                if (index === 0 && !isFatihahOrTawbah) arabicText = arabicText.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '').trim();
+                
+                if (index === 0) {
+                    arabicText = cleanBismillah(arabicText, meta.number);
+                }
 
                 const latinText = ayahsLat[index].text;
                 const indoText = ayahsId[index].text;
@@ -1148,8 +1235,8 @@
             ayahsAr.forEach((ayah, index) => {
                 let arabicText = ayah.text;
                 
-                if (ayah.numberInSurah === 1 && !isFatihahOrTawbah) {
-                    arabicText = arabicText.replace('بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ', '').trim();
+                if (ayah.numberInSurah === 1) {
+                    arabicText = cleanBismillah(arabicText, meta.number);
                 }
 
                 const latinText = ayahsLat[index].text;
