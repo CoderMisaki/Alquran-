@@ -120,10 +120,12 @@
 
             if (!themeToggleBtn) return;
             themeToggleBtn.addEventListener('click', () => {
-                const isDark = document.body.classList.contains('theme-dark');
-                const nextTheme = isDark ? 'light' : 'dark';
-                applyTheme(nextTheme);
-                localStorage.setItem('quranTheme', nextTheme);
+                requestAnimationFrame(() => {
+                    const isDark = document.body.classList.contains('theme-dark');
+                    const nextTheme = isDark ? 'light' : 'dark';
+                    applyTheme(nextTheme);
+                    localStorage.setItem('quranTheme', nextTheme);
+                });
             });
         }
 
