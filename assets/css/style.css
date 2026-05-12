@@ -491,10 +491,11 @@
         }
 
         .sticky-back-wrapper {
-            position: sticky; top: 90px; z-index: 90; height: 0; pointer-events: none;
+            position: sticky; top: 90px; z-index: 120; height: 0; pointer-events: none;
         }
 
         .back-btn-ui {
+            position: relative; z-index: 121;
             display: inline-flex; align-items: center; gap: 6px; pointer-events: auto;
         }
 
