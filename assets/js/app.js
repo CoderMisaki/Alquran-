@@ -148,11 +148,13 @@
         }
 
         async function runThemeTransition(nextTheme) {
-            const duration = getThemeTransitionDuration();
+            if (isThemeAnimating) return;
             isThemeAnimating = true;
             document.body.classList.add('theme-transitioning');
+            
             if (themeToggleBtn) {
                 themeToggleBtn.disabled = true;
+                themeToggleBtn.style.pointerEvents = 'none';
                 themeToggleBtn.setAttribute('aria-busy', 'true');
             }
 
@@ -164,21 +166,19 @@
             try {
                 if ('startViewTransition' in document) {
                     const transition = document.startViewTransition(commitTheme);
-                    await transition.finished;
+                    await Promise.race([
+                        transition.finished,
+                        new Promise(resolve => setTimeout(resolve, 800))
+                    ]);
                 } else {
-                    await new Promise(resolve => {
-                        requestAnimationFrame(() => {
-                            requestAnimationFrame(() => {
-                                commitTheme();
-                                window.setTimeout(resolve, duration + 80);
-                            });
-                        });
-                    });
+                    commitTheme();
+                    await new Promise(resolve => setTimeout(resolve, 350));
                 }
             } finally {
                 document.body.classList.remove('theme-transitioning');
                 if (themeToggleBtn) {
                     themeToggleBtn.disabled = false;
+                    themeToggleBtn.style.pointerEvents = 'auto';
                     themeToggleBtn.removeAttribute('aria-busy');
                 }
                 isThemeAnimating = false;
