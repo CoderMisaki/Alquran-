@@ -118,13 +118,23 @@
             const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
             applyTheme(initialTheme);
 
+            let overlay = document.querySelector('.theme-transition-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'theme-transition-overlay';
+                document.body.appendChild(overlay);
+            }
+
             if (!themeToggleBtn) return;
             themeToggleBtn.addEventListener('click', () => {
+                const isDark = document.body.classList.contains('theme-dark');
+                const nextTheme = isDark ? 'light' : 'dark';
+
+                overlay.classList.add('active');
                 requestAnimationFrame(() => {
-                    const isDark = document.body.classList.contains('theme-dark');
-                    const nextTheme = isDark ? 'light' : 'dark';
                     applyTheme(nextTheme);
                     localStorage.setItem('quranTheme', nextTheme);
+                    setTimeout(() => overlay.classList.remove('active'), 420);
                 });
             });
         }
