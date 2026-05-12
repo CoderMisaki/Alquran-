@@ -1,0 +1,558 @@
+        :root {
+            --bg-color: #ffffff;
+            --surface-color: #fcfcfc;
+            --surface-hover: #f5f5f5;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --text-faint: #cccccc;
+            --border-color: #eaeaea;
+            --accent-color: #000000;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --error-color: #ef4444;
+            --font-scale: 1; 
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0a0a0a;
+                --surface-color: #121212;
+                --surface-hover: #1a1a1a;
+                --text-main: #f5f5f5;
+                --text-muted: #a3a3a3;
+                --text-faint: #444444;
+                --border-color: #262626;
+                --accent-color: #ffffff;
+                --nav-bg: rgba(10, 10, 10, 0.85);
+            }
+        }
+
+        html { scroll-behavior: smooth; }
+
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; 
+            -webkit-user-select: none; -moz-user-select: none;
+            -ms-user-select: none; user-select: none;
+        }
+
+        input {
+            -webkit-user-select: auto; -moz-user-select: auto;
+            -ms-user-select: auto; user-select: auto;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        button, input {
+            background: none; border: none;
+            cursor: pointer; font-family: inherit;
+            color: inherit; outline: none; 
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(25px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes toastSlideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(100px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @keyframes flashHighlight {
+            0% { background-color: var(--surface-color); transform: scale(1); }
+            50% { background-color: var(--bg-color); border-color: var(--accent-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform: scale(1.02); }
+            100% { background-color: var(--surface-color); transform: scale(1); }
+        }
+
+        @keyframes fadeInOpacity {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes collapseCard {
+            to { height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; border: 0; opacity: 0; }
+        }
+
+        .fade-in-opacity {
+            animation: fadeInOpacity 0.3s ease-out forwards;
+        }
+
+        .tap-effect {
+            transition: transform 0.15s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .tap-effect:active {
+            transform: scale(0.9) !important;
+            background-color: var(--text-main) !important;
+            color: var(--bg-color) !important;
+            border-color: var(--text-main) !important;
+            transition: none !important; 
+        }
+
+        .tap-effect:active * {
+            color: var(--bg-color) !important;
+            stroke: var(--bg-color) !important;
+            transition: none !important;
+        }
+
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background-color: var(--nav-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 5%; display: flex;
+            align-items: center; justify-content: space-between;
+            height: 75px; transition: all 0.3s ease;
+        }
+
+        .logo {
+            font-family: 'Amiri', serif;
+            font-size: 1.8rem; font-weight: 700;
+            letter-spacing: normal;
+        }
+
+        .header-right {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; max-width: 400px;
+        }
+
+        .juz-filter-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+        }
+
+        .juz-filter-btn.active { background-color: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color); }
+
+        .search-container { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
+
+        .search-input {
+            width: 100%; padding: 0.65rem 2.8rem 0.65rem 2.8rem;
+            border-radius: 30px; border: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+            color: var(--text-main); font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            background-color: var(--bg-color);
+        }
+
+        .search-icon {
+            position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%); width: 18px; height: 18px;
+            stroke: var(--text-muted); transition: stroke 0.3s ease; pointer-events: none;
+        }
+        
+        .search-clear-btn {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%); width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center;
+            background-color: var(--text-faint); color: var(--bg-color);
+            border-radius: 50%; cursor: pointer; transition: background-color 0.2s;
+        }
+
+        .search-clear-btn:hover { background-color: var(--text-muted); }
+        .search-input:focus ~ .search-icon { stroke: var(--text-main); }
+
+        .progress-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 2px;
+            background: transparent; z-index: 9999; pointer-events: none;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+
+        .progress-bar {
+            height: 100%; background-color: var(--accent-color); width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        main {
+            padding: 2rem 5%; max-width: 1200px;
+            margin: 0 auto; min-height: calc(100vh - 75px);
+        }
+
+        .hidden { display: none !important; }
+
+        .loader-container {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 50vh; width: 100%;
+        }
+
+        #load {
+            position: relative; width: 280px; height: 36px;
+            overflow: visible; cursor: default;
+        }
+
+        #load div {
+            position: absolute; width: 20px; height: 36px; opacity: 0;
+            font-family: Helvetica, Arial, sans-serif; font-weight: bold; font-size: 1.2rem;
+            animation: move 2s linear infinite;
+            transform: rotate(180deg);
+            color: var(--accent-color);
+        }
+
+        #load div:nth-child(2) { animation-delay: 0.2s; }
+        #load div:nth-child(3) { animation-delay: 0.4s; }
+        #load div:nth-child(4) { animation-delay: 0.6s; }
+        #load div:nth-child(5) { animation-delay: 0.8s; }
+        #load div:nth-child(6) { animation-delay: 1s; }
+        #load div:nth-child(7) { animation-delay: 1.2s; }
+
+        @keyframes move {
+            0% { left: 0; opacity: 0; }
+            35% { left: 41%; transform: rotate(0deg); opacity: 1; }
+            65% { left: 59%; transform: rotate(0deg); opacity: 1; }
+            100% { left: 100%; transform: rotate(-180deg); opacity: 0; }
+        }
+
+        .cr-card-effect {
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s;
+            transform-origin: center center; will-change: transform;
+        }
+
+        .cr-collapsing {
+            animation: collapseCard 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+            pointer-events: none;
+        }
+
+        .continue-reading-card {
+            background: linear-gradient(135deg, var(--surface-color), var(--bg-color));
+            border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color);
+            border-radius: 12px; padding: 0.9rem 1.1rem; margin-bottom: 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            overflow: hidden; touch-action: pan-y; 
+        }
+        
+        .cr-info { display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
+        .cr-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .cr-surah-name { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+        .cr-ayah-info { font-size: 0.8rem; color: var(--text-muted); }
+        .cr-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            background-color: var(--accent-color); color: var(--bg-color);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            pointer-events: none;
+        }
+        .cr-icon svg { transform: translateX(1.5px); }
+
+        .surah-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;
+        }
+
+        .surah-card {
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 1.15rem; display: flex; align-items: center;
+            justify-content: space-between; gap: 0.8rem; cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); opacity: 1; transform: translateX(0);
+        }
+
+        .surah-card.animate-slide {
+            opacity: 0; animation: slideInRight 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        .surah-card.flash-highlight { animation: flashHighlight 0.6s ease-out forwards; }
+
+        .surah-card:hover, .surah-card:active {
+            border-color: var(--accent-color); transform: translateY(-3px);
+            box-shadow: 0 10px 20px -8px rgba(0,0,0,0.08); background-color: var(--bg-color);
+        }
+
+        .surah-info-left {
+            display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;
+        }
+
+        .surah-number {
+            width: 36px; height: 36px; background-color: var(--bg-color);
+            border: 1px solid var(--border-color); border-radius: 10px; display: flex;
+            align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600;
+            transform: rotate(45deg); transition: all 0.3s ease; flex-shrink: 0;
+        }
+
+        .surah-number span { transform: rotate(-45deg); }
+
+        .surah-card:hover .surah-number {
+            background-color: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color);
+        }
+
+        .surah-details { min-width: 0; }
+        .surah-details h3 {
+            font-size: 1.05rem; font-weight: 600; margin-bottom: 0.2rem;
+            letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .surah-details p {
+            font-size: 0.8rem; color: var(--text-muted); font-weight: 500;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .surah-arabic-name {
+            font-family: 'Amiri', serif; font-size: 1.4rem;
+            color: var(--text-main); flex-shrink: 0; min-width: 70px; text-align: right;
+        }
+
+        .sticky-back-wrapper {
+            position: sticky; top: 90px; z-index: 90; height: 0; pointer-events: none;
+        }
+
+        .back-btn-ui {
+            display: inline-flex; align-items: center; gap: 6px; pointer-events: auto;
+        }
+
+        .back-main-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            height: 32px; padding: 0 12px 0 10px; background-color: var(--surface-color);
+            border: 1px solid var(--border-color); border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04); font-size: 0.82rem; font-weight: 600; color: var(--text-main);
+            overflow: hidden; white-space: nowrap; max-width: 120px; opacity: 1;
+            transition: max-width 0.3s ease, padding 0.3s ease, opacity 0.2s ease, margin 0.3s ease, border-color 0.3s, background-color 0.3s;
+        }
+
+        .back-toggle-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 50%;
+            background-color: var(--surface-color); border: 1.5px solid var(--text-faint); 
+            color: var(--text-main); box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease, border-color 0.3s, background-color 0.3s; flex-shrink: 0;
+        }
+
+        .back-btn-ui.collapsed .back-main-btn {
+            max-width: 0; padding-left: 0; padding-right: 0; opacity: 0; border: none;
+            margin-right: -6px; box-shadow: none;
+        }
+
+        .back-btn-ui.collapsed .back-toggle-btn {
+            transform: rotate(180deg); border-color: var(--accent-color); color: var(--accent-color);
+        }
+
+        .detail-tools-row {
+            display: flex; justify-content: flex-end; align-items: flex-start;
+            height: 32px; margin-bottom: 2.5rem; gap: 6px; pointer-events: none;
+        }
+
+        .detail-tools-row > * { pointer-events: auto; }
+
+        .nav-surah-btn, .lock-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 50%;
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            color: var(--text-main); flex-shrink: 0;
+        }
+
+        .lock-btn.locked { background-color: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color); }
+
+        .zoom-controls {
+            display: flex; align-items: center; gap: 4px;
+            background-color: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 30px; padding: 2px; height: 32px; flex-shrink: 0;
+        }
+
+        .zoom-value {
+            font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+            width: 22px; text-align: center; font-variant-numeric: tabular-nums;
+        }
+
+        .zoom-btn {
+            width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.85rem; color: var(--text-main); transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .zoom-btn.pressed { background-color: var(--border-color); transform: scale(0.85); }
+
+        .surah-header-detail {
+            text-align: center; padding-bottom: 2rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);
+        }
+
+        .surah-header-detail h2 {
+            font-size: 2.2rem; font-weight: 700; margin-bottom: 0.3rem; letter-spacing: -1px;
+        }
+
+        .surah-header-detail p {
+            color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.2rem; font-weight: 500;
+        }
+
+        .bismillah {
+            font-family: 'Amiri', serif; font-size: calc(2.4rem * var(--font-scale));
+            font-weight: 400; margin-top: 1rem; color: var(--text-main); line-height: 1.5;
+        }
+
+        .ayah-list { display: flex; flex-direction: column; gap: 1.5rem; }
+
+        .ayah-item {
+            display: flex; flex-direction: column; gap: 1rem;
+            padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);
+        }
+        
+        .ayah-item.flash-highlight { animation: flashHighlight 1s ease-out forwards; border-radius: 10px; padding: 1rem; }
+        .ayah-item:last-child { border-bottom: none; }
+
+        .ayah-top {
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem;
+        }
+
+        .ayah-number-badge {
+            flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid var(--border-color); display: flex; align-items: center;
+            justify-content: center; font-size: 0.85rem; font-weight: 600;
+            color: var(--text-main); background-color: var(--surface-color);
+        }
+
+        .ayah-arabic {
+            font-family: 'Amiri', serif; font-size: calc(2.2rem * var(--font-scale));
+            line-height: 2.2; text-align: right; direction: rtl; color: var(--text-main); flex-grow: 1;
+        }
+
+        .ayah-translations { padding-left: calc(36px + 1.5rem); }
+
+        .ayah-latin {
+            font-size: calc(1rem * var(--font-scale)); color: var(--text-main);
+            margin-bottom: 0.4rem; font-style: italic; line-height: 1.6; font-weight: 500;
+        }
+
+        .ayah-indo {
+            font-size: calc(0.95rem * var(--font-scale)); color: var(--text-muted); line-height: 1.8;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px); z-index: 1000;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+
+        .modal-box {
+            background-color: var(--bg-color); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 2rem; width: 100%; max-width: 380px;
+            max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: modalSlideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        .modal-box h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .modal-box p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+        .input-group {
+            display: flex; align-items: center; justify-content: center;
+            gap: 12px; margin-bottom: 2rem; width: 100%;
+        }
+
+        .input-group input {
+            flex: 1; min-width: 0; width: 100%; padding: 12px 10px;
+            border: 1px solid var(--border-color); border-radius: 12px;
+            background-color: var(--surface-color); color: var(--text-main);
+            font-size: 1rem; text-align: center; transition: border-color 0.2s;
+        }
+
+        .input-group input:focus { border-color: var(--accent-color); }
+
+        .juz-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            gap: 8px; margin-bottom: 1.5rem;
+        }
+
+        .juz-btn {
+            border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 0;
+            font-size: 0.9rem; font-weight: 600; background-color: var(--surface-color);
+        }
+
+        .juz-btn.selected { background-color: var(--accent-color); color: var(--bg-color); }
+
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .modal-btn { padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; border: none;}
+        .btn-cancel { background-color: var(--surface-color); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-apply { background-color: var(--accent-color); color: var(--bg-color); }
+
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background-color: var(--accent-color); color: var(--bg-color);
+            padding: 12px 24px; border-radius: 30px; font-size: 0.95rem; font-weight: 500;
+            z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            animation: toastSlideUp 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+            display: flex; align-items: center; gap: 10px; white-space: nowrap;
+        }
+
+        .toast.error { background-color: var(--error-color); color: #ffffff; }
+
+        @media (max-width: 768px) {
+            header { 
+                flex-direction: column; align-items: center; 
+                height: auto; padding: 1rem 5% 1.25rem; gap: 1.25rem; 
+            }
+            .header-right { max-width: 100%; width: 100%; }
+            .ayah-top { flex-direction: column-reverse; align-items: flex-end; gap: 1rem; }
+            .ayah-number-badge { align-self: flex-start; }
+            .ayah-translations { padding-left: 0; }
+            .ayah-arabic { font-size: calc(1.8rem * var(--font-scale)); width: 100%; line-height: 2; }
+            .bismillah { font-size: calc(2rem * var(--font-scale)); }
+            .juz-grid { grid-template-columns: repeat(4, 1fr); }
+            .sticky-back-wrapper { top: 125px; } 
+        }
+    
+
+/* =========================================
+   DESKTOP UI/UX OPTIMIZATION
+   ========================================= */
+@media (min-width: 1024px) {
+    /* 1. Mengatur ulang grid list surah agar tidak terlalu rapat */
+    .surah-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* 2. Membatasi lebar area baca ayat agar nyaman di mata */
+    #view-detail {
+        max-width: 850px;
+        margin: 0 auto; /* Posisi di tengah */
+        padding: 0 2rem;
+    }
+
+    /* Menyesuaikan posisi tombol kembali agar tetap sejajar dengan konten bacaan */
+    .sticky-back-wrapper {
+        top: 90px;
+        max-width: 850px;
+        margin: 0 auto;
+    }
+
+    /* 3. Merapihkan tombol navigasi detail (Zoom, Lock, Next/Prev) */
+    .detail-tools-row {
+        margin-bottom: 3.5rem;
+    }
+
+    /* Memberikan sedikit transisi hover yang lebih elegan pada tombol */
+    .surah-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px -10px rgba(0,0,0,0.15);
+    }
+
+    /* 4. Custom Scrollbar untuk estetika dark/light mode */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+        background: var(--bg-color);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 5px;
+        border: 2px solid var(--bg-color); /* Memberikan efek padding */
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+    }
+}
