@@ -130,12 +130,19 @@
                 const isDark = document.body.classList.contains('theme-dark');
                 const nextTheme = isDark ? 'light' : 'dark';
 
+                // 1. Munculkan overlay
                 overlay.classList.add('active');
-                requestAnimationFrame(() => {
+
+                // 2. Tunggu overlay menutupi layar (300ms), lalu ganti tema
+                setTimeout(() => {
                     applyTheme(nextTheme);
                     localStorage.setItem('quranTheme', nextTheme);
-                    setTimeout(() => overlay.classList.remove('active'), 920);
-                });
+
+                    // 3. Hilangkan overlay perlahan
+                    requestAnimationFrame(() => {
+                        overlay.classList.remove('active');
+                    });
+                }, 300);
             });
         }
 
