@@ -152,19 +152,7 @@
             align-items: center;
             gap: 0.65rem;
         }
-        .lux-logo-icon {
-            width: 42px;
-            height: 42px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.26), transparent 65%), linear-gradient(145deg, #111 0%, #1e1e1e 45%, #0a0a0a 100%);
-            box-shadow: inset 0 0 0 1px rgba(216,177,90,0.4), 0 8px 20px rgba(0,0,0,0.22);
-        }
-        body.theme-dark .lux-logo-icon { box-shadow: inset 0 0 0 1px rgba(253,231,161,0.45), 0 10px 24px rgba(0,0,0,0.35); }
-        .lux-logo-svg { width: 31px; height: 31px; filter: drop-shadow(0 0 4px rgba(216,177,90,0.35)); }
-        .logo-text { line-height: 1; }
+        .logo-text { line-height: 1; display: inline-block; }
 
         .header-right {
             display: flex; align-items: center; gap: 10px;
@@ -635,10 +623,22 @@
 
 
 .theme-transition-overlay {
-    position: fixed; inset: 0; pointer-events: none; z-index: 9998;
-    background: radial-gradient(circle at 50% 12%, rgba(255,255,255,0.24), rgba(0,0,0,0.18));
-    opacity: 0; transition: opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+    position: fixed;
+    inset: -25%;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0;
+    transform: translate3d(24%, -24%, 0);
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, opacity;
 }
-.theme-transition-overlay.active { opacity: 1; }
-body.theme-light .theme-transition-overlay { background: radial-gradient(circle at 50% 12%, rgba(255,250,220,0.65), rgba(255,255,255,0)); }
-body.theme-dark .theme-transition-overlay { background: radial-gradient(circle at 50% 12%, rgba(20,20,20,0), rgba(0,0,0,0.54)); }
+.theme-transition-overlay.active {
+    opacity: 1;
+    transform: translate3d(-24%, 24%, 0);
+}
+body.theme-light .theme-transition-overlay {
+    background: radial-gradient(circle at 100% 0%, rgba(255, 246, 206, 0.72) 0%, rgba(255, 255, 255, 0.32) 36%, rgba(255, 255, 255, 0) 70%);
+}
+body.theme-dark .theme-transition-overlay {
+    background: radial-gradient(circle at 100% 0%, rgba(26, 26, 26, 0.78) 0%, rgba(8, 8, 8, 0.48) 38%, rgba(0, 0, 0, 0) 72%);
+}
