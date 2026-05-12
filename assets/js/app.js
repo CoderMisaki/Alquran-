@@ -226,7 +226,7 @@
             
             checkLastRead();
             applySearchAndFilter(!clearSearchQuery); 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'auto' });
         }
 
         function showDetailView() {
@@ -235,7 +235,7 @@
             elViewDetail.classList.remove('hidden');
             elHeaderRight.style.display = 'none';
             updateNavButtonsVisibility();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'auto' });
             applyZoom();
             
             if (ayahObserver) ayahObserver.disconnect();
@@ -377,20 +377,27 @@
         }
 
         let progressTimeout;
+        let isScrolling = false;
+
         window.addEventListener('scroll', () => {
-            if (!elViewDetail.classList.contains('hidden')) {
-                const barContainer = document.getElementById('reading-progress-container');
-                barContainer.style.opacity = '1';
+            if (!isScrolling && !elViewDetail.classList.contains('hidden')) {
+                window.requestAnimationFrame(() => {
+                    const barContainer = document.getElementById('reading-progress-container');
+                    barContainer.style.opacity = '1';
 
-                const winScroll = window.pageYOffset || document.documentElement.scrollTop;
-                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-                const scrolled = height > 0 ? (winScroll / height) * 100 : 100;
-                document.getElementById('reading-progress-bar').style.width = scrolled + "%";
+                    const winScroll = window.scrollY || window.pageYOffset;
+                    const height = document.documentElement.scrollHeight - window.innerHeight;
+                    const scrolled = height > 0 ? (winScroll / height) * 100 : 100;
+                    document.getElementById('reading-progress-bar').style.width = scrolled + "%";
 
-                clearTimeout(progressTimeout);
-                progressTimeout = setTimeout(() => {
-                    barContainer.style.opacity = '0';
-                }, 2000);
+                    clearTimeout(progressTimeout);
+                    progressTimeout = setTimeout(() => {
+                        barContainer.style.opacity = '0';
+                    }, 2000);
+
+                    isScrolling = false;
+                });
+                isScrolling = true;
             }
         }, {passive: true});
 
@@ -463,10 +470,19 @@
                 return;
             }
 
+            const fragment = document.createDocumentFragment();
+
             surahs.forEach((surah, index) => {
                 const card = document.createElement('div');
-                card.className = `surah-card ${animateSlide ? 'animate-slide' : ''}`;
-                if (animateSlide) card.style.animationDelay = `${index * 0.02}s`;
+                const shouldAnimate = animateSlide && index < 15;
+                card.className = `surah-card ${shouldAnimate ? 'animate-slide' : ''}`;
+
+                if (shouldAnimate) {
+                    card.style.animationDelay = `${index * 0.03}s`;
+                } else {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translate3d(0,0,0)';
+                }
 
                 card.onclick = () => fetchSurahDetail(surah.number, surah);
                 card.innerHTML = `
@@ -479,8 +495,10 @@
                     </div>
                     <div class="surah-arabic-name">${surah.name}</div>
                 `;
-                elSurahGrid.appendChild(card);
+                fragment.appendChild(card);
             });
+
+            elSurahGrid.appendChild(fragment);
         }
 
         function renderJuzSurahList(juzSurahs, animateSlide, isSearching) {
@@ -590,19 +608,15 @@
                 ${bismillahHtml}
             `;
 
-            elAyahList.innerHTML = '';
-
+            let allAyahsHTML = '';
             ayahsAr.forEach((ayah, index) => {
                 let arabicText = ayah.text;
-                
-                if (index === 0) {
-                    arabicText = cleanBismillah(arabicText, meta.number);
-                }
+                if (index === 0) arabicText = cleanBismillah(arabicText, meta.number);
 
                 const latinText = ayahsLat[index].text;
                 const indoText = ayahsId[index].text;
 
-                const ayahHTML = `
+                allAyahsHTML += `
                     <div class="ayah-item" data-ayah="${ayah.numberInSurah}">
                         <div class="ayah-top">
                             <div class="ayah-number-badge">${ayah.numberInSurah}</div>
@@ -614,8 +628,8 @@
                         </div>
                     </div>
                 `;
-                elAyahList.insertAdjacentHTML('beforeend', ayahHTML);
             });
+            elAyahList.innerHTML = allAyahsHTML;
         }
 
         function renderJuzSpecificSurahDetail(meta, ayahsAr, ayahsId, ayahsLat) {
@@ -632,19 +646,15 @@
                 ${bismillahHtml}
             `;
 
-            elAyahList.innerHTML = '';
-            
+            let allAyahsHTML = '';
             ayahsAr.forEach((ayah, index) => {
                 let arabicText = ayah.text;
-                
-                if (ayah.numberInSurah === 1) {
-                    arabicText = cleanBismillah(arabicText, meta.number);
-                }
+                if (ayah.numberInSurah === 1) arabicText = cleanBismillah(arabicText, meta.number);
 
                 const latinText = ayahsLat[index].text;
                 const indoText = ayahsId[index].text;
 
-                const ayahHTML = `
+                allAyahsHTML += `
                     <div class="ayah-item" data-ayah="${ayah.numberInSurah}">
                         <div class="ayah-top">
                             <div class="ayah-number-badge">${ayah.numberInSurah}</div>
@@ -656,8 +666,8 @@
                         </div>
                     </div>
                 `;
-                elAyahList.insertAdjacentHTML('beforeend', ayahHTML);
             });
+            elAyahList.innerHTML = allAyahsHTML;
         }
 
         function setupJuzGrid() {

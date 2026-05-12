@@ -329,10 +329,15 @@
         }
 
         .surah-card {
-            background-color: var(--surface-color); border: 1px solid var(--border-color);
-            border-radius: 14px; padding: 1.15rem; display: flex; align-items: center;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.15rem;
+            display: flex; align-items: center;
             justify-content: space-between; gap: 0.8rem; cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); opacity: 1; transform: translateX(0);
+            opacity: 1; transform: translate3d(0, 0, 0);
+            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, border-color 0.3s ease;
+            will-change: transform;
         }
 
         .surah-card.animate-slide {
@@ -343,8 +348,10 @@
         .surah-card.flash-highlight { animation: flashHighlight 0.6s ease-out forwards; }
 
         .surah-card:hover, .surah-card:active {
-            border-color: var(--accent-color); transform: translateY(-3px);
-            box-shadow: 0 10px 20px -8px rgba(0,0,0,0.08); background-color: var(--bg-color);
+            border-color: var(--accent-color);
+            transform: translate3d(0, -3px, 0);
+            box-shadow: 0 10px 20px -8px rgba(0,0,0,0.08);
+            background-color: var(--bg-color);
         }
 
         .surah-info-left {
