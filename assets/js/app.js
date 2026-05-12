@@ -69,6 +69,7 @@
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
         const themeToggleBtn = document.getElementById('theme-toggle');
+        let isThemeAnimating = false;
 
         const indoSurahMeta = {
             1: { name: "Al-Fatihah", translation: "Pembukaan" }, 2: { name: "Al-Baqarah", translation: "Sapi Betina" }, 3: { name: "Ali 'Imran", translation: "Keluarga 'Imran" }, 4: { name: "An-Nisa'", translation: "Wanita" }, 5: { name: "Al-Ma'idah", translation: "Jamuan (Hidangan)" },
@@ -105,11 +106,23 @@
         });
 
         function applyTheme(theme) {
-            document.body.classList.remove('theme-light', 'theme-dark');
-            document.body.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light');
+            const isDarkTheme = theme === 'dark';
+            document.body.classList.toggle('theme-dark', isDarkTheme);
+            document.body.classList.toggle('theme-light', !isDarkTheme);
+            document.documentElement.style.colorScheme = isDarkTheme ? 'dark' : 'light';
             if (themeToggleBtn) {
-                themeToggleBtn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+                themeToggleBtn.setAttribute('aria-pressed', isDarkTheme ? 'true' : 'false');
             }
+        }
+
+        function getThemeTransitionDuration() {
+            const rawValue = getComputedStyle(document.documentElement)
+                .getPropertyValue('--theme-duration')
+                .trim();
+
+            if (rawValue.endsWith('ms')) return parseFloat(rawValue);
+            if (rawValue.endsWith('s')) return parseFloat(rawValue) * 1000;
+            return 680;
         }
 
         function initThemeToggle() {
@@ -120,18 +133,28 @@
 
             if (!themeToggleBtn) return;
             themeToggleBtn.addEventListener('click', () => {
+                if (isThemeAnimating) return;
+
                 const isDark = document.body.classList.contains('theme-dark');
                 const nextTheme = isDark ? 'light' : 'dark';
+                const duration = getThemeTransitionDuration();
 
+                isThemeAnimating = true;
+                themeToggleBtn.disabled = true;
                 document.body.classList.add('theme-transitioning');
-                requestAnimationFrame(() => {
-                    applyTheme(nextTheme);
-                    localStorage.setItem('quranTheme', nextTheme);
-                });
 
-                setTimeout(() => {
-                    document.body.classList.remove('theme-transitioning');
-                }, 520);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        applyTheme(nextTheme);
+                        localStorage.setItem('quranTheme', nextTheme);
+
+                        window.setTimeout(() => {
+                            document.body.classList.remove('theme-transitioning');
+                            themeToggleBtn.disabled = false;
+                            isThemeAnimating = false;
+                        }, duration + 80);
+                    });
+                });
             });
         }
 
