@@ -134,7 +134,7 @@
                 requestAnimationFrame(() => {
                     applyTheme(nextTheme);
                     localStorage.setItem('quranTheme', nextTheme);
-                    setTimeout(() => overlay.classList.remove('active'), 420);
+                    setTimeout(() => overlay.classList.remove('active'), 700);
                 });
             });
         }
