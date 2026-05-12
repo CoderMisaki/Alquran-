@@ -131,6 +131,11 @@
             const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
             applyTheme(initialTheme);
 
+            requestAnimationFrame(() => {
+                document.documentElement.classList.add('theme-ready');
+                document.body.classList.add('theme-ready');
+            });
+
             if (!themeToggleBtn) return;
             themeToggleBtn.addEventListener('click', () => {
                 if (isThemeAnimating) return;

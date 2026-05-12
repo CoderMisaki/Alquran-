@@ -340,11 +340,21 @@
             border: 1px solid var(--border-color);
             border-radius: 14px;
             padding: 1.15rem;
-            display: flex; align-items: center;
-            justify-content: space-between; gap: 0.8rem; cursor: pointer;
-            opacity: 1; transform: translate3d(0, 0, 0);
-            transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, border-color 0.3s ease;
-            will-change: transform;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            cursor: pointer;
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+
+            transition: background-color var(--theme-duration) var(--theme-ease),
+                        color var(--theme-duration) var(--theme-ease),
+                        border-color var(--theme-duration) var(--theme-ease),
+                        box-shadow 0.24s ease,
+                        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+            will-change: transform, background-color, border-color, color;
         }
 
         .surah-card.animate-slide {
@@ -644,15 +654,47 @@
 }
 
 
-body.theme-transitioning,
-body.theme-transitioning * {
+body.theme-ready.theme-transitioning .surah-card,
+body.theme-ready.theme-transitioning .surah-number,
+body.theme-ready.theme-transitioning .surah-details h3,
+body.theme-ready.theme-transitioning .surah-details p,
+body.theme-ready.theme-transitioning .surah-arabic-name,
+body.theme-ready.theme-transitioning .continue-reading-card,
+body.theme-ready.theme-transitioning .search-input,
+body.theme-ready.theme-transitioning .juz-filter-btn,
+body.theme-ready.theme-transitioning header,
+body.theme-ready.theme-transitioning main,
+body.theme-ready.theme-transitioning .theme-toggle,
+body.theme-ready.theme-transitioning .ayah-item,
+body.theme-ready.theme-transitioning .ayah-number-badge,
+body.theme-ready.theme-transitioning .ayah-arabic,
+body.theme-ready.theme-transitioning .ayah-latin,
+body.theme-ready.theme-transitioning .ayah-indo,
+body.theme-ready.theme-transitioning svg,
+body.theme-ready.theme-transitioning svg * {
     transition-duration: var(--theme-duration) !important;
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+    transition-timing-function: var(--theme-ease) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    body.theme-transitioning,
-    body.theme-transitioning * {
+    body.theme-ready.theme-transitioning .surah-card,
+    body.theme-ready.theme-transitioning .surah-number,
+    body.theme-ready.theme-transitioning .surah-details h3,
+    body.theme-ready.theme-transitioning .surah-details p,
+    body.theme-ready.theme-transitioning .surah-arabic-name,
+    body.theme-ready.theme-transitioning .continue-reading-card,
+    body.theme-ready.theme-transitioning .search-input,
+    body.theme-ready.theme-transitioning .juz-filter-btn,
+    body.theme-ready.theme-transitioning header,
+    body.theme-ready.theme-transitioning main,
+    body.theme-ready.theme-transitioning .theme-toggle,
+    body.theme-ready.theme-transitioning .ayah-item,
+    body.theme-ready.theme-transitioning .ayah-number-badge,
+    body.theme-ready.theme-transitioning .ayah-arabic,
+    body.theme-ready.theme-transitioning .ayah-latin,
+    body.theme-ready.theme-transitioning .ayah-indo,
+    body.theme-ready.theme-transitioning svg,
+    body.theme-ready.theme-transitioning svg * {
         transition-duration: 0.01ms !important;
     }
 }
