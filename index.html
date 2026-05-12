@@ -15,7 +15,12 @@
 
     <header id="main-header">
         <div class="logo arabic-logo">القرآن الكريم</div>
-        <div class="header-right" id="header-right">
+        <div class="header-controls">
+            <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Ganti mode tema" title="Ganti tema terang/gelap">
+                <span class="theme-icon theme-sun">☀️</span>
+                <span class="theme-icon theme-moon">🌙</span>
+            </button>
+            <div class="header-right" id="header-right">
             <button class="juz-filter-btn tap-effect" id="btn-open-juz" onclick="openJuzModal()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             </button>
@@ -25,6 +30,7 @@
                 <div class="search-clear-btn hidden" id="search-clear" onclick="clearSearch()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </div>
+            </div>
             </div>
         </div>
     </header>

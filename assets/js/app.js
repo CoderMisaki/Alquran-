@@ -68,6 +68,7 @@
         const iconLock = document.getElementById('icon-lock');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
+        const themeToggleBtn = document.getElementById('theme-toggle');
 
         const indoSurahMeta = {
             1: { name: "Al-Fatihah", translation: "Pembukaan" }, 2: { name: "Al-Baqarah", translation: "Sapi Betina" }, 3: { name: "Ali 'Imran", translation: "Keluarga 'Imran" }, 4: { name: "An-Nisa'", translation: "Wanita" }, 5: { name: "Al-Ma'idah", translation: "Jamuan (Hidangan)" },
@@ -96,11 +97,35 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
+            initThemeToggle();
             fetchAllSurahs();
             setupJuzGrid();
             setupContinueReadingSwipe();
             initAyahObserver();
         });
+
+        function applyTheme(theme) {
+            document.body.classList.remove('theme-light', 'theme-dark');
+            document.body.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light');
+            if (themeToggleBtn) {
+                themeToggleBtn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+            }
+        }
+
+        function initThemeToggle() {
+            const savedTheme = localStorage.getItem('quranTheme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+            applyTheme(initialTheme);
+
+            if (!themeToggleBtn) return;
+            themeToggleBtn.addEventListener('click', () => {
+                const isDark = document.body.classList.contains('theme-dark');
+                const nextTheme = isDark ? 'light' : 'dark';
+                applyTheme(nextTheme);
+                localStorage.setItem('quranTheme', nextTheme);
+            });
+        }
 
         const smartNormalize = (str) => {
             let s = str.toLowerCase().replace(/[^a-z0-9]/g, ''); 
