@@ -49,6 +49,8 @@
         let ayahObserver = null;
 
         const API_BASE = 'https://api.alquran.cloud/v1';
+        const ALLOWED_THEMES = new Set(['light', 'dark']);
+        const ALLOWED_MODAL_IDS = new Set(['modal-lock', 'modal-juz']);
 
         const elLoader = document.getElementById('loader');
         const elViewList = document.getElementById('view-list');
@@ -105,8 +107,28 @@
             initAyahObserver();
         });
 
+        function getSafeTheme(value) {
+            return ALLOWED_THEMES.has(value) ? value : null;
+        }
+
+        function getStoredTheme() {
+            try {
+                return getSafeTheme(localStorage.getItem('quranTheme'));
+            } catch {
+                return null;
+            }
+        }
+
+        function saveTheme(theme) {
+            if (!ALLOWED_THEMES.has(theme)) return;
+            try {
+                localStorage.setItem('quranTheme', theme);
+            } catch {}
+        }
+
         function applyTheme(theme) {
-            const isDarkTheme = theme === 'dark';
+            const safeTheme = getSafeTheme(theme) || 'light';
+            const isDarkTheme = safeTheme === 'dark';
             document.body.classList.toggle('theme-dark', isDarkTheme);
             document.body.classList.toggle('theme-light', !isDarkTheme);
             document.documentElement.style.colorScheme = isDarkTheme ? 'dark' : 'light';
@@ -120,13 +142,51 @@
                 .getPropertyValue('--theme-duration')
                 .trim();
 
-            if (rawValue.endsWith('ms')) return parseFloat(rawValue);
-            if (rawValue.endsWith('s')) return parseFloat(rawValue) * 1000;
-            return 680;
+            if (rawValue.endsWith('ms')) return Number.parseFloat(rawValue);
+            if (rawValue.endsWith('s')) return Number.parseFloat(rawValue) * 1000;
+            return 780;
+        }
+
+        async function runThemeTransition(nextTheme) {
+            const duration = getThemeTransitionDuration();
+            isThemeAnimating = true;
+            document.body.classList.add('theme-transitioning');
+            if (themeToggleBtn) {
+                themeToggleBtn.disabled = true;
+                themeToggleBtn.setAttribute('aria-busy', 'true');
+            }
+
+            const commitTheme = () => {
+                applyTheme(nextTheme);
+                saveTheme(nextTheme);
+            };
+
+            try {
+                if ('startViewTransition' in document) {
+                    const transition = document.startViewTransition(commitTheme);
+                    await transition.finished;
+                } else {
+                    await new Promise(resolve => {
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                commitTheme();
+                                window.setTimeout(resolve, duration + 80);
+                            });
+                        });
+                    });
+                }
+            } finally {
+                document.body.classList.remove('theme-transitioning');
+                if (themeToggleBtn) {
+                    themeToggleBtn.disabled = false;
+                    themeToggleBtn.removeAttribute('aria-busy');
+                }
+                isThemeAnimating = false;
+            }
         }
 
         function initThemeToggle() {
-            const savedTheme = localStorage.getItem('quranTheme');
+            const savedTheme = getStoredTheme();
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
             applyTheme(initialTheme);
@@ -139,27 +199,9 @@
             if (!themeToggleBtn) return;
             themeToggleBtn.addEventListener('click', () => {
                 if (isThemeAnimating) return;
-
                 const isDark = document.body.classList.contains('theme-dark');
                 const nextTheme = isDark ? 'light' : 'dark';
-                const duration = getThemeTransitionDuration();
-
-                isThemeAnimating = true;
-                themeToggleBtn.disabled = true;
-                document.body.classList.add('theme-transitioning');
-
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        applyTheme(nextTheme);
-                        localStorage.setItem('quranTheme', nextTheme);
-
-                        window.setTimeout(() => {
-                            document.body.classList.remove('theme-transitioning');
-                            themeToggleBtn.disabled = false;
-                            isThemeAnimating = false;
-                        }, duration + 80);
-                    });
-                });
+                runThemeTransition(nextTheme);
             });
         }
 
@@ -418,11 +460,29 @@
             }
         }, {passive: true});
 
+        async function safeFetchJson(url, timeoutMs = 10000) {
+            const controller = new AbortController();
+            const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    signal: controller.signal,
+                    headers: { Accept: 'application/json' },
+                    cache: 'no-store',
+                    credentials: 'omit',
+                    referrerPolicy: 'no-referrer'
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } finally {
+                window.clearTimeout(timeoutId);
+            }
+        }
+
         async function fetchAllSurahs() {
             try {
                 showLoader();
-                const response = await fetch(`${API_BASE}/surah`);
-                const data = await response.json();
+                const data = await safeFetchJson(`${API_BASE}/surah`);
                 
                 if (data.code === 200) {
                     allSurahs = data.data.map(surah => ({
@@ -481,41 +541,57 @@
         }
 
         function renderSurahList(surahs, animateSlide, isSearching) {
-            elSurahGrid.innerHTML = '';
-            if(surahs.length === 0) {
-                elSurahGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">Pencarian tidak ditemukan.</p>';
+            elSurahGrid.textContent = '';
+            if (!Array.isArray(surahs) || surahs.length === 0) {
+                const empty = document.createElement('p');
+                empty.style.gridColumn = '1 / -1';
+                empty.style.textAlign = 'center';
+                empty.style.color = 'var(--text-muted)';
+                empty.style.padding = '2rem';
+                empty.textContent = 'Pencarian tidak ditemukan.';
+                elSurahGrid.appendChild(empty);
                 return;
             }
 
             const fragment = document.createDocumentFragment();
 
             surahs.forEach((surah, index) => {
-                const card = document.createElement('div');
+                const number = Number.parseInt(surah.number, 10);
+                if (!Number.isInteger(number) || number < 1 || number > 114) return;
+
+                const card = document.createElement('button');
                 const shouldAnimate = animateSlide && index < 15;
-                card.className = `surah-card ${shouldAnimate ? 'animate-slide' : ''}`;
+                card.type = 'button';
+                card.className = `surah-card${shouldAnimate ? ' animate-slide' : ''}`;
+                card.setAttribute('aria-label', `Buka Surah ${surah.indoName || number}`);
 
                 if (shouldAnimate) {
-                    card.style.animationDelay = `${index * 0.03}s`;
-                } else {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translate3d(0,0,0)';
+                    card.style.animationDelay = `${Math.min(index * 0.03, 0.45)}s`;
                 }
 
-                card.onclick = () => fetchSurahDetail(surah.number, surah);
-                card.innerHTML = `
-                    <div class="surah-info-left">
-                        <div class="surah-number"><span>${surah.number}</span></div>
-                        <div class="surah-details">
-                            <h3>${surah.indoName}</h3>
-                            <p>${surah.indoTranslation} • ${surah.numberOfAyahs} Ayat</p>
-                        </div>
-                    </div>
-                    <div class="surah-arabic-name">${surah.name}</div>
-                `;
+                const left = document.createElement('div');
+                left.className = 'surah-info-left';
+                const numberBox = document.createElement('div');
+                numberBox.className = 'surah-number';
+                const numberSpan = document.createElement('span');
+                numberSpan.textContent = String(number);
+                numberBox.appendChild(numberSpan);
+                const details = document.createElement('div');
+                details.className = 'surah-details';
+                const title = document.createElement('h3');
+                title.textContent = String(surah.indoName || `Surah ${number}`);
+                const subtitle = document.createElement('p');
+                subtitle.textContent = `${surah.indoTranslation || ''} • ${Number.parseInt(surah.numberOfAyahs, 10) || 0} Ayat`;
+                details.append(title, subtitle);
+                left.append(numberBox, details);
+                const arabicName = document.createElement('div');
+                arabicName.className = 'surah-arabic-name';
+                arabicName.textContent = String(surah.name || '');
+                card.append(left, arabicName);
+                card.addEventListener('click', () => fetchSurahDetail(number, surah));
                 fragment.appendChild(card);
             });
-
-            elSurahGrid.appendChild(fragment);
+            elSurahGrid.replaceChildren(fragment);
         }
 
         function renderJuzSurahList(juzSurahs, animateSlide, isSearching) {
@@ -738,25 +814,32 @@
             }
         }
 
+        function clampInteger(value, min, max) {
+            const number = Number.parseInt(value, 10);
+            if (!Number.isInteger(number)) return null;
+            return Math.min(Math.max(number, min), max);
+        }
+
         function applyLock() {
-            const start = parseInt(inputStartAyah.value);
-            const end = parseInt(inputEndAyah.value);
-
-            if (isNaN(start) || isNaN(end) || start > end || start < 1) {
-                showToast("Rentang ayat tidak valid.", true); return;
+            const allRenderedAyahs = Array.from(document.querySelectorAll('.ayah-item'));
+            const maxAyah = allRenderedAyahs.reduce((max, el) => {
+                const ayahNum = Number.parseInt(el.getAttribute('data-ayah'), 10);
+                return Number.isInteger(ayahNum) ? Math.max(max, ayahNum) : max;
+            }, 1);
+            const start = clampInteger(inputStartAyah.value, 1, maxAyah);
+            const end = clampInteger(inputEndAyah.value, 1, maxAyah);
+            if (start === null || end === null || start > end) {
+                showToast('Rentang ayat tidak valid.', true);
+                return;
             }
-
-            const allRenderedAyahs = document.querySelectorAll('.ayah-item');
             let hasMatch = false;
 
             allRenderedAyahs.forEach(el => {
-                const ayahNum = parseInt(el.getAttribute('data-ayah'));
-                if (ayahNum >= start && ayahNum <= end) {
-                    el.style.display = 'flex';
-                    hasMatch = true;
-                } else {
-                    el.style.display = 'none';
-                }
+                const ayahNum = Number.parseInt(el.getAttribute('data-ayah'), 10);
+                const shouldShow = Number.isInteger(ayahNum) && ayahNum >= start && ayahNum <= end;
+                el.hidden = !shouldShow;
+                el.style.display = shouldShow ? 'flex' : 'none';
+                if (shouldShow) hasMatch = true;
             });
 
             if (!hasMatch) {
@@ -789,7 +872,9 @@
         }
 
         function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
+            if (!ALLOWED_MODAL_IDS.has(id)) return;
+            const modal = document.getElementById(id);
+            if (modal) modal.classList.add('hidden');
         }
 
         let toastTimeout;
