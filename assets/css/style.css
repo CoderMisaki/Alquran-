@@ -10,6 +10,7 @@
             --nav-bg: rgba(255, 255, 255, 0.85);
             --error-color: #ef4444;
             --font-scale: 1;
+            --theme-duration: 0.68s;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -645,7 +646,7 @@
 
 body.theme-transitioning,
 body.theme-transitioning * {
-    transition-duration: 0.45s !important;
+    transition-duration: var(--theme-duration) !important;
     transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
