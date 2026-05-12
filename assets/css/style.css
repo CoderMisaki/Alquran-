@@ -27,6 +27,30 @@
         }
 
         html { scroll-behavior: smooth; }
+        
+        body.theme-dark {
+            --bg-color: #0a0a0a;
+            --surface-color: #121212;
+            --surface-hover: #1a1a1a;
+            --text-main: #f5f5f5;
+            --text-muted: #a3a3a3;
+            --text-faint: #444444;
+            --border-color: #262626;
+            --accent-color: #ffffff;
+            --nav-bg: rgba(10, 10, 10, 0.85);
+        }
+
+        body.theme-light {
+            --bg-color: #ffffff;
+            --surface-color: #fcfcfc;
+            --surface-hover: #f5f5f5;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --text-faint: #cccccc;
+            --border-color: #eaeaea;
+            --accent-color: #000000;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+        }
 
         * {
             margin: 0; padding: 0; box-sizing: border-box;
@@ -129,6 +153,20 @@
             display: flex; align-items: center; gap: 10px;
             width: 100%; max-width: 400px;
         }
+        .header-controls { display: flex; align-items: center; gap: 10px; }
+
+        .theme-toggle {
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+            display: inline-flex; align-items: center; justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .theme-icon { position: absolute; font-size: 16px; transition: all 0.25s ease; }
+        .theme-moon { opacity: 0; transform: scale(0.7) rotate(-20deg); }
+        body.theme-dark .theme-sun { opacity: 0; transform: scale(0.7) rotate(20deg); }
+        body.theme-dark .theme-moon { opacity: 1; transform: scale(1) rotate(0); }
 
         .juz-filter-btn {
             display: flex; align-items: center; justify-content: center;
@@ -494,6 +532,7 @@
                 flex-direction: column; align-items: center; 
                 height: auto; padding: 1rem 5% 1.25rem; gap: 1.25rem; 
             }
+            .header-controls { flex-direction: column; align-items: flex-start; width: 100%; gap: 0.75rem; }
             .header-right { max-width: 100%; width: 100%; }
             .ayah-top { flex-direction: column-reverse; align-items: flex-end; gap: 1rem; }
             .ayah-number-badge { align-self: flex-start; }
