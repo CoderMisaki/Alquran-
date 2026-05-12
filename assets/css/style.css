@@ -59,12 +59,18 @@
             -ms-user-select: none; user-select: none;
         }
 
-        body, header, .surah-card, .search-input, .juz-filter-btn, .modal-box {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+        body, header, .surah-card, .search-input, .juz-filter-btn, .modal-box,
+        .theme-toggle, .lock-btn, .nav-surah-btn, .zoom-btn, .back-main-btn, .back-toggle-btn,
+        .modal-btn, .search-clear-btn, .continue-reading-card, .ayah-item {
+            transition: background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                        color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                        border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                        box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: background-color, color, border-color, box-shadow;
         }
 
         svg, svg * {
-            transition: fill 0.3s ease, stroke 0.3s ease;
+            transition: fill 0.4s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         input {
@@ -637,24 +643,15 @@
 }
 
 
-
-.theme-transition-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9998;
-    pointer-events: none;
-    background-color: var(--bg-color);
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    will-change: opacity;
-}
-
-.theme-transition-overlay.active {
-    opacity: 1;
+body.theme-transitioning,
+body.theme-transitioning * {
+    transition-duration: 0.45s !important;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .theme-transition-overlay {
-        transition: opacity 0.2s linear;
+    body.theme-transitioning,
+    body.theme-transitioning * {
+        transition-duration: 0.01ms !important;
     }
 }

@@ -118,31 +118,20 @@
             const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
             applyTheme(initialTheme);
 
-            let overlay = document.querySelector('.theme-transition-overlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.className = 'theme-transition-overlay';
-                document.body.appendChild(overlay);
-            }
-
             if (!themeToggleBtn) return;
             themeToggleBtn.addEventListener('click', () => {
                 const isDark = document.body.classList.contains('theme-dark');
                 const nextTheme = isDark ? 'light' : 'dark';
 
-                // 1. Munculkan overlay
-                overlay.classList.add('active');
-
-                // 2. Tunggu overlay menutupi layar (300ms), lalu ganti tema
-                setTimeout(() => {
+                document.body.classList.add('theme-transitioning');
+                requestAnimationFrame(() => {
                     applyTheme(nextTheme);
                     localStorage.setItem('quranTheme', nextTheme);
+                });
 
-                    // 3. Hilangkan overlay perlahan
-                    requestAnimationFrame(() => {
-                        overlay.classList.remove('active');
-                    });
-                }, 300);
+                setTimeout(() => {
+                    document.body.classList.remove('theme-transitioning');
+                }, 520);
             });
         }
 
