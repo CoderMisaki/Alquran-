@@ -599,13 +599,12 @@
                     card.style.animationDelay = `${Math.min(index * 0.03, 0.45)}s`;
                 }
 
-                const left = document.createElement('div');
-                left.className = 'surah-info-left';
                 const numberBox = document.createElement('div');
                 numberBox.className = 'surah-number';
                 const numberSpan = document.createElement('span');
                 numberSpan.textContent = String(number);
                 numberBox.appendChild(numberSpan);
+
                 const details = document.createElement('div');
                 details.className = 'surah-details';
                 const title = document.createElement('h3');
@@ -613,11 +612,11 @@
                 const subtitle = document.createElement('p');
                 subtitle.textContent = `${surah.indoTranslation || ''} • ${Number.parseInt(surah.numberOfAyahs, 10) || 0} Ayat`;
                 details.append(title, subtitle);
-                left.append(numberBox, details);
+
                 const arabicName = document.createElement('div');
                 arabicName.className = 'surah-arabic-name';
                 arabicName.textContent = String(surah.name || '');
-                card.append(left, arabicName);
+                card.append(numberBox, details, arabicName);
                 card.addEventListener('click', () => fetchSurahDetail(number, surah));
                 fragment.appendChild(card);
             });
@@ -643,12 +642,10 @@
                 };
                 
                 card.innerHTML = `
-                    <div class="surah-info-left">
-                        <div class="surah-number"><span>${item.meta.number}</span></div>
-                        <div class="surah-details">
-                            <h3>${item.meta.indoName}</h3>
-                            <p>${item.meta.indoTranslation} • Ayat ${item.meta.juzStartAyah}-${item.meta.juzEndAyah}</p>
-                        </div>
+                    <div class="surah-number"><span>${item.meta.number}</span></div>
+                    <div class="surah-details">
+                        <h3>${item.meta.indoName}</h3>
+                        <p>${item.meta.indoTranslation} • Ayat ${item.meta.juzStartAyah}-${item.meta.juzEndAyah}</p>
                     </div>
                     <div class="surah-arabic-name">${item.meta.name}</div>
                 `;

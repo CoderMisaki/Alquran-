@@ -75,13 +75,13 @@
         <div id="view-list" class="hidden">
             
             <div id="continue-reading" class="continue-reading-card cr-card-effect hidden">
+                <div class="cr-icon play-btn-large">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </div>
                 <div class="cr-info">
                     <span class="cr-label">Lanjutkan Terakhir Dibaca</span>
                     <h3 id="cr-surah-name" class="cr-surah-name">Surah</h3>
                     <p id="cr-ayah-info" class="cr-ayah-info">Ayat</p>
-                </div>
-                <div class="cr-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                 </div>
             </div>
 
@@ -102,7 +102,13 @@
                 </div>
             </div>
 
-            <div class="detail-tools-row">
+            <div class="desktop-detail-header-row">
+                <button class="back-main-btn tap-effect" onclick="showListView(false)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    <span>Kembali</span>
+                </button>
+
+                <div class="detail-tools-row detail-tools-group">
                 <button class="nav-surah-btn tap-effect" id="btn-prev-surah" onclick="navigateSurah(-1)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
@@ -119,6 +125,7 @@
                     <button id="btn-zoom-out" class="zoom-btn tap-effect" onclick="handleZoomPress('out', -10)">A-</button>
                     <span class="zoom-value" id="zoom-value">30</span>
                     <button id="btn-zoom-in" class="zoom-btn tap-effect" onclick="handleZoomPress('in', 10)">A+</button>
+                </div>
                 </div>
             </div>
 
