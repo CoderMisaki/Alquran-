@@ -132,8 +132,35 @@
             document.body.classList.toggle('theme-dark', isDarkTheme);
             document.body.classList.toggle('theme-light', !isDarkTheme);
             document.documentElement.style.colorScheme = isDarkTheme ? 'dark' : 'light';
+            syncDesktopLightDetailLayout();
             if (themeToggleBtn) {
                 themeToggleBtn.setAttribute('aria-pressed', isDarkTheme ? 'true' : 'false');
+            }
+        }
+
+        function isDesktopLightLayout() {
+            return window.matchMedia('(min-width: 1024px)').matches &&
+                document.body.classList.contains('theme-light');
+        }
+
+        function syncDesktopLightDetailLayout() {
+            const detailIsOpen = Boolean(elViewDetail && !elViewDetail.classList.contains('hidden'));
+            const useDesktopLayout = Boolean(detailIsOpen && isDesktopLightLayout());
+            document.body.classList.toggle('desktop-quran-detail', useDesktopLayout);
+            document.body.classList.toggle('is-loading', elLoader && !elLoader.classList.contains('hidden'));
+
+            if (!detailIsOpen) return;
+
+            if (useDesktopLayout) {
+                elViewList.classList.remove('hidden');
+                if (elHeaderRight) elHeaderRight.style.display = 'flex';
+                checkLastRead();
+                if (elSurahGrid && elSurahGrid.children.length === 0) {
+                    applySearchAndFilter(false);
+                }
+            } else {
+                elViewList.classList.add('hidden');
+                if (elHeaderRight) elHeaderRight.style.display = 'none';
             }
         }
 
@@ -259,10 +286,12 @@
             elLoader.classList.remove('hidden');
             elViewList.classList.add('hidden');
             elViewDetail.classList.add('hidden');
+            syncDesktopLightDetailLayout();
         }
 
         function hideLoader() {
             elLoader.classList.add('hidden');
+            syncDesktopLightDetailLayout();
         }
 
         function showListView(clearSearchQuery = true) {
@@ -282,6 +311,7 @@
             elViewList.classList.remove('hidden');
             elViewDetail.classList.add('hidden');
             elHeaderRight.style.display = 'flex';
+            document.body.classList.remove('desktop-quran-detail');
             
             checkLastRead();
             applySearchAndFilter(!clearSearchQuery); 
@@ -290,9 +320,8 @@
 
         function showDetailView() {
             hideLoader();
-            elViewList.classList.add('hidden');
             elViewDetail.classList.remove('hidden');
-            elHeaderRight.style.display = 'none';
+            syncDesktopLightDetailLayout();
             updateNavButtonsVisibility();
             window.scrollTo({ top: 0, behavior: 'auto' });
             applyZoom();
@@ -437,6 +466,7 @@
 
         let progressTimeout;
         let isScrolling = false;
+        window.addEventListener('resize', debounce(syncDesktopLightDetailLayout, 100));
 
         window.addEventListener('scroll', () => {
             if (!isScrolling && !elViewDetail.classList.contains('hidden')) {
