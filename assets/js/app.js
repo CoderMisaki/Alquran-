@@ -138,29 +138,28 @@
             }
         }
 
-        function isDesktopLightLayout() {
-            return window.matchMedia('(min-width: 1024px)').matches &&
-                document.body.classList.contains('theme-light');
+        function isDesktopLayout() {
+            return window.matchMedia('(min-width: 1024px)').matches;
         }
 
         function syncDesktopLightDetailLayout() {
-            const detailIsOpen = Boolean(elViewDetail && !elViewDetail.classList.contains('hidden'));
-            const useDesktopLayout = Boolean(detailIsOpen && isDesktopLightLayout());
-            document.body.classList.toggle('desktop-quran-detail', useDesktopLayout);
-            document.body.classList.toggle('is-loading', elLoader && !elLoader.classList.contains('hidden'));
+            const isDesktop = isDesktopLayout();
+            document.body.classList.toggle('desktop-quran-detail', isDesktop);
 
-            if (!detailIsOpen) return;
-
-            if (useDesktopLayout) {
+            if (isDesktop) {
                 elViewList.classList.remove('hidden');
+                elViewDetail.classList.remove('hidden');
                 if (elHeaderRight) elHeaderRight.style.display = 'flex';
-                checkLastRead();
-                if (elSurahGrid && elSurahGrid.children.length === 0) {
-                    applySearchAndFilter(false);
-                }
             } else {
-                elViewList.classList.add('hidden');
-                if (elHeaderRight) elHeaderRight.style.display = 'none';
+                if (currentOpenedSurah) {
+                    elViewList.classList.add('hidden');
+                    elViewDetail.classList.remove('hidden');
+                    if (elHeaderRight) elHeaderRight.style.display = 'none';
+                } else {
+                    elViewList.classList.remove('hidden');
+                    elViewDetail.classList.add('hidden');
+                    if (elHeaderRight) elHeaderRight.style.display = 'flex';
+                }
             }
         }
 
@@ -299,36 +298,34 @@
             resetLockState();
             currentOpenedSurah = null;
             document.getElementById('reading-progress-container').style.opacity = '0';
-            
-            const btnUI = document.getElementById('back-btn-ui');
-            if(btnUI) btnUI.classList.remove('collapsed');
 
-            if(clearSearchQuery) {
+            const btnUI = document.getElementById('back-btn-ui');
+            if (btnUI) btnUI.classList.remove('collapsed');
+
+            if (clearSearchQuery) {
                 elSearchInput.value = '';
                 elSearchClear.classList.add('hidden');
             }
 
-            elViewList.classList.remove('hidden');
-            elViewDetail.classList.add('hidden');
-            elHeaderRight.style.display = 'flex';
-            document.body.classList.remove('desktop-quran-detail');
-            
+            syncDesktopLightDetailLayout();
+
             checkLastRead();
-            applySearchAndFilter(!clearSearchQuery); 
+            applySearchAndFilter(!clearSearchQuery);
             window.scrollTo({ top: 0, behavior: 'auto' });
         }
 
         function showDetailView() {
             hideLoader();
-            elViewDetail.classList.remove('hidden');
+
             syncDesktopLightDetailLayout();
+
             updateNavButtonsVisibility();
             window.scrollTo({ top: 0, behavior: 'auto' });
             applyZoom();
-            
+
             if (ayahObserver) ayahObserver.disconnect();
-            
             const ayahs = document.querySelectorAll('.ayah-item');
+
             ayahs.forEach(el => ayahObserver.observe(el));
         }
 
@@ -513,7 +510,7 @@
             try {
                 showLoader();
                 const data = await safeFetchJson(`${API_BASE}/surah`);
-                
+
                 if (data.code === 200) {
                     allSurahs = data.data.map(surah => ({
                         ...surah,
@@ -523,159 +520,29 @@
 
                     showListView(true);
 
-                    // LOGIKA BARU: Otomatis buka detail surah di panel kanan (Desktop) jika ada history
-                    if (window.matchMedia('(min-width: 1024px)').matches) {
+                    if (isDesktopLayout()) {
+                        let targetSurah = 1;
+                        let targetAyah = 1;
+
                         const lastSurah = localStorage.getItem('lastReadSurah');
                         const lastAyah = localStorage.getItem('lastReadAyah');
                         if (lastSurah) {
-                            const parsedSurah = parseInt(lastSurah, 10);
-                            const parsedAyah = parseInt(lastAyah, 10) || 1;
-                            const meta = allSurahs.find(s => s.number === parsedSurah);
+                            targetSurah = parseInt(lastSurah, 10);
+                            targetAyah = parseInt(lastAyah, 10) || 1;
+                        }
 
-                            if (meta) {
-                                // Beri jeda agar API tidak mudah terkena rate limit saat initial load.
-                                setTimeout(() => {
-                                    fetchSurahDetail(parsedSurah, meta, parsedAyah);
-                                }, 300);
-                            }
+                        const meta = allSurahs.find(s => s.number === targetSurah);
+                        if (meta) {
+                            setTimeout(() => {
+                                fetchSurahDetail(targetSurah, meta, targetAyah);
+                            }, 300);
                         }
                     }
-                } else throw new Error("Gagal mengambil API.");
+
+                } else throw new Error('Gagal mengambil API.');
             } catch (error) {
-                showToast("Koneksi terganggu. Silakan muat ulang.", true);
+                showToast('Koneksi terganggu. Silakan muat ulang.', true);
             }
-        }
-
-        async function fetchJuzAndShowCards(juzNumber) {
-            showLoader();
-            try {
-                const [resAr, resId, resLat] = await Promise.all([
-                    fetch(`${API_BASE}/juz/${juzNumber}/quran-uthmani`),
-                    fetch(`${API_BASE}/juz/${juzNumber}/id.indonesian`),
-                    fetch(`${API_BASE}/juz/${juzNumber}/en.transliteration`)
-                ]);
-                const dataAr = await resAr.json();
-                const dataId = await resId.json();
-                const dataLat = await resLat.json();
-
-                const surahsInJuz = {};
-                dataAr.data.ayahs.forEach((ayah, idx) => {
-                    const surahNum = ayah.surah.number;
-                    if (!surahsInJuz[surahNum]) {
-                        surahsInJuz[surahNum] = {
-                            meta: {
-                                ...ayah.surah,
-                                indoName: indoSurahMeta[surahNum].name,
-                                indoTranslation: indoSurahMeta[surahNum].translation,
-                                juzStartAyah: ayah.numberInSurah,
-                                juzEndAyah: ayah.numberInSurah,
-                                revelationType: ayah.surah.revelationType
-                            },
-                            ayahsAr: [], ayahsId: [], ayahsLat: []
-                        };
-                    }
-                    surahsInJuz[surahNum].meta.juzEndAyah = ayah.numberInSurah;
-                    surahsInJuz[surahNum].ayahsAr.push(ayah);
-                    surahsInJuz[surahNum].ayahsId.push(dataId.data.ayahs[idx]);
-                    surahsInJuz[surahNum].ayahsLat.push(dataLat.data.ayahs[idx]);
-                });
-
-                currentJuzData = Object.values(surahsInJuz);
-                showListView(false); 
-
-            } catch (err) {
-                showToast("Gagal memuat Juz. Periksa koneksi internet.", true);
-                resetJuzFilter();
-            }
-        }
-
-        function renderSurahList(surahs, animateSlide, isSearching) {
-            elSurahGrid.textContent = '';
-            if (!Array.isArray(surahs) || surahs.length === 0) {
-                const empty = document.createElement('p');
-                empty.style.gridColumn = '1 / -1';
-                empty.style.textAlign = 'center';
-                empty.style.color = 'var(--text-muted)';
-                empty.style.padding = '2rem';
-                empty.textContent = 'Pencarian tidak ditemukan.';
-                elSurahGrid.appendChild(empty);
-                return;
-            }
-
-            const fragment = document.createDocumentFragment();
-
-            surahs.forEach((surah, index) => {
-                const number = Number.parseInt(surah.number, 10);
-                if (!Number.isInteger(number) || number < 1 || number > 114) return;
-
-                const card = document.createElement('button');
-                const shouldAnimate = animateSlide && index < 15;
-                card.type = 'button';
-                card.className = `surah-card${shouldAnimate ? ' animate-slide' : ''}`;
-                card.setAttribute('aria-label', `Buka Surah ${surah.indoName || number}`);
-
-                if (shouldAnimate) {
-                    card.style.animationDelay = `${Math.min(index * 0.03, 0.45)}s`;
-                }
-
-                const numberBox = document.createElement('div');
-                numberBox.className = 'surah-number';
-                const numberSpan = document.createElement('span');
-                numberSpan.textContent = String(number);
-                numberBox.appendChild(numberSpan);
-
-                const details = document.createElement('div');
-                details.className = 'surah-details';
-                const title = document.createElement('h3');
-                title.textContent = String(surah.indoName || `Surah ${number}`);
-                const subtitle = document.createElement('p');
-                subtitle.textContent = `${surah.indoTranslation || ''} • ${Number.parseInt(surah.numberOfAyahs, 10) || 0} Ayat`;
-                details.append(title, subtitle);
-
-                const leftInfo = document.createElement('div');
-                leftInfo.className = 'surah-info-left';
-                leftInfo.append(numberBox, details);
-
-                const arabicName = document.createElement('div');
-                arabicName.className = 'surah-arabic-name';
-                arabicName.textContent = String(surah.name || '');
-                card.append(leftInfo, arabicName);
-                card.addEventListener('click', () => fetchSurahDetail(number, surah));
-                fragment.appendChild(card);
-            });
-            elSurahGrid.replaceChildren(fragment);
-        }
-
-        function renderJuzSurahList(juzSurahs, animateSlide, isSearching) {
-            elSurahGrid.innerHTML = '';
-            if(juzSurahs.length === 0) {
-                elSurahGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">Pencarian tidak ditemukan.</p>';
-                return;
-            }
-
-            juzSurahs.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = `surah-card ${animateSlide ? 'animate-slide' : ''}`;
-                if (animateSlide) card.style.animationDelay = `${index * 0.02}s`;
-
-                card.onclick = () => {
-                    currentOpenedSurah = null; 
-                    renderJuzSpecificSurahDetail(item.meta, item.ayahsAr, item.ayahsId, item.ayahsLat);
-                    showDetailView();
-                };
-                
-                card.innerHTML = `
-                    <div class="surah-info-left">
-                        <div class="surah-number"><span>${item.meta.number}</span></div>
-                        <div class="surah-details">
-                            <h3>${item.meta.indoName}</h3>
-                            <p>${item.meta.indoTranslation} • Ayat ${item.meta.juzStartAyah}-${item.meta.juzEndAyah}</p>
-                        </div>
-                    </div>
-                    <div class="surah-arabic-name">${item.meta.name}</div>
-                `;
-                elSurahGrid.appendChild(card);
-            });
         }
 
         async function fetchSurahDetail(surahNumber, surahMeta, scrollToAyah = null) {
