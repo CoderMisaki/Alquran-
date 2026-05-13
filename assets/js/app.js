@@ -520,7 +520,21 @@
                         indoName: indoSurahMeta[surah.number].name,
                         indoTranslation: indoSurahMeta[surah.number].translation
                     }));
+
                     showListView(true);
+
+                    // LOGIKA BARU: Otomatis buka detail surah di panel kanan (Desktop) jika ada history
+                    if (window.matchMedia('(min-width: 1024px)').matches) {
+                        const lastSurah = localStorage.getItem('lastReadSurah');
+                        const lastAyah = localStorage.getItem('lastReadAyah');
+                        if (lastSurah) {
+                            const meta = allSurahs.find(s => s.number == lastSurah);
+                            if (meta) {
+                                // Panggil fungsi detail diam-diam tanpa auto-scroll kasar
+                                fetchSurahDetail(parseInt(lastSurah), meta, parseInt(lastAyah));
+                            }
+                        }
+                    }
                 } else throw new Error("Gagal mengambil API.");
             } catch (error) {
                 showToast("Koneksi terganggu. Silakan muat ulang.", true);
