@@ -528,10 +528,15 @@
                         const lastSurah = localStorage.getItem('lastReadSurah');
                         const lastAyah = localStorage.getItem('lastReadAyah');
                         if (lastSurah) {
-                            const meta = allSurahs.find(s => s.number == lastSurah);
+                            const parsedSurah = parseInt(lastSurah, 10);
+                            const parsedAyah = parseInt(lastAyah, 10) || 1;
+                            const meta = allSurahs.find(s => s.number === parsedSurah);
+
                             if (meta) {
-                                // Panggil fungsi detail diam-diam tanpa auto-scroll kasar
-                                fetchSurahDetail(parseInt(lastSurah), meta, parseInt(lastAyah));
+                                // Beri jeda agar API tidak mudah terkena rate limit saat initial load.
+                                setTimeout(() => {
+                                    fetchSurahDetail(parsedSurah, meta, parsedAyah);
+                                }, 300);
                             }
                         }
                     }

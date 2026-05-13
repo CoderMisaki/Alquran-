@@ -523,7 +523,6 @@
         }
 
         .detail-tools-row > * { pointer-events: auto; }
-        .desktop-detail-header-row { display: none; }
 
         .nav-surah-btn, .lock-btn {
             display: flex; align-items: center; justify-content: center;
@@ -1174,9 +1173,10 @@
 
     body.theme-light.desktop-quran-detail .sticky-back-wrapper {
         position: static;
+        float: left;
         height: auto;
         max-width: none;
-        margin: 0 0 1rem;
+        margin: 0;
         pointer-events: auto;
     }
 
@@ -1184,17 +1184,10 @@
         position: static;
     }
 
-    body.theme-light.desktop-quran-detail .desktop-detail-header-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-    }
-
-    body.theme-light.desktop-quran-detail .detail-tools-group {
-        display: flex;
-        gap: 10px;
+    body.theme-light.desktop-quran-detail .detail-tools-row {
+        float: right;
+        margin: 0 0 1.5rem 0;
+        height: auto;
     }
 
     body.theme-light.desktop-quran-detail .nav-surah-btn {
