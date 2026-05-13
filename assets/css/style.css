@@ -1012,23 +1012,34 @@
         letter-spacing: -0.03em;
     }
 
-    body.theme-light:not(.desktop-quran-detail) .surah-grid,
-    body.theme-light.desktop-quran-detail #view-list .surah-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* Grid layout dibuat lebih natural menggunakan auto-fill agar tidak melebar berlebihan */
+    body.theme-light:not(.desktop-quran-detail) .surah-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 1rem;
     }
 
+    /* Kembalikan struktur kartu ke horizontal dan buat ukurannya lebih compact */
     body.theme-light .surah-card {
         border-color: rgba(18, 28, 31, 0.08);
         background: rgba(255,255,255,0.82);
-        box-shadow: 0 14px 34px rgba(22, 36, 42, 0.055);
+        box-shadow: 0 4px 15px rgba(22, 36, 42, 0.03);
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 1.5rem 1rem;
-        gap: 0.8rem;
+        justify-content: space-between;
+        text-align: left;
+        padding: 1rem 1.25rem;
+        border-radius: 16px;
+        min-height: 80px;
+    }
+
+    /* Pastikan info kiri sejajar rapi */
+    body.theme-light .surah-info-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        min-width: 0;
     }
 
     body.theme-light .surah-card:hover {
@@ -1061,7 +1072,8 @@
 
     body.theme-light .surah-arabic-name {
         color: #242424;
-        margin-top: auto;
+        margin-top: 0;
+        font-size: 1.5rem;
     }
 
     body.theme-light.desktop-quran-detail main {
