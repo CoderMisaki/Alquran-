@@ -613,10 +613,14 @@
                 subtitle.textContent = `${surah.indoTranslation || ''} • ${Number.parseInt(surah.numberOfAyahs, 10) || 0} Ayat`;
                 details.append(title, subtitle);
 
+                const leftInfo = document.createElement('div');
+                leftInfo.className = 'surah-info-left';
+                leftInfo.append(numberBox, details);
+
                 const arabicName = document.createElement('div');
                 arabicName.className = 'surah-arabic-name';
                 arabicName.textContent = String(surah.name || '');
-                card.append(numberBox, details, arabicName);
+                card.append(leftInfo, arabicName);
                 card.addEventListener('click', () => fetchSurahDetail(number, surah));
                 fragment.appendChild(card);
             });
@@ -642,10 +646,12 @@
                 };
                 
                 card.innerHTML = `
-                    <div class="surah-number"><span>${item.meta.number}</span></div>
-                    <div class="surah-details">
-                        <h3>${item.meta.indoName}</h3>
-                        <p>${item.meta.indoTranslation} • Ayat ${item.meta.juzStartAyah}-${item.meta.juzEndAyah}</p>
+                    <div class="surah-info-left">
+                        <div class="surah-number"><span>${item.meta.number}</span></div>
+                        <div class="surah-details">
+                            <h3>${item.meta.indoName}</h3>
+                            <p>${item.meta.indoTranslation} • Ayat ${item.meta.juzStartAyah}-${item.meta.juzEndAyah}</p>
+                        </div>
                     </div>
                     <div class="surah-arabic-name">${item.meta.name}</div>
                 `;
