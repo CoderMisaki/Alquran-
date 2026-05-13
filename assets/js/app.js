@@ -49,6 +49,8 @@
         let ayahObserver = null;
 
         const API_BASE = 'https://api.alquran.cloud/v1';
+        const FALLBACK_SURAH_LIST_URL = 'https://raw.githubusercontent.com/rioastamal/quran-json/master/surah.json';
+        const FALLBACK_SURAH_DETAIL_BASE = 'https://raw.githubusercontent.com/rioastamal/quran-json/master/surah';
         const ALLOWED_THEMES = new Set(['light', 'dark']);
         const ALLOWED_MODAL_IDS = new Set(['modal-lock', 'modal-juz']);
 
@@ -502,13 +504,42 @@
             }
         }
 
+        function mapFallbackSurahList(data) {
+            return data.map((surah) => ({
+                number: Number(surah.number),
+                name: surah.name || '',
+                englishName: surah.name_latin || '',
+                englishNameTranslation: '',
+                numberOfAyahs: Number(surah.number_of_ayah) || 0,
+                revelationType: (surah.place || '').toLowerCase() === 'madinah' ? 'Medinan' : 'Meccan'
+            }));
+        }
+
+        function mapFallbackAyahs(arabicAyahs, propertyName) {
+            return arabicAyahs.map((ayah) => ({
+                numberInSurah: Number(ayah.number),
+                text: ayah[propertyName] || ''
+            }));
+        }
+
         async function fetchAllSurahs() {
             try {
                 showLoader();
-                const data = await safeFetchJson(`${API_BASE}/surah`);
+                let surahResponse;
+                try {
+                    const data = await safeFetchJson(`${API_BASE}/surah`);
+                    if (data.code === 200 && Array.isArray(data.data)) {
+                        surahResponse = data.data;
+                    }
+                } catch {}
 
-                if (data.code === 200) {
-                    allSurahs = data.data.map(surah => ({
+                if (!surahResponse) {
+                    const fallbackData = await safeFetchJson(FALLBACK_SURAH_LIST_URL);
+                    surahResponse = mapFallbackSurahList(fallbackData);
+                }
+
+                if (Array.isArray(surahResponse)) {
+                    allSurahs = surahResponse.map(surah => ({
                         ...surah,
                         indoName: indoSurahMeta[surah.number].name,
                         indoTranslation: indoSurahMeta[surah.number].translation
@@ -550,9 +581,20 @@
                 if(scrollToAyah) localStorage.setItem('lastReadAyah', scrollToAyah);
                 else localStorage.setItem('lastReadAyah', 1);
 
-                const dataAr = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`);
-                const dataId = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`);
-                const dataLat = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`);
+                let dataAr, dataId, dataLat;
+                try {
+                    dataAr = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`);
+                    dataId = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`);
+                    dataLat = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`);
+                } catch {}
+
+                if (!(dataAr?.code === 200 && dataId?.code === 200 && dataLat?.code === 200)) {
+                    const fallbackDetail = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`);
+                    const fallbackAyahs = Array.isArray(fallbackDetail) ? fallbackDetail : (fallbackDetail.verses || []);
+                    dataAr = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'text') } };
+                    dataId = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'translation_id') } };
+                    dataLat = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'transliteration') } };
+                }
 
                 if (dataAr.code === 200 && dataId.code === 200 && dataLat.code === 200) {
                     currentOpenedSurah = surahNumber;
