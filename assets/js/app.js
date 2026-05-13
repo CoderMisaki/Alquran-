@@ -493,11 +493,7 @@
             try {
                 const response = await fetch(url, {
                     method: 'GET',
-                    signal: controller.signal,
-                    headers: { Accept: 'application/json' },
-                    cache: 'no-store',
-                    credentials: 'omit',
-                    referrerPolicy: 'no-referrer'
+                    signal: controller.signal
                 });
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return await response.json();
@@ -554,15 +550,9 @@
                 if(scrollToAyah) localStorage.setItem('lastReadAyah', scrollToAyah);
                 else localStorage.setItem('lastReadAyah', 1);
 
-                const [resAr, resId, resLat] = await Promise.all([
-                    fetch(`${API_BASE}/surah/${surahNumber}/quran-uthmani`),
-                    fetch(`${API_BASE}/surah/${surahNumber}/id.indonesian`),
-                    fetch(`${API_BASE}/surah/${surahNumber}/en.transliteration`)
-                ]);
-
-                const dataAr = await resAr.json();
-                const dataId = await resId.json();
-                const dataLat = await resLat.json();
+                const dataAr = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`);
+                const dataId = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`);
+                const dataLat = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`);
 
                 if (dataAr.code === 200 && dataId.code === 200 && dataLat.code === 200) {
                     currentOpenedSurah = surahNumber;
