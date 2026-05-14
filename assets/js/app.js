@@ -63,6 +63,7 @@
         let activeJuzFilter = null;
         let ayahObserver = null;
         let detailRequestToken = 0;
+        const surahDetailCache = new Map();
 
         const API_BASE = 'https://api.alquran.cloud/v1';
         const FALLBACK_SURAH_LIST_URL = 'https://raw.githubusercontent.com/rioastamal/quran-json/master/surah.json';
@@ -763,18 +764,30 @@
                 else localStorage.setItem('lastReadAyah', 1);
 
                 let dataAr, dataId, dataLat;
-                try {
-                    dataAr = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`);
-                    dataId = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`);
-                    dataLat = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`);
-                } catch {}
 
-                if (!(dataAr?.code === 200 && dataId?.code === 200 && dataLat?.code === 200)) {
-                    const fallbackDetail = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`);
-                    const fallbackAyahs = Array.isArray(fallbackDetail) ? fallbackDetail : (fallbackDetail.verses || []);
-                    dataAr = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'text') } };
-                    dataId = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'translation_id') } };
-                    dataLat = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'transliteration') } };
+                if (surahDetailCache.has(surahNumber)) {
+                    const cachedData = surahDetailCache.get(surahNumber);
+                    dataAr = cachedData.dataAr;
+                    dataId = cachedData.dataId;
+                    dataLat = cachedData.dataLat;
+                } else {
+                    try {
+                        dataAr = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`);
+                        dataId = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`);
+                        dataLat = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`);
+                    } catch {}
+
+                    if (!(dataAr?.code === 200 && dataId?.code === 200 && dataLat?.code === 200)) {
+                        const fallbackDetail = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`);
+                        const fallbackAyahs = Array.isArray(fallbackDetail) ? fallbackDetail : (fallbackDetail.verses || []);
+                        dataAr = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'text') } };
+                        dataId = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'translation_id') } };
+                        dataLat = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'transliteration') } };
+                    }
+
+                    if (dataAr.code === 200 && dataId.code === 200 && dataLat.code === 200) {
+                        surahDetailCache.set(surahNumber, { dataAr, dataId, dataLat });
+                    }
                 }
 
                 if (requestToken !== detailRequestToken) return;
