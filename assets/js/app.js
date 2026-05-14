@@ -142,7 +142,9 @@
             if (!ALLOWED_THEMES.has(theme)) return;
             try {
                 localStorage.setItem('quranTheme', theme);
-            } catch {}
+            } catch (error) {
+                console.warn('Failed to save theme to localStorage:', error);
+            }
         }
 
         function applyTheme(theme) {
