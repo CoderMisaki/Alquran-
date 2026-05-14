@@ -793,21 +793,11 @@
 }
 
 
-        function renderSurahDetail(meta, ayahsAr, ayahsId, ayahsLat) {
-            const isFatihahOrTawbah = meta.number === 1 || meta.number === 9;
-            const bismillahHtml = !isFatihahOrTawbah ? `<div class="bismillah">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>` : '';
-            const revType = meta.revelationType && meta.revelationType.toLowerCase() === 'meccan' ? 'Makkiyah' : 'Madaniyah';
-
-            elSurahHeaderDetail.innerHTML = `
-                <h2>${escapeHTML(meta.indoName)}</h2>
-                <p>Surah ke-${escapeHTML(meta.number)} dari 114 • ${escapeHTML(revType)} • ${escapeHTML(meta.numberOfAyahs)} Ayat</p>
-                ${bismillahHtml}
-            `;
-
+        function generateAyahsHTML(ayahsAr, ayahsId, ayahsLat, metaNumber) {
             let allAyahsHTML = '';
             ayahsAr.forEach((ayah, index) => {
                 let arabicText = ayah.text;
-                if (index === 0) arabicText = cleanBismillah(arabicText, meta.number);
+                if (ayah.numberInSurah === 1) arabicText = cleanBismillah(arabicText, metaNumber);
 
                 const latinText = ayahsLat[index].text;
                 const indoText = ayahsId[index].text;
@@ -825,6 +815,21 @@
                     </div>
                 `;
             });
+            return allAyahsHTML;
+        }
+
+        function renderSurahDetail(meta, ayahsAr, ayahsId, ayahsLat) {
+            const isFatihahOrTawbah = meta.number === 1 || meta.number === 9;
+            const bismillahHtml = !isFatihahOrTawbah ? `<div class="bismillah">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>` : '';
+            const revType = meta.revelationType && meta.revelationType.toLowerCase() === 'meccan' ? 'Makkiyah' : 'Madaniyah';
+
+            elSurahHeaderDetail.innerHTML = `
+                <h2>${escapeHTML(meta.indoName)}</h2>
+                <p>Surah ke-${escapeHTML(meta.number)} dari 114 • ${escapeHTML(revType)} • ${escapeHTML(meta.numberOfAyahs)} Ayat</p>
+                ${bismillahHtml}
+            `;
+
+            let allAyahsHTML = generateAyahsHTML(ayahsAr, ayahsId, ayahsLat, meta.number);
             elAyahList.innerHTML = allAyahsHTML;
         }
 
@@ -842,27 +847,7 @@
                 ${bismillahHtml}
             `;
 
-            let allAyahsHTML = '';
-            ayahsAr.forEach((ayah, index) => {
-                let arabicText = ayah.text;
-                if (ayah.numberInSurah === 1) arabicText = cleanBismillah(arabicText, meta.number);
-
-                const latinText = ayahsLat[index].text;
-                const indoText = ayahsId[index].text;
-
-                allAyahsHTML += `
-                    <div class="ayah-item" data-ayah="${escapeHTML(ayah.numberInSurah)}" data-juz="${escapeHTML(ayah.juz || "")}">
-                        <div class="ayah-top">
-                            <div class="ayah-number-badge">${escapeHTML(ayah.numberInSurah)}</div>
-                            <div class="ayah-arabic">${escapeHTML(arabicText)}</div>
-                        </div>
-                        <div class="ayah-translations">
-                            <div class="ayah-latin">${escapeHTML(latinText)}</div>
-                            <div class="ayah-indo">${escapeHTML(indoText)}</div>
-                        </div>
-                    </div>
-                `;
-            });
+            let allAyahsHTML = generateAyahsHTML(ayahsAr, ayahsId, ayahsLat, meta.number);
             elAyahList.innerHTML = allAyahsHTML;
         }
 
