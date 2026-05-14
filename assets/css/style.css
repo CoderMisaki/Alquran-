@@ -1148,9 +1148,11 @@
     }
 
     body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed {
-        max-width: 340px;
-        padding-right: 1.8rem;
-        transform: translateX(8px);
+        max-width: 72px;
+        width: 72px;
+        padding: 0.85rem;
+        justify-content: center;
+        transform: translateX(0);
         box-shadow: 0 14px 30px rgba(10,20,24,0.12);
     }
 
@@ -1167,11 +1169,23 @@
         overflow: hidden;
     }
 
+    body.desktop-quran-detail #view-list .continue-reading-card .cr-info {
+        min-width: 0;
+        transition: width 320ms ease, opacity 220ms ease;
+    }
+
     body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed .cr-ayah-info {
         max-height: 0;
         opacity: 0;
         transform: translateY(-4px);
         margin-top: 0;
+    }
+
+    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed .cr-info {
+        width: 0;
+        opacity: 0;
+        overflow: hidden;
+        pointer-events: none;
     }
 
     body.desktop-quran-detail #view-list .play-btn-large {
