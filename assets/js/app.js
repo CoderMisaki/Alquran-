@@ -647,6 +647,7 @@
                 return;
             }
 
+            const fragment = document.createDocumentFragment();
             surahs.forEach((surah, index) => {
                 const card = document.createElement('button');
                 card.type = 'button';
@@ -669,8 +670,9 @@
                     <div class="surah-arabic-name">${escapeHTML(surah.name)}</div>
                 `;
 
-                elSurahGrid.appendChild(card);
+                fragment.appendChild(card);
             });
+            elSurahGrid.appendChild(fragment);
         }
 
         function renderJuzSurahList(juzSurahs, animateSlide = false) {
@@ -685,6 +687,7 @@
                 return;
             }
 
+            const fragment = document.createDocumentFragment();
             juzSurahs.forEach((item, index) => {
                 const card = document.createElement('button');
                 card.type = 'button';
@@ -711,8 +714,9 @@
                     <div class="surah-arabic-name">${escapeHTML(item.meta.name)}</div>
                 `;
 
-                elSurahGrid.appendChild(card);
+                fragment.appendChild(card);
             });
+            elSurahGrid.appendChild(fragment);
         }
 
         async function fetchSurahDetail(surahNumber, surahMeta, scrollToAyah = null) {
