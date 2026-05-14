@@ -261,10 +261,10 @@
                     if (!isNaN(keyword) && metaObj.number === parseInt(keyword)) return true;
                     if (metaObj.name && metaObj.name.includes(keyword)) return true;
 
-                    const rawName = metaObj.indoName.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const rawTrans = metaObj.indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const normName = smartNormalize(metaObj.indoName);
-                    const normTrans = smartNormalize(metaObj.indoTranslation);
+                    const rawName = metaObj._searchRawName || metaObj.indoName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const rawTrans = metaObj._searchRawTrans || metaObj.indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const normName = metaObj._searchNormName || smartNormalize(metaObj.indoName);
+                    const normTrans = metaObj._searchNormTrans || smartNormalize(metaObj.indoTranslation);
                     
                     return rawName.includes(rawKey) || rawTrans.includes(rawKey) || 
                            normName.includes(normKey) || normTrans.includes(normKey);
@@ -600,11 +600,19 @@
                 }
 
                 if (Array.isArray(surahResponse)) {
-                    allSurahs = surahResponse.map(surah => ({
-                        ...surah,
-                        indoName: indoSurahMeta[surah.number].name,
-                        indoTranslation: indoSurahMeta[surah.number].translation
-                    }));
+                    allSurahs = surahResponse.map(surah => {
+                        const indoName = indoSurahMeta[surah.number].name;
+                        const indoTranslation = indoSurahMeta[surah.number].translation;
+                        return {
+                            ...surah,
+                            indoName,
+                            indoTranslation,
+                            _searchRawName: indoName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                            _searchRawTrans: indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                            _searchNormName: smartNormalize(indoName),
+                            _searchNormTrans: smartNormalize(indoTranslation)
+                        };
+                    });
 
                     showListView(true);
 
