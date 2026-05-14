@@ -409,32 +409,57 @@
             const crCard = document.getElementById('continue-reading');
             let startX = 0, currentX = 0, isDragging = false;
             
+            const isDesktopCardMode = () => document.body.classList.contains('desktop-quran-detail');
+            const resetCardVisual = () => {
+                crCard.style.transform = '';
+                crCard.style.opacity = '1';
+            };
+
             crCard.addEventListener('touchstart', (e) => {
                 startX = e.touches[0].clientX;
-                isDragging = false; 
+                currentX = startX;
+                isDragging = false;
                 crCard.style.transition = 'none';
             }, {passive: true});
             
             crCard.addEventListener('touchmove', (e) => {
                 currentX = e.touches[0].clientX;
-                let diff = currentX - startX;
-                if(Math.abs(diff) > 10) isDragging = true;
+                const diff = currentX - startX;
+                if (Math.abs(diff) > 10) isDragging = true;
 
-                if(isDragging && diff < 0) {
+                if (!isDragging) return;
+
+                if (isDesktopCardMode() && diff > 0) {
+                    crCard.style.transform = `translateX(${Math.min(diff, 48)}px)`;
+                    return;
+                }
+
+                if (diff < 0) {
                     crCard.style.transform = `translateX(${diff}px)`;
                     crCard.style.opacity = Math.max(0.2, 1 + (diff / 150));
                 }
             }, {passive: true});
             
-            crCard.addEventListener('touchend', (e) => {
-                if(!isDragging) {
+            crCard.addEventListener('touchend', () => {
+                if (!isDragging) {
                     resumeReading();
                     return;
                 }
-                let diff = currentX - startX;
+
+                const diff = currentX - startX;
                 crCard.style.transition = 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
-                
-                if(diff < -80) {
+
+                if (isDesktopCardMode() && diff > 70) {
+                    crCard.classList.add('desktop-collapsed');
+                    resetCardVisual();
+                    return;
+                }
+
+                if (isDesktopCardMode() && diff < -35) {
+                    crCard.classList.remove('desktop-collapsed');
+                }
+
+                if (diff < -80 && !isDesktopCardMode()) {
                     crCard.style.transform = 'translateX(-100%)';
                     crCard.style.opacity = '0';
                     setTimeout(() => {
@@ -445,14 +470,14 @@
                             localStorage.removeItem('lastReadAyah');
                         }, 400);
                     }, 100);
-                } else {
-                    crCard.style.transform = '';
-                    crCard.style.opacity = '1';
+                    return;
                 }
+
+                resetCardVisual();
             });
 
-            crCard.addEventListener('click', (e) => {
-                if(!isDragging) resumeReading();
+            crCard.addEventListener('click', () => {
+                if (!isDragging) resumeReading();
             });
         }
 

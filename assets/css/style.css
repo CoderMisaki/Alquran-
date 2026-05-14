@@ -1120,6 +1120,60 @@
         gap: 1rem;
     }
 
+
+
+    body.desktop-quran-detail #view-list .continue-reading-card {
+        position: relative;
+        max-width: 100%;
+        transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+                    opacity 320ms ease,
+                    max-width 420ms cubic-bezier(0.22, 1, 0.36, 1),
+                    padding 420ms cubic-bezier(0.22, 1, 0.36, 1),
+                    box-shadow 320ms ease;
+    }
+
+    body.desktop-quran-detail #view-list .continue-reading-card::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        bottom: 10px;
+        width: 3px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.92);
+        opacity: 0;
+        transform: scaleY(0.5);
+        transition: opacity 280ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+        pointer-events: none;
+    }
+
+    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed {
+        max-width: 340px;
+        padding-right: 1.8rem;
+        transform: translateX(8px);
+        box-shadow: 0 14px 30px rgba(10,20,24,0.12);
+    }
+
+    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed::before {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+
+    body.desktop-quran-detail #view-list .continue-reading-card .cr-ayah-info {
+        max-height: 30px;
+        opacity: 1;
+        transform: translateY(0);
+        transition: max-height 320ms ease, opacity 220ms ease, transform 280ms ease;
+        overflow: hidden;
+    }
+
+    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed .cr-ayah-info {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-4px);
+        margin-top: 0;
+    }
+
     body.desktop-quran-detail #view-list .play-btn-large {
         width: 44px;
         height: 44px;
