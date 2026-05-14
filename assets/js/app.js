@@ -764,10 +764,14 @@
 
                 let dataAr, dataId, dataLat;
                 try {
-                    dataAr = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`);
-                    dataId = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`);
-                    dataLat = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`);
-                } catch {}
+                    [dataAr, dataId, dataLat] = await Promise.all([
+                        safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`),
+                        safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`),
+                        safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`)
+                    ]);
+                } catch (err) {
+                    console.warn(`Failed to fetch surah ${surahNumber} detail:`, err);
+                }
 
                 if (!(dataAr?.code === 200 && dataId?.code === 200 && dataLat?.code === 200)) {
                     const fallbackDetail = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`);
