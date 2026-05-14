@@ -117,6 +117,8 @@
             111: { name: "Al-Lahab", translation: "Gejolak Api" }, 112: { name: "Al-Ikhlas", translation: "Ikhlas" }, 113: { name: "Al-Falaq", translation: "Waktu Subuh" }, 114: { name: "An-Nas", translation: "Manusia" }
         };
 
+        if (typeof module !== 'undefined' && module.exports) { module.exports = { safeFetchJson }; }
+
         document.addEventListener('DOMContentLoaded', () => {
             initThemeToggle();
             fetchAllSurahs();
