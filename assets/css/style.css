@@ -2015,14 +2015,20 @@
                 dataAr.data.ayahs.forEach((ayah, idx) => {
                     const surahNum = ayah.surah.number;
                     if (!surahsInJuz[surahNum]) {
+                        const indoName = indoSurahMeta[surahNum].name;
+                        const indoTranslation = indoSurahMeta[surahNum].translation;
                         surahsInJuz[surahNum] = {
                             meta: {
                                 ...ayah.surah,
-                                indoName: indoSurahMeta[surahNum].name,
-                                indoTranslation: indoSurahMeta[surahNum].translation,
+                                indoName,
+                                indoTranslation,
                                 juzStartAyah: ayah.numberInSurah,
                                 juzEndAyah: ayah.numberInSurah,
-                                revelationType: ayah.surah.revelationType
+                                revelationType: ayah.surah.revelationType,
+                                rawName: indoName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                                rawTrans: indoTranslation.toLowerCase().replace(/[^a-z0-9]/g, ''),
+                                normName: smartNormalize(indoName),
+                                normTrans: smartNormalize(indoTranslation)
                             },
                             ayahsAr: [], ayahsId: [], ayahsLat: []
                         };
