@@ -435,101 +435,118 @@
             crBanner.classList.add('hidden');
         }
 
-        function setupContinueReadingSwipe() {
-            const crCard = document.getElementById('continue-reading');
+        function setupSwipeHandlers(element, callbacks) {
             let startX = 0;
             let currentX = 0;
             let isDragging = false;
             let pointerId = null;
-
-            const isDesktopCardMode = () => document.body.classList.contains('desktop-quran-detail');
-            const resetCardVisual = () => {
-                crCard.style.transform = '';
-                crCard.style.opacity = '1';
-            };
 
             const onStart = (clientX, activePointerId = null) => {
                 startX = clientX;
                 currentX = clientX;
                 isDragging = false;
                 pointerId = activePointerId;
-                crCard.style.transition = 'none';
+                if (callbacks.onStart) callbacks.onStart();
             };
 
             const onMove = (clientX) => {
                 currentX = clientX;
                 const diff = currentX - startX;
                 if (Math.abs(diff) > 10) isDragging = true;
-                if (!isDragging) return;
-
-                if (isDesktopCardMode() && diff > 0) {
-                    crCard.style.transform = `translateX(${Math.min(diff, 120)}px)`;
-                    return;
-                }
-
-                if (diff < 0) {
-                    crCard.style.transform = `translateX(${diff}px)`;
-                    crCard.style.opacity = Math.max(0.2, 1 + (diff / 150));
-                }
+                if (callbacks.onMove) callbacks.onMove(diff, isDragging);
             };
 
             const onEnd = () => {
-                if (!isDragging) {
-                    resumeReading();
-                    return;
-                }
-
                 const diff = currentX - startX;
-                crCard.style.transition = 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
-
-                if (isDesktopCardMode() && diff > 55) {
-                    crCard.classList.add('desktop-collapsed');
-                    resetCardVisual();
-                    return;
-                }
-
-                if (isDesktopCardMode() && diff < -35) {
-                    crCard.classList.remove('desktop-collapsed');
-                }
-
-                if (diff < -80 && !isDesktopCardMode()) {
-                    crCard.style.transform = 'translateX(-100%)';
-                    crCard.style.opacity = '0';
-                    setTimeout(() => {
-                        crCard.classList.add('cr-collapsing');
-                        setTimeout(() => {
-                            crCard.classList.add('hidden');
-                            localStorage.removeItem('lastReadSurah');
-                            localStorage.removeItem('lastReadAyah');
-                        }, 400);
-                    }, 100);
-                    return;
-                }
-
-                resetCardVisual();
+                if (callbacks.onEnd) callbacks.onEnd(diff, isDragging);
             };
 
-            crCard.addEventListener('touchstart', (e) => onStart(e.touches[0].clientX), { passive: true });
-            crCard.addEventListener('touchmove', (e) => onMove(e.touches[0].clientX), { passive: true });
-            crCard.addEventListener('touchend', onEnd);
+            element.addEventListener('touchstart', (e) => onStart(e.touches[0].clientX), { passive: true });
+            element.addEventListener('touchmove', (e) => onMove(e.touches[0].clientX), { passive: true });
+            element.addEventListener('touchend', onEnd);
 
-            crCard.addEventListener('pointerdown', (e) => {
+            element.addEventListener('pointerdown', (e) => {
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
                 onStart(e.clientX, e.pointerId);
-                crCard.setPointerCapture?.(e.pointerId);
+                element.setPointerCapture?.(e.pointerId);
             });
-            crCard.addEventListener('pointermove', (e) => {
+            element.addEventListener('pointermove', (e) => {
                 if (pointerId !== e.pointerId) return;
                 onMove(e.clientX);
             });
-            crCard.addEventListener('pointerup', (e) => {
+            element.addEventListener('pointerup', (e) => {
                 if (pointerId !== e.pointerId) return;
                 pointerId = null;
                 onEnd();
             });
 
-            crCard.addEventListener('click', () => {
-                if (!isDragging) resumeReading();
+            element.addEventListener('click', () => {
+                if (callbacks.onClick) callbacks.onClick(isDragging);
+            });
+        }
+
+        function setupContinueReadingSwipe() {
+            const crCard = document.getElementById('continue-reading');
+            const isDesktopCardMode = () => document.body.classList.contains('desktop-quran-detail');
+            const resetCardVisual = () => {
+                crCard.style.transform = '';
+                crCard.style.opacity = '1';
+            };
+
+            setupSwipeHandlers(crCard, {
+                onStart: () => {
+                    crCard.style.transition = 'none';
+                },
+                onMove: (diff, isDragging) => {
+                    if (!isDragging) return;
+
+                    if (isDesktopCardMode() && diff > 0) {
+                        crCard.style.transform = `translateX(${Math.min(diff, 120)}px)`;
+                        return;
+                    }
+
+                    if (diff < 0) {
+                        crCard.style.transform = `translateX(${diff}px)`;
+                        crCard.style.opacity = Math.max(0.2, 1 + (diff / 150));
+                    }
+                },
+                onEnd: (diff, isDragging) => {
+                    if (!isDragging) {
+                        resumeReading();
+                        return;
+                    }
+
+                    crCard.style.transition = 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
+
+                    if (isDesktopCardMode() && diff > 55) {
+                        crCard.classList.add('desktop-collapsed');
+                        resetCardVisual();
+                        return;
+                    }
+
+                    if (isDesktopCardMode() && diff < -35) {
+                        crCard.classList.remove('desktop-collapsed');
+                    }
+
+                    if (diff < -80 && !isDesktopCardMode()) {
+                        crCard.style.transform = 'translateX(-100%)';
+                        crCard.style.opacity = '0';
+                        setTimeout(() => {
+                            crCard.classList.add('cr-collapsing');
+                            setTimeout(() => {
+                                crCard.classList.add('hidden');
+                                localStorage.removeItem('lastReadSurah');
+                                localStorage.removeItem('lastReadAyah');
+                            }, 400);
+                        }, 100);
+                        return;
+                    }
+
+                    resetCardVisual();
+                },
+                onClick: (isDragging) => {
+                    if (!isDragging) resumeReading();
+                }
             });
         }
 
