@@ -804,18 +804,21 @@
                 ${bismillahHtml}
             `;
 
-            let allAyahsHTML = '';
-            ayahsAr.forEach((ayah, index) => {
+            const allAyahsHTMLParts = [];
+            for (let index = 0; index < ayahsAr.length; index++) {
+                const ayah = ayahsAr[index];
                 let arabicText = ayah.text;
                 if (index === 0) arabicText = cleanBismillah(arabicText, meta.number);
 
                 const latinText = ayahsLat[index].text;
                 const indoText = ayahsId[index].text;
 
-                allAyahsHTML += `
-                    <div class="ayah-item" data-ayah="${escapeHTML(ayah.numberInSurah)}" data-juz="${escapeHTML(ayah.juz || "")}">
+                const escapedNum = escapeHTML(ayah.numberInSurah);
+
+                allAyahsHTMLParts.push(`
+                    <div class="ayah-item" data-ayah="${escapedNum}" data-juz="${escapeHTML(ayah.juz || "")}">
                         <div class="ayah-top">
-                            <div class="ayah-number-badge">${escapeHTML(ayah.numberInSurah)}</div>
+                            <div class="ayah-number-badge">${escapedNum}</div>
                             <div class="ayah-arabic">${escapeHTML(arabicText)}</div>
                         </div>
                         <div class="ayah-translations">
@@ -823,9 +826,9 @@
                             <div class="ayah-indo">${escapeHTML(indoText)}</div>
                         </div>
                     </div>
-                `;
-            });
-            elAyahList.innerHTML = allAyahsHTML;
+                `);
+            }
+            elAyahList.innerHTML = allAyahsHTMLParts.join('');
         }
 
         function renderJuzSpecificSurahDetail(meta, ayahsAr, ayahsId, ayahsLat) {
@@ -842,18 +845,21 @@
                 ${bismillahHtml}
             `;
 
-            let allAyahsHTML = '';
-            ayahsAr.forEach((ayah, index) => {
+            const allAyahsHTMLParts = [];
+            for (let index = 0; index < ayahsAr.length; index++) {
+                const ayah = ayahsAr[index];
                 let arabicText = ayah.text;
                 if (ayah.numberInSurah === 1) arabicText = cleanBismillah(arabicText, meta.number);
 
                 const latinText = ayahsLat[index].text;
                 const indoText = ayahsId[index].text;
 
-                allAyahsHTML += `
-                    <div class="ayah-item" data-ayah="${escapeHTML(ayah.numberInSurah)}" data-juz="${escapeHTML(ayah.juz || "")}">
+                const escapedNum = escapeHTML(ayah.numberInSurah);
+
+                allAyahsHTMLParts.push(`
+                    <div class="ayah-item" data-ayah="${escapedNum}" data-juz="${escapeHTML(ayah.juz || "")}">
                         <div class="ayah-top">
-                            <div class="ayah-number-badge">${escapeHTML(ayah.numberInSurah)}</div>
+                            <div class="ayah-number-badge">${escapedNum}</div>
                             <div class="ayah-arabic">${escapeHTML(arabicText)}</div>
                         </div>
                         <div class="ayah-translations">
@@ -861,9 +867,9 @@
                             <div class="ayah-indo">${escapeHTML(indoText)}</div>
                         </div>
                     </div>
-                `;
-            });
-            elAyahList.innerHTML = allAyahsHTML;
+                `);
+            }
+            elAyahList.innerHTML = allAyahsHTMLParts.join('');
         }
 
         function setupJuzGrid() {
