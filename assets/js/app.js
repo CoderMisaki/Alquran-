@@ -389,6 +389,8 @@
                         const ayahNum = entry.target.getAttribute('data-ayah');
                         localStorage.setItem('lastReadSurah', currentOpenedSurah);
                         localStorage.setItem('lastReadAyah', ayahNum);
+                        const ayahJuz = entry.target.getAttribute('data-juz');
+                        if (ayahJuz) localStorage.setItem('lastReadJuz', ayahJuz);
                     }
                 });
             }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
@@ -397,13 +399,14 @@
         function checkLastRead() {
             const lastSurah = localStorage.getItem('lastReadSurah');
             const lastAyah = localStorage.getItem('lastReadAyah');
+            const lastJuz = localStorage.getItem('lastReadJuz');
             const crBanner = document.getElementById('continue-reading');
             
             if (lastSurah && allSurahs.length > 0) {
                 const meta = allSurahs.find(s => s.number == parseInt(lastSurah));
                 if(meta) {
                     document.getElementById('cr-surah-name').textContent = meta.indoName;
-                    document.getElementById('cr-ayah-info').textContent = `Ayat ke-${lastAyah || 1}`;
+                    document.getElementById('cr-ayah-info').textContent = `Ayat ke-${lastAyah || 1}${lastJuz ? ` • Juz ${lastJuz}` : ''}`;
                     crBanner.classList.remove('hidden', 'cr-collapsing');
                     crBanner.style.transform = '';
                     crBanner.style.opacity = '1';
@@ -751,7 +754,7 @@
                 const indoText = ayahsId[index].text;
 
                 allAyahsHTML += `
-                    <div class="ayah-item" data-ayah="${ayah.numberInSurah}">
+                    <div class="ayah-item" data-ayah="${ayah.numberInSurah}" data-juz="${ayah.juz || ""}">
                         <div class="ayah-top">
                             <div class="ayah-number-badge">${ayah.numberInSurah}</div>
                             <div class="ayah-arabic">${arabicText}</div>
@@ -789,7 +792,7 @@
                 const indoText = ayahsId[index].text;
 
                 allAyahsHTML += `
-                    <div class="ayah-item" data-ayah="${ayah.numberInSurah}">
+                    <div class="ayah-item" data-ayah="${ayah.numberInSurah}" data-juz="${ayah.juz || ""}">
                         <div class="ayah-top">
                             <div class="ayah-number-badge">${ayah.numberInSurah}</div>
                             <div class="ayah-arabic">${arabicText}</div>
