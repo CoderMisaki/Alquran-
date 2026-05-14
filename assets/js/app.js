@@ -616,21 +616,26 @@
             }));
         }
 
+        async function fetchSurahsData() {
+            let surahResponse;
+            try {
+                const data = await safeFetchJson(`${API_BASE}/surah`);
+                if (data.code === 200 && Array.isArray(data.data)) {
+                    surahResponse = data.data;
+                }
+            } catch {}
+
+            if (!surahResponse) {
+                const fallbackData = await safeFetchJson(FALLBACK_SURAH_LIST_URL);
+                surahResponse = mapFallbackSurahList(fallbackData);
+            }
+            return surahResponse;
+        }
+
         async function fetchAllSurahs() {
             try {
                 showLoader();
-                let surahResponse;
-                try {
-                    const data = await safeFetchJson(`${API_BASE}/surah`);
-                    if (data.code === 200 && Array.isArray(data.data)) {
-                        surahResponse = data.data;
-                    }
-                } catch {}
-
-                if (!surahResponse) {
-                    const fallbackData = await safeFetchJson(FALLBACK_SURAH_LIST_URL);
-                    surahResponse = mapFallbackSurahList(fallbackData);
-                }
+                let surahResponse = await fetchSurahsData();
 
                 if (Array.isArray(surahResponse)) {
                     allSurahs = surahResponse.map(surah => ({
