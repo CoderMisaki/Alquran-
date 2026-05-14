@@ -901,13 +901,15 @@
         function setupJuzGrid() {
             const container = document.getElementById('juz-grid-container');
             container.innerHTML = '';
+            const fragment = document.createDocumentFragment();
             for(let i = 1; i <= 30; i++) {
                 const btn = document.createElement('button');
                 btn.className = 'juz-btn tap-effect';
                 btn.textContent = `Juz ${i}`;
                 btn.onclick = () => selectJuz(i);
-                container.appendChild(btn);
+                fragment.appendChild(btn);
             }
+            container.appendChild(fragment);
         }
 
         function openJuzModal() {
