@@ -566,6 +566,87 @@
             }
         }
 
+
+        function renderSurahList(surahs, animateSlide = false) {
+            elSurahGrid.innerHTML = '';
+
+            if (!Array.isArray(surahs) || surahs.length === 0) {
+                elSurahGrid.innerHTML = `
+                    <p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">
+                        Pencarian tidak ditemukan.
+                    </p>
+                `;
+                return;
+            }
+
+            surahs.forEach((surah, index) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = `surah-card ${animateSlide ? 'animate-slide' : ''}`;
+
+                if (animateSlide) {
+                    card.style.animationDelay = `${index * 0.02}s`;
+                }
+
+                card.onclick = () => fetchSurahDetail(surah.number, surah);
+
+                card.innerHTML = `
+                    <div class="surah-info-left">
+                        <div class="surah-number"><span>${surah.number}</span></div>
+                        <div class="surah-details">
+                            <h3>${surah.indoName}</h3>
+                            <p>${surah.indoTranslation} • ${surah.numberOfAyahs} Ayat</p>
+                        </div>
+                    </div>
+                    <div class="surah-arabic-name">${surah.name}</div>
+                `;
+
+                elSurahGrid.appendChild(card);
+            });
+        }
+
+        function renderJuzSurahList(juzSurahs, animateSlide = false) {
+            elSurahGrid.innerHTML = '';
+
+            if (!Array.isArray(juzSurahs) || juzSurahs.length === 0) {
+                elSurahGrid.innerHTML = `
+                    <p style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;">
+                        Pencarian tidak ditemukan.
+                    </p>
+                `;
+                return;
+            }
+
+            juzSurahs.forEach((item, index) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = `surah-card ${animateSlide ? 'animate-slide' : ''}`;
+
+                if (animateSlide) {
+                    card.style.animationDelay = `${index * 0.02}s`;
+                }
+
+                card.onclick = () => {
+                    currentOpenedSurah = null;
+                    renderJuzSpecificSurahDetail(item.meta, item.ayahsAr, item.ayahsId, item.ayahsLat);
+                    showDetailView();
+                };
+
+                card.innerHTML = `
+                    <div class="surah-info-left">
+                        <div class="surah-number"><span>${item.meta.number}</span></div>
+                        <div class="surah-details">
+                            <h3>${item.meta.indoName}</h3>
+                            <p>${item.meta.indoTranslation} • Ayat ${item.meta.juzStartAyah}-${item.meta.juzEndAyah}</p>
+                        </div>
+                    </div>
+                    <div class="surah-arabic-name">${item.meta.name}</div>
+                `;
+
+                elSurahGrid.appendChild(card);
+            });
+        }
+
         async function fetchSurahDetail(surahNumber, surahMeta, scrollToAyah = null) {
             try {
                 showLoader();
