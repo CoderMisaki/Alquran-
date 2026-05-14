@@ -47,6 +47,7 @@
         let isLocked = false;
         let activeJuzFilter = null;
         let ayahObserver = null;
+        let detailRequestToken = 0;
 
         const API_BASE = 'https://api.alquran.cloud/v1';
         const FALLBACK_SURAH_LIST_URL = 'https://raw.githubusercontent.com/rioastamal/quran-json/master/surah.json';
@@ -147,6 +148,13 @@
         function syncDesktopLightDetailLayout() {
             const isDesktop = isDesktopLayout();
             document.body.classList.toggle('desktop-quran-detail', isDesktop);
+
+            if (document.body.classList.contains('is-loading')) {
+                elViewList.classList.add('hidden');
+                elViewDetail.classList.add('hidden');
+                if (elHeaderRight) elHeaderRight.style.display = 'flex';
+                return;
+            }
 
             if (isDesktop) {
                 elViewList.classList.remove('hidden');
@@ -284,6 +292,7 @@
         }
 
         function showLoader() {
+            document.body.classList.add('is-loading');
             elLoader.classList.remove('hidden');
             elViewList.classList.add('hidden');
             elViewDetail.classList.add('hidden');
@@ -291,6 +300,7 @@
         }
 
         function hideLoader() {
+            document.body.classList.remove('is-loading');
             elLoader.classList.add('hidden');
             syncDesktopLightDetailLayout();
         }
@@ -648,6 +658,8 @@
         }
 
         async function fetchSurahDetail(surahNumber, surahMeta, scrollToAyah = null) {
+            const requestToken = ++detailRequestToken;
+
             try {
                 showLoader();
                 resetLockState();
@@ -671,6 +683,8 @@
                     dataLat = { code: 200, data: { ayahs: mapFallbackAyahs(fallbackAyahs, 'transliteration') } };
                 }
 
+                if (requestToken !== detailRequestToken) return;
+
                 if (dataAr.code === 200 && dataId.code === 200 && dataLat.code === 200) {
                     currentOpenedSurah = surahNumber;
                     renderSurahDetail(surahMeta, dataAr.data.ayahs, dataId.data.ayahs, dataLat.data.ayahs);
@@ -690,6 +704,7 @@
                 } else throw new Error("Gagal memuat ayat.");
 
             } catch (error) {
+                if (requestToken !== detailRequestToken) return;
                 showToast("Gagal memuat. Periksa koneksi internet.", true);
                 showListView();
             }
