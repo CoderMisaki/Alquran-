@@ -489,19 +489,12 @@
             }
         }, {passive: true});
 
-        async function safeFetchJson(url, timeoutMs = 10000) {
-            const controller = new AbortController();
-            const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
-            try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    signal: controller.signal
-                });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return await response.json();
-            } finally {
-                window.clearTimeout(timeoutId);
+        async function safeFetchJson(url) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Gagal mengambil data, HTTP Status: ${response.status}`);
             }
+            return await response.json();
         }
 
         function mapFallbackSurahList(data) {
@@ -568,7 +561,8 @@
 
                 } else throw new Error('Gagal mengambil API.');
             } catch (error) {
-                showToast('Koneksi terganggu. Silakan muat ulang.', true);
+                console.error('Detail Error API:', error);
+                showToast(`Koneksi terganggu: ${error.message}`, true);
             }
         }
 
