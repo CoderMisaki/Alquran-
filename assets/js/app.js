@@ -659,16 +659,33 @@
 
                 card.onclick = () => fetchSurahDetail(surah.number, surah);
 
-                card.innerHTML = `
-                    <div class="surah-info-left">
-                        <div class="surah-number"><span>${escapeHTML(surah.number)}</span></div>
-                        <div class="surah-details">
-                            <h3>${escapeHTML(surah.indoName)}</h3>
-                            <p>${escapeHTML(surah.indoTranslation)} • ${escapeHTML(surah.numberOfAyahs)} Ayat</p>
-                        </div>
-                    </div>
-                    <div class="surah-arabic-name">${escapeHTML(surah.name)}</div>
-                `;
+                const infoLeft = document.createElement('div');
+                infoLeft.className = 'surah-info-left';
+
+                const surahNumberDiv = document.createElement('div');
+                surahNumberDiv.className = 'surah-number';
+                const numberSpan = document.createElement('span');
+                numberSpan.textContent = surah.number;
+                surahNumberDiv.appendChild(numberSpan);
+
+                const surahDetailsDiv = document.createElement('div');
+                surahDetailsDiv.className = 'surah-details';
+                const surahH3 = document.createElement('h3');
+                surahH3.textContent = surah.indoName;
+                const surahP = document.createElement('p');
+                surahP.textContent = `${surah.indoTranslation} • ${surah.numberOfAyahs} Ayat`;
+                surahDetailsDiv.appendChild(surahH3);
+                surahDetailsDiv.appendChild(surahP);
+
+                infoLeft.appendChild(surahNumberDiv);
+                infoLeft.appendChild(surahDetailsDiv);
+
+                const arabicNameDiv = document.createElement('div');
+                arabicNameDiv.className = 'surah-arabic-name';
+                arabicNameDiv.textContent = surah.name;
+
+                card.appendChild(infoLeft);
+                card.appendChild(arabicNameDiv);
 
                 fragment.appendChild(card);
             });
@@ -703,16 +720,33 @@
                     showDetailView();
                 };
 
-                card.innerHTML = `
-                    <div class="surah-info-left">
-                        <div class="surah-number"><span>${escapeHTML(item.meta.number)}</span></div>
-                        <div class="surah-details">
-                            <h3>${escapeHTML(item.meta.indoName)}</h3>
-                            <p>${escapeHTML(item.meta.indoTranslation)} • Ayat ${escapeHTML(item.meta.juzStartAyah)}-${escapeHTML(item.meta.juzEndAyah)}</p>
-                        </div>
-                    </div>
-                    <div class="surah-arabic-name">${escapeHTML(item.meta.name)}</div>
-                `;
+                const infoLeft = document.createElement('div');
+                infoLeft.className = 'surah-info-left';
+
+                const surahNumberDiv = document.createElement('div');
+                surahNumberDiv.className = 'surah-number';
+                const numberSpan = document.createElement('span');
+                numberSpan.textContent = item.meta.number;
+                surahNumberDiv.appendChild(numberSpan);
+
+                const surahDetailsDiv = document.createElement('div');
+                surahDetailsDiv.className = 'surah-details';
+                const surahH3 = document.createElement('h3');
+                surahH3.textContent = item.meta.indoName;
+                const surahP = document.createElement('p');
+                surahP.textContent = `${item.meta.indoTranslation} • Ayat ${item.meta.juzStartAyah}-${item.meta.juzEndAyah}`;
+                surahDetailsDiv.appendChild(surahH3);
+                surahDetailsDiv.appendChild(surahP);
+
+                infoLeft.appendChild(surahNumberDiv);
+                infoLeft.appendChild(surahDetailsDiv);
+
+                const arabicNameDiv = document.createElement('div');
+                arabicNameDiv.className = 'surah-arabic-name';
+                arabicNameDiv.textContent = item.meta.name;
+
+                card.appendChild(infoLeft);
+                card.appendChild(arabicNameDiv);
 
                 fragment.appendChild(card);
             });
