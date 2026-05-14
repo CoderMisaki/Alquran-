@@ -1,3 +1,18 @@
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            const s = String(str);
+            return s.replace(/[&<>"']/g, function(m) {
+                switch (m) {
+                    case '&': return '&amp;';
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '"': return '&quot;';
+                    case "'": return '&#39;';
+                    default: return m;
+                }
+            });
+        }
+
         function debounce(func, delay) {
             let timeout;
             return function(...args) {
@@ -645,13 +660,13 @@
 
                 card.innerHTML = `
                     <div class="surah-info-left">
-                        <div class="surah-number"><span>${surah.number}</span></div>
+                        <div class="surah-number"><span>${escapeHTML(surah.number)}</span></div>
                         <div class="surah-details">
-                            <h3>${surah.indoName}</h3>
-                            <p>${surah.indoTranslation} • ${surah.numberOfAyahs} Ayat</p>
+                            <h3>${escapeHTML(surah.indoName)}</h3>
+                            <p>${escapeHTML(surah.indoTranslation)} • ${escapeHTML(surah.numberOfAyahs)} Ayat</p>
                         </div>
                     </div>
-                    <div class="surah-arabic-name">${surah.name}</div>
+                    <div class="surah-arabic-name">${escapeHTML(surah.name)}</div>
                 `;
 
                 elSurahGrid.appendChild(card);
@@ -687,13 +702,13 @@
 
                 card.innerHTML = `
                     <div class="surah-info-left">
-                        <div class="surah-number"><span>${item.meta.number}</span></div>
+                        <div class="surah-number"><span>${escapeHTML(item.meta.number)}</span></div>
                         <div class="surah-details">
-                            <h3>${item.meta.indoName}</h3>
-                            <p>${item.meta.indoTranslation} • Ayat ${item.meta.juzStartAyah}-${item.meta.juzEndAyah}</p>
+                            <h3>${escapeHTML(item.meta.indoName)}</h3>
+                            <p>${escapeHTML(item.meta.indoTranslation)} • Ayat ${escapeHTML(item.meta.juzStartAyah)}-${escapeHTML(item.meta.juzEndAyah)}</p>
                         </div>
                     </div>
-                    <div class="surah-arabic-name">${item.meta.name}</div>
+                    <div class="surah-arabic-name">${escapeHTML(item.meta.name)}</div>
                 `;
 
                 elSurahGrid.appendChild(card);
@@ -780,8 +795,8 @@
             const revType = meta.revelationType && meta.revelationType.toLowerCase() === 'meccan' ? 'Makkiyah' : 'Madaniyah';
 
             elSurahHeaderDetail.innerHTML = `
-                <h2>${meta.indoName}</h2>
-                <p>Surah ke-${meta.number} dari 114 • ${revType} • ${meta.numberOfAyahs} Ayat</p>
+                <h2>${escapeHTML(meta.indoName)}</h2>
+                <p>Surah ke-${escapeHTML(meta.number)} dari 114 • ${escapeHTML(revType)} • ${escapeHTML(meta.numberOfAyahs)} Ayat</p>
                 ${bismillahHtml}
             `;
 
@@ -794,14 +809,14 @@
                 const indoText = ayahsId[index].text;
 
                 allAyahsHTML += `
-                    <div class="ayah-item" data-ayah="${ayah.numberInSurah}" data-juz="${ayah.juz || ""}">
+                    <div class="ayah-item" data-ayah="${escapeHTML(ayah.numberInSurah)}" data-juz="${escapeHTML(ayah.juz || "")}">
                         <div class="ayah-top">
-                            <div class="ayah-number-badge">${ayah.numberInSurah}</div>
-                            <div class="ayah-arabic">${arabicText}</div>
+                            <div class="ayah-number-badge">${escapeHTML(ayah.numberInSurah)}</div>
+                            <div class="ayah-arabic">${escapeHTML(arabicText)}</div>
                         </div>
                         <div class="ayah-translations">
-                            <div class="ayah-latin">${latinText}</div>
-                            <div class="ayah-indo">${indoText}</div>
+                            <div class="ayah-latin">${escapeHTML(latinText)}</div>
+                            <div class="ayah-indo">${escapeHTML(indoText)}</div>
                         </div>
                     </div>
                 `;
@@ -818,8 +833,8 @@
             }
 
             elSurahHeaderDetail.innerHTML = `
-                <h2>${meta.indoName}</h2>
-                <p>Juz ${activeJuzFilter} • Ayat ${meta.juzStartAyah} - ${meta.juzEndAyah}</p>
+                <h2>${escapeHTML(meta.indoName)}</h2>
+                <p>Juz ${escapeHTML(activeJuzFilter)} • Ayat ${escapeHTML(meta.juzStartAyah)} - ${escapeHTML(meta.juzEndAyah)}</p>
                 ${bismillahHtml}
             `;
 
@@ -832,14 +847,14 @@
                 const indoText = ayahsId[index].text;
 
                 allAyahsHTML += `
-                    <div class="ayah-item" data-ayah="${ayah.numberInSurah}" data-juz="${ayah.juz || ""}">
+                    <div class="ayah-item" data-ayah="${escapeHTML(ayah.numberInSurah)}" data-juz="${escapeHTML(ayah.juz || "")}">
                         <div class="ayah-top">
-                            <div class="ayah-number-badge">${ayah.numberInSurah}</div>
-                            <div class="ayah-arabic">${arabicText}</div>
+                            <div class="ayah-number-badge">${escapeHTML(ayah.numberInSurah)}</div>
+                            <div class="ayah-arabic">${escapeHTML(arabicText)}</div>
                         </div>
                         <div class="ayah-translations">
-                            <div class="ayah-latin">${latinText}</div>
-                            <div class="ayah-indo">${indoText}</div>
+                            <div class="ayah-latin">${escapeHTML(latinText)}</div>
+                            <div class="ayah-indo">${escapeHTML(indoText)}</div>
                         </div>
                     </div>
                 `;
