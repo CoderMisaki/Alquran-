@@ -385,18 +385,33 @@
             }
         }
 
+        let saveLastReadTimeout = null;
+
         function initAyahObserver() {
             ayahObserver = new IntersectionObserver((entries) => {
                 if(!currentOpenedSurah) return;
+
+                let lastIntersectingAyahNum = null;
+                let lastIntersectingAyahJuz = null;
+
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        const ayahNum = entry.target.getAttribute('data-ayah');
-                        localStorage.setItem('lastReadSurah', currentOpenedSurah);
-                        localStorage.setItem('lastReadAyah', ayahNum);
+                        lastIntersectingAyahNum = entry.target.getAttribute('data-ayah');
                         const ayahJuz = entry.target.getAttribute('data-juz');
-                        if (ayahJuz) localStorage.setItem('lastReadJuz', ayahJuz);
+                        if (ayahJuz) lastIntersectingAyahJuz = ayahJuz;
                     }
                 });
+
+                if (lastIntersectingAyahNum) {
+                    clearTimeout(saveLastReadTimeout);
+                    saveLastReadTimeout = setTimeout(() => {
+                        localStorage.setItem('lastReadSurah', currentOpenedSurah);
+                        localStorage.setItem('lastReadAyah', lastIntersectingAyahNum);
+                        if (lastIntersectingAyahJuz) {
+                            localStorage.setItem('lastReadJuz', lastIntersectingAyahJuz);
+                        }
+                    }, 500);
+                }
             }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
         }
 
