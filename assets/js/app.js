@@ -430,7 +430,7 @@
                 if (!isDragging) return;
 
                 if (isDesktopCardMode() && diff > 0) {
-                    crCard.style.transform = `translateX(${Math.min(diff, 48)}px)`;
+                    crCard.style.transform = `translateX(${Math.min(diff, 120)}px)`;
                     return;
                 }
 
@@ -449,7 +449,7 @@
                 const diff = currentX - startX;
                 crCard.style.transition = 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
 
-                if (isDesktopCardMode() && diff > 70) {
+                if (isDesktopCardMode() && diff > 55) {
                     crCard.classList.add('desktop-collapsed');
                     resetCardVisual();
                     return;
