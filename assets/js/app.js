@@ -132,7 +132,8 @@
         function getStoredTheme() {
             try {
                 return getSafeTheme(localStorage.getItem('quranTheme'));
-            } catch {
+            } catch (error) {
+                console.warn('Failed to retrieve theme from localStorage:', error);
                 return null;
             }
         }
@@ -141,7 +142,9 @@
             if (!ALLOWED_THEMES.has(theme)) return;
             try {
                 localStorage.setItem('quranTheme', theme);
-            } catch {}
+            } catch (error) {
+                console.warn('Failed to save theme to localStorage:', error);
+            }
         }
 
         function applyTheme(theme) {
@@ -592,7 +595,9 @@
                     if (data.code === 200 && Array.isArray(data.data)) {
                         surahResponse = data.data;
                     }
-                } catch {}
+                } catch (error) {
+                    console.warn("Primary fetch for all surahs failed, falling back.", error);
+                }
 
                 if (!surahResponse) {
                     const fallbackData = await safeFetchJson(FALLBACK_SURAH_LIST_URL);
@@ -735,7 +740,9 @@
                     dataAr = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`);
                     dataId = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`);
                     dataLat = await safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`);
-                } catch {}
+                } catch (error) {
+                    console.warn("Primary fetch for surah detail failed, falling back.", error);
+                }
 
                 if (!(dataAr?.code === 200 && dataId?.code === 200 && dataLat?.code === 200)) {
                     const fallbackDetail = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`);
