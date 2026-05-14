@@ -407,26 +407,29 @@
 
         function setupContinueReadingSwipe() {
             const crCard = document.getElementById('continue-reading');
-            let startX = 0, currentX = 0, isDragging = false;
-            
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+            let pointerId = null;
+
             const isDesktopCardMode = () => document.body.classList.contains('desktop-quran-detail');
             const resetCardVisual = () => {
                 crCard.style.transform = '';
                 crCard.style.opacity = '1';
             };
 
-            crCard.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                currentX = startX;
+            const onStart = (clientX, activePointerId = null) => {
+                startX = clientX;
+                currentX = clientX;
                 isDragging = false;
+                pointerId = activePointerId;
                 crCard.style.transition = 'none';
-            }, {passive: true});
-            
-            crCard.addEventListener('touchmove', (e) => {
-                currentX = e.touches[0].clientX;
+            };
+
+            const onMove = (clientX) => {
+                currentX = clientX;
                 const diff = currentX - startX;
                 if (Math.abs(diff) > 10) isDragging = true;
-
                 if (!isDragging) return;
 
                 if (isDesktopCardMode() && diff > 0) {
@@ -438,9 +441,9 @@
                     crCard.style.transform = `translateX(${diff}px)`;
                     crCard.style.opacity = Math.max(0.2, 1 + (diff / 150));
                 }
-            }, {passive: true});
-            
-            crCard.addEventListener('touchend', () => {
+            };
+
+            const onEnd = () => {
                 if (!isDragging) {
                     resumeReading();
                     return;
@@ -474,6 +477,25 @@
                 }
 
                 resetCardVisual();
+            };
+
+            crCard.addEventListener('touchstart', (e) => onStart(e.touches[0].clientX), { passive: true });
+            crCard.addEventListener('touchmove', (e) => onMove(e.touches[0].clientX), { passive: true });
+            crCard.addEventListener('touchend', onEnd);
+
+            crCard.addEventListener('pointerdown', (e) => {
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                onStart(e.clientX, e.pointerId);
+                crCard.setPointerCapture?.(e.pointerId);
+            });
+            crCard.addEventListener('pointermove', (e) => {
+                if (pointerId !== e.pointerId) return;
+                onMove(e.clientX);
+            });
+            crCard.addEventListener('pointerup', (e) => {
+                if (pointerId !== e.pointerId) return;
+                pointerId = null;
+                onEnd();
             });
 
             crCard.addEventListener('click', () => {
