@@ -1148,10 +1148,10 @@
     }
 
     body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed {
-        max-width: 72px;
-        width: 72px;
-        padding: 0.85rem;
-        justify-content: center;
+        max-width: 220px;
+        width: 220px;
+        padding: 0.85rem 0.95rem;
+        justify-content: flex-start;
         transform: translateX(0);
         box-shadow: 0 14px 30px rgba(10,20,24,0.12);
     }
@@ -1182,10 +1182,13 @@
     }
 
     body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed .cr-info {
-        width: 0;
-        opacity: 0;
+        width: auto;
+        opacity: 1;
         overflow: hidden;
-        pointer-events: none;
+    }
+
+    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed .cr-label {
+        display: none;
     }
 
     body.desktop-quran-detail #view-list .play-btn-large {
