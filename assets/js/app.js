@@ -146,31 +146,9 @@
         }
 
         function syncDesktopLightDetailLayout() {
-            const isDesktop = isDesktopLayout();
-            document.body.classList.toggle('desktop-quran-detail', isDesktop);
-
-            if (document.body.classList.contains('is-loading')) {
-                elViewList.classList.add('hidden');
-                elViewDetail.classList.add('hidden');
-                if (elHeaderRight) elHeaderRight.style.display = 'flex';
-                return;
-            }
-
-            if (isDesktop) {
-                elViewList.classList.remove('hidden');
-                elViewDetail.classList.remove('hidden');
-                if (elHeaderRight) elHeaderRight.style.display = 'flex';
-            } else {
-                if (currentOpenedSurah) {
-                    elViewList.classList.add('hidden');
-                    elViewDetail.classList.remove('hidden');
-                    if (elHeaderRight) elHeaderRight.style.display = 'none';
-                } else {
-                    elViewList.classList.remove('hidden');
-                    elViewDetail.classList.add('hidden');
-                    if (elHeaderRight) elHeaderRight.style.display = 'flex';
-                }
-            }
+            const isDesktop = window.innerWidth >= 1024;
+            const hasDetail = elViewDetail && !elViewDetail.classList.contains('hidden');
+            document.body.classList.toggle('desktop-quran-detail', isDesktop && hasDetail);
         }
 
         function getThemeTransitionDuration() {
@@ -319,7 +297,11 @@
                 elSearchClear.classList.add('hidden');
             }
 
+            elViewList.classList.remove('hidden');
+            elViewDetail.classList.add('hidden');
+            document.body.classList.remove('desktop-quran-detail');
             syncDesktopLightDetailLayout();
+            if (elHeaderRight) elHeaderRight.style.display = 'flex';
 
             checkLastRead();
             applySearchAndFilter(!clearSearchQuery);
@@ -328,7 +310,14 @@
 
         function showDetailView() {
             hideLoader();
-
+            if (isDesktopLayout()) {
+                elViewList.classList.remove('hidden');
+                if (elHeaderRight) elHeaderRight.style.display = 'flex';
+            } else {
+                elViewList.classList.add('hidden');
+                if (elHeaderRight) elHeaderRight.style.display = 'none';
+            }
+            elViewDetail.classList.remove('hidden');
             syncDesktopLightDetailLayout();
 
             updateNavButtonsVisibility();
@@ -478,7 +467,11 @@
 
         let progressTimeout;
         let isScrolling = false;
-        window.addEventListener('resize', debounce(syncDesktopLightDetailLayout, 100));
+        window.addEventListener(
+            'resize',
+            debounce(syncDesktopLightDetailLayout, 150),
+            { passive: true }
+        );
 
         window.addEventListener('scroll', () => {
             if (!isScrolling && !elViewDetail.classList.contains('hidden')) {
