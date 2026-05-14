@@ -166,16 +166,6 @@
             document.body.classList.toggle('desktop-quran-detail', isDesktop && hasDetail);
         }
 
-        function getThemeTransitionDuration() {
-            const rawValue = getComputedStyle(document.documentElement)
-                .getPropertyValue('--theme-duration')
-                .trim();
-
-            if (rawValue.endsWith('ms')) return Number.parseFloat(rawValue);
-            if (rawValue.endsWith('s')) return Number.parseFloat(rawValue) * 1000;
-            return 780;
-        }
-
         async function runThemeTransition(nextTheme) {
             if (isThemeAnimating) return;
             isThemeAnimating = true;
