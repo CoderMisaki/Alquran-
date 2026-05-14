@@ -990,4 +990,7 @@
             toastTimeout = setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
-    
+        if (typeof module !== 'undefined' && module.exports) {
+            module.exports = { safeFetchJson };
+        }
+
