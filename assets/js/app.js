@@ -804,7 +804,9 @@
                 ${bismillahHtml}
             `;
 
-            let allAyahsHTML = '';
+            elAyahList.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+
             ayahsAr.forEach((ayah, index) => {
                 let arabicText = ayah.text;
                 if (index === 0) arabicText = cleanBismillah(arabicText, meta.number);
@@ -812,20 +814,45 @@
                 const latinText = ayahsLat[index].text;
                 const indoText = ayahsId[index].text;
 
-                allAyahsHTML += `
-                    <div class="ayah-item" data-ayah="${escapeHTML(ayah.numberInSurah)}" data-juz="${escapeHTML(ayah.juz || "")}">
-                        <div class="ayah-top">
-                            <div class="ayah-number-badge">${escapeHTML(ayah.numberInSurah)}</div>
-                            <div class="ayah-arabic">${escapeHTML(arabicText)}</div>
-                        </div>
-                        <div class="ayah-translations">
-                            <div class="ayah-latin">${escapeHTML(latinText)}</div>
-                            <div class="ayah-indo">${escapeHTML(indoText)}</div>
-                        </div>
-                    </div>
-                `;
+                const ayahItem = document.createElement('div');
+                ayahItem.className = 'ayah-item';
+                ayahItem.dataset.ayah = ayah.numberInSurah;
+                ayahItem.dataset.juz = ayah.juz || "";
+
+                const ayahTop = document.createElement('div');
+                ayahTop.className = 'ayah-top';
+
+                const ayahNumberBadge = document.createElement('div');
+                ayahNumberBadge.className = 'ayah-number-badge';
+                ayahNumberBadge.textContent = ayah.numberInSurah;
+
+                const ayahArabic = document.createElement('div');
+                ayahArabic.className = 'ayah-arabic';
+                ayahArabic.textContent = arabicText;
+
+                ayahTop.appendChild(ayahNumberBadge);
+                ayahTop.appendChild(ayahArabic);
+
+                const ayahTranslations = document.createElement('div');
+                ayahTranslations.className = 'ayah-translations';
+
+                const ayahLatin = document.createElement('div');
+                ayahLatin.className = 'ayah-latin';
+                ayahLatin.textContent = latinText;
+
+                const ayahIndo = document.createElement('div');
+                ayahIndo.className = 'ayah-indo';
+                ayahIndo.textContent = indoText;
+
+                ayahTranslations.appendChild(ayahLatin);
+                ayahTranslations.appendChild(ayahIndo);
+
+                ayahItem.appendChild(ayahTop);
+                ayahItem.appendChild(ayahTranslations);
+
+                fragment.appendChild(ayahItem);
             });
-            elAyahList.innerHTML = allAyahsHTML;
+            elAyahList.appendChild(fragment);
         }
 
         function renderJuzSpecificSurahDetail(meta, ayahsAr, ayahsId, ayahsLat) {
@@ -842,7 +869,9 @@
                 ${bismillahHtml}
             `;
 
-            let allAyahsHTML = '';
+            elAyahList.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+
             ayahsAr.forEach((ayah, index) => {
                 let arabicText = ayah.text;
                 if (ayah.numberInSurah === 1) arabicText = cleanBismillah(arabicText, meta.number);
@@ -850,20 +879,45 @@
                 const latinText = ayahsLat[index].text;
                 const indoText = ayahsId[index].text;
 
-                allAyahsHTML += `
-                    <div class="ayah-item" data-ayah="${escapeHTML(ayah.numberInSurah)}" data-juz="${escapeHTML(ayah.juz || "")}">
-                        <div class="ayah-top">
-                            <div class="ayah-number-badge">${escapeHTML(ayah.numberInSurah)}</div>
-                            <div class="ayah-arabic">${escapeHTML(arabicText)}</div>
-                        </div>
-                        <div class="ayah-translations">
-                            <div class="ayah-latin">${escapeHTML(latinText)}</div>
-                            <div class="ayah-indo">${escapeHTML(indoText)}</div>
-                        </div>
-                    </div>
-                `;
+                const ayahItem = document.createElement('div');
+                ayahItem.className = 'ayah-item';
+                ayahItem.dataset.ayah = ayah.numberInSurah;
+                ayahItem.dataset.juz = ayah.juz || "";
+
+                const ayahTop = document.createElement('div');
+                ayahTop.className = 'ayah-top';
+
+                const ayahNumberBadge = document.createElement('div');
+                ayahNumberBadge.className = 'ayah-number-badge';
+                ayahNumberBadge.textContent = ayah.numberInSurah;
+
+                const ayahArabic = document.createElement('div');
+                ayahArabic.className = 'ayah-arabic';
+                ayahArabic.textContent = arabicText;
+
+                ayahTop.appendChild(ayahNumberBadge);
+                ayahTop.appendChild(ayahArabic);
+
+                const ayahTranslations = document.createElement('div');
+                ayahTranslations.className = 'ayah-translations';
+
+                const ayahLatin = document.createElement('div');
+                ayahLatin.className = 'ayah-latin';
+                ayahLatin.textContent = latinText;
+
+                const ayahIndo = document.createElement('div');
+                ayahIndo.className = 'ayah-indo';
+                ayahIndo.textContent = indoText;
+
+                ayahTranslations.appendChild(ayahLatin);
+                ayahTranslations.appendChild(ayahIndo);
+
+                ayahItem.appendChild(ayahTop);
+                ayahItem.appendChild(ayahTranslations);
+
+                fragment.appendChild(ayahItem);
             });
-            elAyahList.innerHTML = allAyahsHTML;
+            elAyahList.appendChild(fragment);
         }
 
         function setupJuzGrid() {
