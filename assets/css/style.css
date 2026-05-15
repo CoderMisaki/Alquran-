@@ -707,7 +707,7 @@
 
 
 /* =========================================
-   DESKTOP UI/UX OPTIMIZATION
+   DESKTOP BASE (>=1024px)
    ========================================= */
 @media (min-width: 1024px) {
     /* 1. Mengatur ulang grid list surah agar tidak terlalu rapat */
@@ -762,9 +762,8 @@
 
 
 /* ======================================================
-   DESKTOP LIGHT MODE REDESIGN - UI seperti referensi
-   Hanya aktif di desktop (>=1024px) dan mode terang.
-   Tidak mengubah tampilan mobile dan dark mode.
+   DESKTOP MODE OVERRIDES (LIGHT/DARK) + DETAIL STATE
+   Cascade order: base → mode override → state → component
    ====================================================== */
 @media (min-width: 1024px) {
     body.theme-light {
@@ -1113,18 +1112,13 @@
     }
 
     body.desktop-quran-detail #view-list .continue-reading-card {
+        position: relative;
         min-height: 80px;
+        max-width: 100%;
         margin-bottom: 1.25rem;
         padding: 1rem;
         border-radius: 20px;
         gap: 1rem;
-    }
-
-
-
-    body.desktop-quran-detail #view-list .continue-reading-card {
-        position: relative;
-        max-width: 100%;
         transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
                     opacity 320ms ease,
                     max-width 420ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -2587,89 +2581,3 @@
 
 
 # Alquran-
-
-/* Premium desktop redesign */
-@media (min-width: 1024px) {
-  :root {
-    --teal-accent: #1f8a84;
-    --gold-color: #c8a85c;
-  }
-
-  main {
-    display: grid;
-    grid-template-columns: 460px minmax(0,1fr);
-    gap: 1.5rem;
-    padding: 1.25rem 5% 2rem;
-    align-items: start;
-  }
-
-  body::before,
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  body::before {
-    background:
-      radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--teal-accent) 24%, transparent), transparent 42%),
-      radial-gradient(circle at 85% 20%, color-mix(in srgb, var(--gold-color) 22%, transparent), transparent 45%),
-      radial-gradient(circle at 50% 75%, color-mix(in srgb, var(--teal-accent) 14%, transparent), transparent 48%);
-    opacity: 0.5;
-  }
-
-  body::after {
-    background: repeating-conic-gradient(from 0deg at 78% 68%, color-mix(in srgb, var(--gold-color) 10%, transparent) 0deg 15deg, transparent 15deg 30deg);
-    opacity: 0.15;
-  }
-
-  body.theme-dark::before { opacity: 0.34; }
-  body.theme-dark::after { opacity: 0.1; }
-
-  #view-list, #view-detail {
-    border-radius: 24px;
-    border: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
-    background: color-mix(in srgb, var(--surface-color) 72%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 16px 45px rgba(0,0,0,0.08);
-  }
-
-  #view-list { max-height: calc(100vh - 130px); overflow-y: auto; padding: 1.25rem; }
-  #view-list::-webkit-scrollbar, #view-detail::-webkit-scrollbar { width: 10px; }
-  #view-list::-webkit-scrollbar-thumb, #view-detail::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--teal-accent) 35%, var(--border-color)); border-radius: 10px; }
-  #view-detail { max-height: calc(100vh - 130px); overflow-y: auto; padding: 1.6rem 1.8rem 2rem; }
-
-  .continue-reading-card { display:flex; align-items:center; gap:1.5rem; border-radius: 20px; padding: 1.05rem 1.2rem; position: relative; overflow: hidden; }
-  .continue-reading-card::after { content:""; width:72px; aspect-ratio:1; margin-left:auto; clip-path: polygon(50% 0%, 92% 25%, 92% 75%, 50% 100%, 8% 75%, 8% 25%); background: linear-gradient(135deg,var(--teal-accent),var(--gold-color)); opacity:.88; }
-  .play-btn-large { width:56px; height:56px; border-radius:999px; background: var(--teal-accent); color:#fff; }
-
-  .surah-grid { grid-template-columns: repeat(3,1fr); gap: .8rem; }
-  .surah-card { border-radius:18px; text-align:center; flex-direction:column; align-items:center; justify-content:center; min-height:150px; padding:1rem .7rem; border:1px solid var(--border-color); }
-  .surah-card:hover { transform: translateY(-4px); box-shadow: 0 15px 32px rgba(0,0,0,.12); }
-  .surah-number { width:43px; height:43px; border:1.5px solid var(--gold-color); transform: rotate(45deg); border-radius: 10px; background: transparent; }
-  .surah-number span { transform: rotate(-45deg); display:inline-block; }
-  .surah-card:hover .surah-number { background: color-mix(in srgb, var(--teal-accent) 24%, transparent); }
-
-  .detail-tools-row { justify-content: flex-end; gap: .6rem; margin-bottom: 1rem; }
-  .detail-tools-row button, .zoom-controls { border-radius: 12px; }
-  .lock-btn.active { background: var(--teal-accent); color: #fff; border-color: var(--teal-accent); }
-
-  .surah-header-detail { border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem; }
-  .surah-header-detail h2 { font-size: clamp(2rem, 3vw, 2.8rem); font-weight: 700; }
-
-  .bismillah { text-align:center; font-size: calc(2.1rem * var(--font-scale)); margin: 1rem 0 0.4rem; position:relative; }
-  .bismillah::before, .bismillah::after { content: "✦"; color: var(--gold-color); position:absolute; top:50%; transform:translateY(-50%); }
-  .bismillah::before { left: 1.2rem; }
-  .bismillah::after { right: 1.2rem; }
-
-  .ayah-item { display:grid; grid-template-columns:50px minmax(200px,1fr) minmax(200px,.9fr); gap:1.1rem; align-items:center; border-bottom: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent); padding: 1.15rem 0; }
-  .ayah-top { display: contents; }
-  .ayah-number-badge { grid-column:1; border-radius: 12px; border-color: var(--gold-color); }
-  .ayah-translations { grid-column:2; }
-  .ayah-latin { color: var(--teal-accent); font-weight: 600; }
-  .ayah-indo { color: var(--text-muted); }
-  .ayah-arabic { grid-column:3; text-align:right; direction:rtl; line-height:2; font-size: calc(1.8rem * var(--font-scale)); }
-}
