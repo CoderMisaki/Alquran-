@@ -8,25 +8,19 @@
             --border-color: #eaeaea;
             --accent-color: #000000;
             --nav-bg: rgba(255, 255, 255, 0.85);
+            --app-bg: #f7f8f5;
+            --panel-bg: rgba(255, 255, 255, 0.82);
+            --panel-border: rgba(18, 28, 31, 0.10);
+            --accent-teal: #168f86;
+            --accent-gold: #c9ad62;
+            --shadow-sm: 0 8px 22px rgba(22, 36, 42, 0.06);
+            --shadow-md: 0 18px 42px rgba(22, 36, 42, 0.08);
+            --shadow-lg: 0 28px 80px rgba(22, 36, 42, 0.10);
             --error-color: #ef4444;
             --font-scale: 1;
             --theme-duration: 350ms;
             --theme-ease: cubic-bezier(0.25, 1, 0.5, 1);
             --theme-fast: 220ms;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #0a0a0a;
-                --surface-color: #121212;
-                --surface-hover: #1a1a1a;
-                --text-main: #f5f5f5;
-                --text-muted: #a3a3a3;
-                --text-faint: #444444;
-                --border-color: #262626;
-                --accent-color: #ffffff;
-                --nav-bg: rgba(10, 10, 10, 0.85);
-            }
         }
 
         html { scroll-behavior: smooth; }
@@ -41,6 +35,14 @@
             --border-color: #262626;
             --accent-color: #ffffff;
             --nav-bg: rgba(10, 10, 10, 0.85);
+            --app-bg: #080d0f;
+            --panel-bg: rgba(18, 25, 28, 0.78);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --accent-teal: #39b8ad;
+            --accent-gold: #d4bc7e;
+            --shadow-sm: 0 10px 24px rgba(0, 0, 0, 0.35);
+            --shadow-md: 0 18px 42px rgba(0, 0, 0, 0.45);
+            --shadow-lg: 0 28px 80px rgba(0, 0, 0, 0.55);
         }
 
         body.theme-light {
@@ -53,6 +55,14 @@
             --border-color: #eaeaea;
             --accent-color: #000000;
             --nav-bg: rgba(255, 255, 255, 0.85);
+            --app-bg: #f7f8f5;
+            --panel-bg: rgba(255, 255, 255, 0.82);
+            --panel-border: rgba(18, 28, 31, 0.10);
+            --accent-teal: #168f86;
+            --accent-gold: #c9ad62;
+            --shadow-sm: 0 8px 22px rgba(22, 36, 42, 0.06);
+            --shadow-md: 0 18px 42px rgba(22, 36, 42, 0.08);
+            --shadow-lg: 0 28px 80px rgba(22, 36, 42, 0.10);
         }
 
         * {
@@ -766,19 +776,45 @@
    Cascade order: base → mode override → state → component
    ====================================================== */
 @media (min-width: 1024px) {
+    body.theme-dark {
+        --bg-color: #080d0f;
+        --surface-color: rgba(11,17,20,0.82);
+        --surface-hover: rgba(18,25,28,0.92);
+        --text-main: #f5f5f5;
+        --text-muted: #9aa6a6;
+        --border-color: var(--panel-border);
+        --accent-color: var(--accent-teal);
+        --app-bg: #080d0f;
+        --panel-bg: rgba(18,25,28,0.78);
+        --panel-border: rgba(255,255,255,0.08);
+        --accent-teal: #39b8ad;
+        --accent-gold: #d4bc7e;
+        --shadow-sm: 0 10px 24px rgba(0,0,0,0.35);
+        --shadow-md: 0 18px 42px rgba(0,0,0,0.45);
+        --shadow-lg: 0 28px 80px rgba(0,0,0,0.55);
+    }
+
     body.theme-light {
         --bg-color: #f7f8f5;
         --surface-color: rgba(255, 255, 255, 0.82);
         --surface-hover: #ffffff;
-        --border-color: rgba(18, 28, 31, 0.10);
+        --border-color: var(--panel-border);
         --text-main: #141414;
         --text-muted: #667070;
         --text-faint: #d9d6c9;
         --accent-color: #168f86;
         --accent-soft: rgba(22, 143, 134, 0.10);
-        --gold-color: #c9ad62;
+        --gold-color: var(--accent-gold);
         --gold-soft: rgba(201, 173, 98, 0.18);
         --nav-bg: rgba(255, 255, 255, 0.74);
+        --app-bg: #f7f8f5;
+        --panel-bg: rgba(255,255,255,0.82);
+        --panel-border: rgba(18, 28, 31, 0.10);
+        --accent-teal: #168f86;
+        --accent-gold: #c9ad62;
+        --shadow-sm: 0 8px 22px rgba(22,36,42,0.06);
+        --shadow-md: 0 18px 42px rgba(22, 36, 42, 0.08);
+        --shadow-lg: 0 28px 80px rgba(22, 36, 42, 0.08);
         background:
             radial-gradient(circle at 10% 24%, rgba(22, 143, 134, 0.10), transparent 18rem),
             radial-gradient(circle at 92% 18%, rgba(201, 173, 98, 0.16), transparent 20rem),
@@ -834,10 +870,10 @@
         height: 82px;
         margin: 18px auto 0;
         padding: 0.9rem 1.35rem;
-        border: 1px solid rgba(18, 28, 31, 0.08);
+        border: 1px solid var(--panel-border);
         border-radius: 28px 28px 18px 18px;
-        background: rgba(255,255,255,0.78);
-        box-shadow: 0 18px 55px rgba(22, 36, 42, 0.08);
+        background: var(--panel-bg);
+        box-shadow: var(--shadow-md);
         backdrop-filter: blur(20px) saturate(1.18);
         -webkit-backdrop-filter: blur(20px) saturate(1.18);
     }
@@ -873,9 +909,9 @@
     body.theme-light .zoom-controls,
     body.theme-light .back-main-btn,
     body.theme-light .back-toggle-btn {
-        background: rgba(255,255,255,0.88);
-        border-color: rgba(18, 28, 31, 0.10);
-        box-shadow: 0 8px 22px rgba(22,36,42,0.06);
+        background: var(--panel-bg);
+        border-color: var(--panel-border);
+        box-shadow: var(--shadow-sm);
     }
 
     body.theme-light .juz-filter-btn.active,
@@ -889,7 +925,7 @@
 
     body.theme-light .search-input {
         height: 46px;
-        border-color: rgba(18, 28, 31, 0.10);
+        border-color: var(--panel-border);
         background: rgba(255,255,255,0.86);
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 8px 22px rgba(22,36,42,0.04);
     }
@@ -917,7 +953,7 @@
     }
 
     body.theme-light .search-icon {
-        background: var(--accent-color);
+        background: var(--accent-teal);
         stroke: #ffffff;
         width: 32px;
         height: 32px;
@@ -929,7 +965,7 @@
     }
 
     body.theme-light .search-clear-btn {
-        background: rgba(22,143,134,0.10);
+        background: color-mix(in srgb, var(--accent-teal) 10%, transparent);
         color: var(--accent-color);
     }
 
@@ -938,11 +974,11 @@
         min-height: calc(100vh - 130px);
         margin: 0 auto 34px;
         padding: 1.35rem;
-        background: rgba(255,255,255,0.50);
-        border: 1px solid rgba(18, 28, 31, 0.07);
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
         border-top: 0;
         border-radius: 0 0 30px 30px;
-        box-shadow: 0 28px 80px rgba(22, 36, 42, 0.08);
+        box-shadow: var(--shadow-lg);
         backdrop-filter: blur(18px) saturate(1.10);
         -webkit-backdrop-filter: blur(18px) saturate(1.10);
     }
@@ -960,7 +996,7 @@
         position: relative;
         min-height: 112px;
         padding: 1.25rem 1.45rem;
-        border: 1px solid rgba(18, 28, 31, 0.08);
+        border: 1px solid var(--panel-border);
         border-left: 0;
         border-radius: 24px;
         background:
@@ -978,7 +1014,7 @@
         width: 60px;
         height: 60px;
         border-radius: 50%;
-        background: var(--accent-color);
+        background: var(--accent-teal);
         color: white;
         display: flex;
         align-items: center;
@@ -1018,9 +1054,9 @@
 
     /* Kembalikan struktur kartu ke horizontal dan buat ukurannya lebih compact */
     body.theme-light .surah-card {
-        border-color: rgba(18, 28, 31, 0.08);
-        background: rgba(255,255,255,0.82);
-        box-shadow: 0 4px 15px rgba(22, 36, 42, 0.03);
+        border-color: var(--panel-border);
+        background: var(--panel-bg);
+        box-shadow: var(--shadow-sm);
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -1043,7 +1079,7 @@
     body.theme-light .surah-card:hover {
         border-color: rgba(22,143,134,0.34);
         background: rgba(255,255,255,0.98);
-        box-shadow: 0 22px 42px rgba(22, 36, 42, 0.10);
+        box-shadow: var(--shadow-md);
     }
 
     body.theme-light .surah-number {
@@ -1092,8 +1128,8 @@
         overflow-y: auto;
         border-right: none;
         border-radius: 24px;
-        background: rgba(255,255,255,0.6);
-        border: 1px solid rgba(18,28,31,0.08);
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
     }
 
     body.desktop-quran-detail #view-detail {
@@ -1102,8 +1138,8 @@
         margin: 0;
         padding: 2rem;
         border-radius: 24px;
-        background: rgba(255,255,255,0.6);
-        border: 1px solid rgba(18,28,31,0.08);
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
         min-width: 0;
     }
 
@@ -1264,7 +1300,7 @@
         border-radius: 20px;
         border: 1px solid var(--border-color);
         backdrop-filter: blur(14px);
-        box-shadow: 0 14px 34px rgba(10,20,24,0.12);
+        box-shadow: var(--shadow-md);
     }
 
     body.desktop-quran-detail .continue-reading-card,
@@ -1281,7 +1317,7 @@
     body.desktop-quran-detail .detail-tools-row,
     body.desktop-quran-detail .sticky-back-wrapper {
         border: 1px solid var(--border-color);
-        box-shadow: 0 10px 28px rgba(10,20,24,0.10);
+        box-shadow: var(--shadow-md);
     }
 
     body.desktop-quran-detail .surah-number {
@@ -1300,18 +1336,18 @@
     body.desktop-quran-detail .ayah-item { border-radius: 14px; padding: 1rem; margin-bottom: .65rem; }
 
     body.theme-light.desktop-quran-detail {
-        background: #f7fbfa;
+        background: var(--app-bg);
         color: #141414;
     }
     body.theme-light.desktop-quran-detail #view-list,
     body.theme-light.desktop-quran-detail #view-detail,
     body.theme-light.desktop-quran-detail header {
-        background: rgba(255,255,255,0.74);
+        background: var(--panel-bg);
         border-color: rgba(18,28,31,0.10);
     }
 
     body.theme-dark.desktop-quran-detail {
-        background: #080d0f;
+        background: var(--app-bg);
         color: #f5f5f5;
     }
     body.theme-dark.desktop-quran-detail::before,
@@ -1319,13 +1355,13 @@
     body.theme-dark.desktop-quran-detail #view-list,
     body.theme-dark.desktop-quran-detail #view-detail,
     body.theme-dark.desktop-quran-detail header {
-        background: rgba(18,25,28,0.78);
-        border-color: rgba(255,255,255,0.08);
-        box-shadow: 0 18px 42px rgba(0,0,0,0.45);
+        background: var(--panel-bg);
+        border-color: var(--panel-border);
+        box-shadow: var(--shadow-md);
     }
     body.theme-dark.desktop-quran-detail .surah-card,
     body.theme-dark.desktop-quran-detail .continue-reading-card,
-    body.theme-dark.desktop-quran-detail .ayah-item { background: rgba(11,17,20,0.82); border-color: rgba(255,255,255,0.08); }
+    body.theme-dark.desktop-quran-detail .ayah-item { background: rgba(11,17,20,0.82); border-color: var(--panel-border); }
     body.theme-dark.desktop-quran-detail .surah-details p,
     body.theme-dark.desktop-quran-detail .surah-header-detail p,
     body.theme-dark.desktop-quran-detail .ayah-indo { color: #9aa6a6; }
@@ -1350,7 +1386,7 @@
     }
 
     body.desktop-quran-detail .nav-surah-btn {
-        background: var(--accent-color);
+        background: var(--accent-teal);
         color: white;
         border: none;
     }
@@ -1360,7 +1396,7 @@
         text-align: left;
         padding: 0 0 1.45rem;
         margin: 0 0 1.35rem;
-        border-bottom: 1px solid rgba(18,28,31,0.08);
+        border-bottom: 1px solid var(--panel-border);
     }
 
     body.desktop-quran-detail .surah-header-detail h2 {
@@ -1406,7 +1442,7 @@
         gap: 1rem;
         align-items: center;
         padding: 1.1rem 0;
-        border-bottom: 1px solid rgba(18,28,31,0.08);
+        border-bottom: 1px solid var(--panel-border);
     }
 
     body.desktop-quran-detail .ayah-top {
