@@ -934,7 +934,7 @@
         color: var(--accent-color);
     }
 
-    body.theme-light main {
+    body.theme-light.desktop-shell main {
         max-width: 1380px;
         min-height: calc(100vh - 130px);
         margin: 0 auto 34px;
@@ -948,11 +948,11 @@
         -webkit-backdrop-filter: blur(18px) saturate(1.10);
     }
 
-    body.theme-light.is-loading main {
+    body.theme-light.desktop-shell.is-loading main {
         display: block;
     }
 
-    body.theme-light:not(.desktop-quran-detail) #view-list {
+    body.theme-light.desktop-list-only #view-list {
         max-width: 1120px;
         margin: 0 auto;
     }
@@ -1012,7 +1012,7 @@
     }
 
     /* Grid layout dibuat lebih natural menggunakan auto-fill agar tidak melebar berlebihan */
-    body.theme-light:not(.desktop-quran-detail) .surah-grid {
+    body.theme-light.desktop-list-only .surah-grid {
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 1rem;
     }
@@ -1075,7 +1075,7 @@
         font-size: 1.5rem;
     }
 
-    body.desktop-quran-detail main {
+    body.desktop-split-detail main {
         display: grid;
         grid-template-columns: 380px minmax(0, 1fr);
         gap: 1.5rem;
@@ -1083,11 +1083,11 @@
         overflow: visible;
     }
 
-    body.desktop-quran-detail #view-list.hidden {
+    body.desktop-split-detail #view-list.hidden {
         display: block !important;
     }
 
-    body.desktop-quran-detail #view-list {
+    body.desktop-split-detail #view-list {
         padding: 1.25rem;
         max-height: calc(100vh - 120px);
         overflow-y: auto;
@@ -1097,7 +1097,7 @@
         border: 1px solid rgba(18,28,31,0.08);
     }
 
-    body.desktop-quran-detail #view-detail {
+    body.desktop-split-detail #view-detail {
         display: block !important;
         max-width: none;
         margin: 0;
@@ -1108,11 +1108,11 @@
         min-width: 0;
     }
 
-    body.desktop-quran-detail.is-loading main {
+    body.desktop-split-detail.is-loading main {
         display: block;
     }
 
-    body.desktop-quran-detail #view-list .continue-reading-card {
+    body.desktop-split-detail #view-list .continue-reading-card {
         min-height: 80px;
         margin-bottom: 1.25rem;
         padding: 1rem;
@@ -1122,7 +1122,7 @@
 
 
 
-    body.desktop-quran-detail #view-list .continue-reading-card {
+    body.desktop-split-detail #view-list .continue-reading-card {
         position: relative;
         max-width: 100%;
         transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -1132,7 +1132,7 @@
                     box-shadow 320ms ease;
     }
 
-    body.desktop-quran-detail #view-list .continue-reading-card::before {
+    body.desktop-split-detail #view-list .continue-reading-card::before {
         content: "";
         position: absolute;
         top: 10px;
@@ -1147,7 +1147,7 @@
         pointer-events: none;
     }
 
-    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed {
+    body.desktop-split-detail #view-list .continue-reading-card.desktop-collapsed {
         max-width: 220px;
         width: 220px;
         padding: 0.85rem 0.95rem;
@@ -1156,12 +1156,12 @@
         box-shadow: 0 14px 30px rgba(10,20,24,0.12);
     }
 
-    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed::before {
+    body.desktop-split-detail #view-list .continue-reading-card.desktop-collapsed::before {
         opacity: 1;
         transform: scaleY(1);
     }
 
-    body.desktop-quran-detail #view-list .continue-reading-card .cr-ayah-info {
+    body.desktop-split-detail #view-list .continue-reading-card .cr-ayah-info {
         max-height: 30px;
         opacity: 1;
         transform: translateY(0);
@@ -1169,43 +1169,43 @@
         overflow: hidden;
     }
 
-    body.desktop-quran-detail #view-list .continue-reading-card .cr-info {
+    body.desktop-split-detail #view-list .continue-reading-card .cr-info {
         min-width: 0;
         transition: width 320ms ease, opacity 220ms ease;
     }
 
-    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed .cr-ayah-info {
+    body.desktop-split-detail #view-list .continue-reading-card.desktop-collapsed .cr-ayah-info {
         max-height: 0;
         opacity: 0;
         transform: translateY(-4px);
         margin-top: 0;
     }
 
-    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed .cr-info {
+    body.desktop-split-detail #view-list .continue-reading-card.desktop-collapsed .cr-info {
         width: auto;
         opacity: 1;
         overflow: hidden;
     }
 
-    body.desktop-quran-detail #view-list .continue-reading-card.desktop-collapsed .cr-label {
+    body.desktop-split-detail #view-list .continue-reading-card.desktop-collapsed .cr-label {
         display: none;
     }
 
-    body.desktop-quran-detail #view-list .play-btn-large {
+    body.desktop-split-detail #view-list .play-btn-large {
         width: 44px;
         height: 44px;
     }
 
-    body.desktop-quran-detail #view-list .cr-surah-name {
+    body.desktop-split-detail #view-list .cr-surah-name {
         font-size: 1.15rem;
     }
 
-    body.desktop-quran-detail #view-list .surah-grid {
+    body.desktop-split-detail #view-list .surah-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.85rem;
     }
 
-    body.desktop-quran-detail #view-list .surah-card {
+    body.desktop-split-detail #view-list .surah-card {
         min-height: 78px;
         flex-direction: row;
         justify-content: space-between;
@@ -1216,32 +1216,32 @@
         border-radius: 14px;
     }
 
-    body.desktop-quran-detail #view-list .surah-info-left {
+    body.desktop-split-detail #view-list .surah-info-left {
         flex-direction: row;
         align-items: center;
         gap: 0.8rem;
         width: 100%;
     }
 
-    body.desktop-quran-detail #view-list .surah-details h3 {
+    body.desktop-split-detail #view-list .surah-details h3 {
         font-size: 0.85rem;
         margin-bottom: 0.1rem;
     }
 
-    body.desktop-quran-detail #view-list .surah-details p {
+    body.desktop-split-detail #view-list .surah-details p {
         max-width: 100%;
         font-size: 0.65rem;
         white-space: normal;
         line-height: 1.2;
     }
 
-    body.desktop-quran-detail #view-list .surah-arabic-name {
+    body.desktop-split-detail #view-list .surah-arabic-name {
         text-align: right;
         font-size: 1.2rem;
         min-width: 72px;
     }
 
-    body.desktop-quran-detail::before {
+    body.desktop-shell::before {
         content: "";
         position: fixed;
         inset: -10% -15% auto auto;
@@ -1253,7 +1253,7 @@
         z-index: -1;
     }
 
-    body.desktop-quran-detail::after {
+    body.desktop-shell::after {
         content: "";
         position: fixed;
         inset: auto auto -16% -12%;
@@ -1265,7 +1265,7 @@
         z-index: -1;
     }
 
-    body.desktop-quran-detail header {
+    body.desktop-shell header {
         margin: 1rem auto 0.75rem;
         border-radius: 20px;
         border: 1px solid var(--border-color);
@@ -1273,24 +1273,24 @@
         box-shadow: 0 14px 34px rgba(10,20,24,0.12);
     }
 
-    body.desktop-quran-detail .continue-reading-card,
-    body.desktop-quran-detail .search-container,
-    body.desktop-quran-detail .theme-toggle,
-    body.desktop-quran-detail .juz-filter-btn,
-    body.desktop-quran-detail .surah-card,
-    body.desktop-quran-detail .ayah-item {
+    body.desktop-shell .continue-reading-card,
+    body.desktop-split-detail .search-container,
+    body.desktop-split-detail .theme-toggle,
+    body.desktop-split-detail .juz-filter-btn,
+    body.desktop-shell .surah-card,
+    body.desktop-split-detail .ayah-item {
         transition: all .28s ease;
     }
 
-    body.desktop-quran-detail .continue-reading-card,
-    body.desktop-quran-detail .surah-card,
-    body.desktop-quran-detail .detail-tools-row,
-    body.desktop-quran-detail .sticky-back-wrapper {
+    body.desktop-shell .continue-reading-card,
+    body.desktop-shell .surah-card,
+    body.desktop-shell .detail-tools-row,
+    body.desktop-shell .sticky-back-wrapper {
         border: 1px solid var(--border-color);
         box-shadow: 0 10px 28px rgba(10,20,24,0.10);
     }
 
-    body.desktop-quran-detail .surah-number {
+    body.desktop-shell .surah-number {
         width: 38px;
         height: 38px;
         transform: rotate(45deg);
@@ -1298,45 +1298,45 @@
         border: 1px solid rgba(201,173,98,0.7);
         background: linear-gradient(135deg, rgba(201,173,98,.24), rgba(201,173,98,.08));
     }
-    body.desktop-quran-detail .surah-number span { transform: rotate(-45deg); }
-    body.desktop-quran-detail .back-main-btn,
-    body.desktop-quran-detail .nav-surah-btn,
-    body.desktop-quran-detail .lock-btn,
-    body.desktop-quran-detail .zoom-btn { border-radius: 12px; border: 1px solid var(--border-color); }
-    body.desktop-quran-detail .ayah-item { border-radius: 14px; padding: 1rem; margin-bottom: .65rem; }
+    body.desktop-shell .surah-number span { transform: rotate(-45deg); }
+    body.desktop-shell .back-main-btn,
+    body.desktop-split-detail .nav-surah-btn,
+    body.desktop-split-detail .lock-btn,
+    body.desktop-split-detail .zoom-btn { border-radius: 12px; border: 1px solid var(--border-color); }
+    body.desktop-shell .ayah-item { border-radius: 14px; padding: 1rem; margin-bottom: .65rem; }
 
-    body.theme-light.desktop-quran-detail {
+    body.theme-light.desktop-shell {
         background: #f7fbfa;
         color: #141414;
     }
-    body.theme-light.desktop-quran-detail #view-list,
-    body.theme-light.desktop-quran-detail #view-detail,
-    body.theme-light.desktop-quran-detail header {
+    body.theme-light.desktop-shell #view-list,
+    body.theme-light.desktop-split-detail #view-detail,
+    body.theme-light.desktop-split-detail header {
         background: rgba(255,255,255,0.74);
         border-color: rgba(18,28,31,0.10);
     }
 
-    body.theme-dark.desktop-quran-detail {
+    body.theme-dark.desktop-shell {
         background: #080d0f;
         color: #f5f5f5;
     }
-    body.theme-dark.desktop-quran-detail::before,
-    body.theme-dark.desktop-quran-detail::after { opacity: .22; }
-    body.theme-dark.desktop-quran-detail #view-list,
-    body.theme-dark.desktop-quran-detail #view-detail,
-    body.theme-dark.desktop-quran-detail header {
+    body.theme-dark.desktop-shell::before,
+    body.theme-dark.desktop-split-detail::after { opacity: .22; }
+    body.theme-dark.desktop-shell #view-list,
+    body.theme-dark.desktop-split-detail #view-detail,
+    body.theme-dark.desktop-split-detail header {
         background: rgba(18,25,28,0.78);
         border-color: rgba(255,255,255,0.08);
         box-shadow: 0 18px 42px rgba(0,0,0,0.45);
     }
-    body.theme-dark.desktop-quran-detail .surah-card,
-    body.theme-dark.desktop-quran-detail .continue-reading-card,
-    body.theme-dark.desktop-quran-detail .ayah-item { background: rgba(11,17,20,0.82); border-color: rgba(255,255,255,0.08); }
-    body.theme-dark.desktop-quran-detail .surah-details p,
-    body.theme-dark.desktop-quran-detail .surah-header-detail p,
-    body.theme-dark.desktop-quran-detail .ayah-indo { color: #9aa6a6; }
+    body.theme-dark.desktop-shell .surah-card,
+    body.theme-dark.desktop-split-detail .continue-reading-card,
+    body.theme-dark.desktop-split-detail .ayah-item { background: rgba(11,17,20,0.82); border-color: rgba(255,255,255,0.08); }
+    body.theme-dark.desktop-split-detail .surah-details p,
+    body.theme-dark.desktop-split-detail .surah-header-detail p,
+    body.theme-dark.desktop-split-detail .ayah-indo { color: #9aa6a6; }
 
-    body.desktop-quran-detail .sticky-back-wrapper {
+    body.desktop-shell .sticky-back-wrapper {
         position: static;
         float: left;
         height: auto;
@@ -1345,23 +1345,23 @@
         pointer-events: auto;
     }
 
-    body.desktop-quran-detail .back-btn-ui {
+    body.desktop-split-detail .back-btn-ui {
         position: static;
     }
 
-    body.desktop-quran-detail .detail-tools-row {
+    body.desktop-split-detail .detail-tools-row {
         float: right;
         margin: 0 0 1.5rem 0;
         height: auto;
     }
 
-    body.desktop-quran-detail .nav-surah-btn {
+    body.desktop-split-detail .nav-surah-btn {
         background: var(--accent-color);
         color: white;
         border: none;
     }
 
-    body.desktop-quran-detail .surah-header-detail {
+    body.desktop-split-detail .surah-header-detail {
         clear: both;
         text-align: left;
         padding: 0 0 1.45rem;
@@ -1369,18 +1369,18 @@
         border-bottom: 1px solid rgba(18,28,31,0.08);
     }
 
-    body.desktop-quran-detail .surah-header-detail h2 {
+    body.desktop-split-detail .surah-header-detail h2 {
         font-size: clamp(2rem, 3vw, 3rem);
         letter-spacing: -0.055em;
         margin-bottom: 0.2rem;
     }
 
-    body.desktop-quran-detail .surah-header-detail p {
+    body.desktop-split-detail .surah-header-detail p {
         max-width: 680px;
         color: #5f6968;
     }
 
-    body.desktop-quran-detail .bismillah {
+    body.desktop-split-detail .bismillah {
         position: relative;
         margin: 1.4rem 0 0.2rem;
         padding: 0.8rem 3rem;
@@ -1389,8 +1389,8 @@
         color: #171717;
     }
 
-    body.desktop-quran-detail .bismillah::before,
-    body.desktop-quran-detail .bismillah::after {
+    body.desktop-split-detail .bismillah::before,
+    body.desktop-split-detail .bismillah::after {
         content: "âœ¦";
         position: absolute;
         top: 50%;
@@ -1399,14 +1399,14 @@
         font-size: 1.15rem;
     }
 
-    body.desktop-quran-detail .bismillah::before { left: 1.25rem; }
-    body.desktop-quran-detail .bismillah::after { right: 1.25rem; }
+    body.desktop-split-detail .bismillah::before { left: 1.25rem; }
+    body.desktop-split-detail .bismillah::after { right: 1.25rem; }
 
-    body.desktop-quran-detail .ayah-list {
+    body.desktop-split-detail .ayah-list {
         gap: 0;
     }
 
-    body.desktop-quran-detail .ayah-item {
+    body.desktop-split-detail .ayah-item {
         display: grid;
         grid-template-columns: 58px minmax(240px, 1fr) minmax(220px, 0.9fr);
         gap: 1rem;
@@ -1415,11 +1415,11 @@
         border-bottom: 1px solid rgba(18,28,31,0.08);
     }
 
-    body.desktop-quran-detail .ayah-top {
+    body.desktop-split-detail .ayah-top {
         display: contents;
     }
 
-    body.desktop-quran-detail .ayah-number-badge {
+    body.desktop-split-detail .ayah-number-badge {
         grid-column: 1;
         width: 38px;
         height: 38px;
@@ -1430,35 +1430,35 @@
         justify-self: start;
     }
 
-    body.desktop-quran-detail .ayah-arabic {
+    body.desktop-split-detail .ayah-arabic {
         grid-column: 3;
         font-size: calc(1.78rem * var(--font-scale));
         line-height: 1.9;
         text-align: right;
     }
 
-    body.desktop-quran-detail .ayah-translations {
+    body.desktop-split-detail .ayah-translations {
         grid-column: 2;
         padding-left: 0;
     }
 
-    body.desktop-quran-detail .ayah-latin {
+    body.desktop-split-detail .ayah-latin {
         color: var(--accent-color);
         font-style: normal;
         font-weight: 600;
         margin-bottom: 0.20rem;
     }
 
-    body.desktop-quran-detail .ayah-indo {
+    body.desktop-split-detail .ayah-indo {
         color: #434d4c;
         line-height: 1.65;
     }
 }
 
 @media (min-width: 1280px) {
-    body.desktop-quran-detail main,
+    body.desktop-split-detail main,
     body.theme-light header,
-    body.theme-light main {
+    body.theme-light.desktop-shell main {
         max-width: 1440px;
     }
 }
@@ -1734,7 +1734,7 @@
         function syncDesktopLightDetailLayout() {
             const detailIsOpen = Boolean(elViewDetail && !elViewDetail.classList.contains('hidden'));
             const useDesktopLayout = Boolean(detailIsOpen && isDesktopLightLayout());
-            document.body.classList.toggle('desktop-quran-detail', useDesktopLayout);
+            document.body.classList.toggle('desktop-split-detail', useDesktopLayout);
 
             if (!detailIsOpen) return;
 
@@ -1755,7 +1755,7 @@
             hideLoader();
             resetLockState();
             currentOpenedSurah = null;
-            document.body.classList.remove('desktop-quran-detail');
+            document.body.classList.remove('desktop-split-detail');
             document.getElementById('reading-progress-container').style.opacity = '0';
             
             const btnUI = document.getElementById('back-btn-ui');

@@ -163,10 +163,23 @@
             return window.matchMedia('(min-width: 1024px)').matches;
         }
 
-        function syncDesktopLightDetailLayout() {
-            const isDesktop = window.innerWidth >= 1024;
+        function getDesktopLayoutState() {
+            const isDesktop = isDesktopLayout();
             const hasDetail = elViewDetail && !elViewDetail.classList.contains('hidden');
-            document.body.classList.toggle('desktop-quran-detail', isDesktop && hasDetail);
+            const hasList = elViewList && !elViewList.classList.contains('hidden');
+
+            if (!isDesktop) return null;
+            if (hasList && hasDetail) return 'desktop-split-detail';
+            if (hasList) return 'desktop-list-only';
+            return 'desktop-shell';
+        }
+
+        function syncDesktopLightDetailLayout() {
+            const desktopState = getDesktopLayoutState();
+            document.body.classList.toggle('desktop-quran-detail', desktopState === 'desktop-split-detail');
+            document.body.classList.toggle('desktop-shell', Boolean(desktopState));
+            document.body.classList.toggle('desktop-list-only', desktopState === 'desktop-list-only');
+            document.body.classList.toggle('desktop-split-detail', desktopState === 'desktop-split-detail');
         }
 
         async function runThemeTransition(nextTheme) {
@@ -275,7 +288,9 @@
         function showLoader() {
             document.body.classList.add('is-loading');
             elLoader.classList.remove('hidden');
-            elViewList.classList.add('hidden');
+            if (!isDesktopLayout()) {
+                elViewList.classList.add('hidden');
+            }
             elViewDetail.classList.add('hidden');
             syncDesktopLightDetailLayout();
         }
@@ -302,7 +317,6 @@
 
             elViewList.classList.remove('hidden');
             elViewDetail.classList.add('hidden');
-            document.body.classList.remove('desktop-quran-detail');
             syncDesktopLightDetailLayout();
             if (elHeaderRight) elHeaderRight.style.display = 'flex';
 
