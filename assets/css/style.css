@@ -9,6 +9,8 @@
             --accent-color: #000000;
             --nav-bg: rgba(255, 255, 255, 0.85);
             --error-color: #ef4444;
+            --focus-ring-color: #2563eb;
+            --focus-ring-shadow: rgba(37, 99, 235, 0.28);
             --font-scale: 1;
             --theme-duration: 350ms;
             --theme-ease: cubic-bezier(0.25, 1, 0.5, 1);
@@ -26,6 +28,8 @@
                 --border-color: #262626;
                 --accent-color: #ffffff;
                 --nav-bg: rgba(10, 10, 10, 0.85);
+                --focus-ring-color: #93c5fd;
+                --focus-ring-shadow: rgba(147, 197, 253, 0.38);
             }
         }
 
@@ -138,6 +142,15 @@
             background: none; border: none;
             cursor: pointer; font-family: inherit;
             color: inherit; outline: none;
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        .surah-card:focus-visible,
+        .continue-reading-card:focus-visible {
+            outline: 2px solid var(--focus-ring-color);
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px var(--focus-ring-shadow);
         }
 
         @keyframes slideInRight {
@@ -268,7 +281,8 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        .search-input:focus {
+        .search-input:focus,
+        .search-input:focus-visible {
             border-color: var(--accent-color);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             background-color: var(--bg-color);
@@ -286,6 +300,7 @@
             display: flex; align-items: center; justify-content: center;
             background-color: var(--text-faint); color: var(--bg-color);
             border-radius: 50%; cursor: pointer; transition: background-color 0.2s;
+            border: 0;
         }
 
         .search-clear-btn:hover { background-color: var(--text-muted); }
@@ -372,6 +387,12 @@
             pointer-events: none;
         }
         .cr-icon svg { transform: translateX(1.5px); }
+        .continue-reading-card::before,
+        .continue-reading-card::after,
+        .surah-card::before,
+        .surah-card::after {
+            pointer-events: none;
+        }
 
         .surah-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;

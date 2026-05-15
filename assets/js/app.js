@@ -536,6 +536,13 @@
                     if (!isDragging) resumeReading();
                 }
             });
+
+            crCard.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    resumeReading();
+                }
+            });
         }
 
         function resumeReading() {

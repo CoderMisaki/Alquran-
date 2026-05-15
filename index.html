@@ -28,15 +28,15 @@
                 </span>
             </button>
             <div class="header-right" id="header-right">
-            <button class="juz-filter-btn tap-effect" id="btn-open-juz" onclick="openJuzModal()">
+            <button class="juz-filter-btn tap-effect" id="btn-open-juz" type="button" onclick="openJuzModal()" aria-label="Buka filter juz">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             </button>
             <div class="search-container" id="search-container">
                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <input type="text" id="search-input" class="search-input" placeholder="Cari nomor, nama surah, atau kata..." autocomplete="off">
-                <div class="search-clear-btn hidden" id="search-clear" onclick="clearSearch()">
+                <button class="search-clear-btn hidden" id="search-clear" type="button" onclick="clearSearch()" aria-label="Hapus pencarian">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </div>
+                </button>
             </div>
             </div>
         </div>
@@ -61,7 +61,7 @@
 
         <div id="view-list" class="hidden">
             
-            <div id="continue-reading" class="continue-reading-card cr-card-effect hidden">
+            <div id="continue-reading" class="continue-reading-card cr-card-effect hidden" role="button" tabindex="0" aria-label="Lanjutkan bacaan terakhir">
                 <div class="cr-icon play-btn-large">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 </div>
@@ -79,33 +79,33 @@
             
             <div class="sticky-back-wrapper">
                 <div class="back-btn-ui" id="back-btn-ui">
-                    <button class="back-main-btn tap-effect" onclick="showListView(false)">
+                    <button class="back-main-btn tap-effect" type="button" onclick="showListView(false)">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         <span>Kembali</span>
                     </button>
-                    <button class="back-toggle-btn tap-effect" onclick="toggleBackButton()">
+                    <button class="back-toggle-btn tap-effect" type="button" onclick="toggleBackButton()" aria-label="Tampilkan atau sembunyikan tombol kembali">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                     </button>
                 </div>
             </div>
 
             <div class="detail-tools-row">
-                <button class="nav-surah-btn tap-effect" id="btn-prev-surah" onclick="navigateSurah(-1)">
+                <button class="nav-surah-btn tap-effect" id="btn-prev-surah" type="button" onclick="navigateSurah(-1)" aria-label="Surah sebelumnya">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
-                <button class="nav-surah-btn tap-effect" id="btn-next-surah" onclick="navigateSurah(1)">
+                <button class="nav-surah-btn tap-effect" id="btn-next-surah" type="button" onclick="navigateSurah(1)" aria-label="Surah berikutnya">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </button>
 
-                <button class="lock-btn tap-effect" id="lock-btn" onclick="handleLockToggle()">
+                <button class="lock-btn tap-effect" id="lock-btn" type="button" onclick="handleLockToggle()" aria-label="Kunci rentang ayat hafalan">
                     <svg id="icon-unlock" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
                     <svg id="icon-lock" class="hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 </button>
 
                 <div class="zoom-controls">
-                    <button id="btn-zoom-out" class="zoom-btn tap-effect" onclick="handleZoomPress('out', -10)">A-</button>
+                    <button id="btn-zoom-out" class="zoom-btn tap-effect" type="button" onclick="handleZoomPress('out', -10)" aria-label="Perkecil ukuran teks">A-</button>
                     <span class="zoom-value" id="zoom-value">30</span>
-                    <button id="btn-zoom-in" class="zoom-btn tap-effect" onclick="handleZoomPress('in', 10)">A+</button>
+                    <button id="btn-zoom-in" class="zoom-btn tap-effect" type="button" onclick="handleZoomPress('in', 10)" aria-label="Perbesar ukuran teks">A+</button>
                 </div>
             </div>
 
