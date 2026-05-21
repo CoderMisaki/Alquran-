@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const { escapeHTML, safeFetchJson, createTextElement } = require('../assets/js/app.js');
+const { escapeHTML, safeFetchJson, createTextElement, sanitizeLastReadPosition, validateApiAyahArray } = require('../assets/js/app.js');
 
 const root = path.resolve(__dirname, '..');
 
@@ -40,4 +40,20 @@ test('no fetch() outside safeFetchJson', () => {
 
 test('no innerHTML usage for dynamic rendering', () => {
   assert.doesNotMatch(read('assets/js/app.js'), /\.innerHTML\s*=/);
+});
+
+
+test('sanitizeLastReadPosition resets invalid ayah and surah bounds', () => {
+  assert.deepStrictEqual(sanitizeLastReadPosition('2', '9999'), { surah: 2, ayah: 1 });
+  assert.deepStrictEqual(sanitizeLastReadPosition('999', '1'), { surah: null, ayah: null });
+});
+
+test('validateApiAyahArray rejects malformed items and overlong translation', () => {
+  const list = validateApiAyahArray([
+    { numberInSurah: 1, text: 'ٱلْحَمْدُ', translation: 'ok' },
+    { numberInSurah: -1, text: 'bad', translation: 'drop' },
+    { numberInSurah: 2, text: 'abc', translation: 'x'.repeat(5001) }
+  ]);
+  assert.strictEqual(list.length, 2);
+  assert.strictEqual(list[1].translation, '');
 });
