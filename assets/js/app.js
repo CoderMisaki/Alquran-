@@ -245,8 +245,8 @@ function handleZoomPress(type, delta) { state.currentZoomLevel = Math.max(0, Mat
 
 function showToast(msg) { const toast = qs('toast'); const body = qs('toast-message'); if (!toast || !body) return; body.textContent = String(msg || ''); toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 2000); }
 function closeModal(id) { if (!['modal-lock', 'modal-juz'].includes(id)) return; const m = qs(id); if (m) m.classList.add('hidden'); }
-function showListView() { saveVisibleAyahAsLastRead(); qs('loader')?.classList.add('hidden'); qs('view-list')?.classList.remove('hidden'); qs('view-detail')?.classList.add('hidden'); }
-function showDetailView() { qs('loader')?.classList.add('hidden'); qs('view-detail')?.classList.remove('hidden'); if (window.innerWidth < 1024) qs('view-list')?.classList.add('hidden'); }
+function showListView() { saveVisibleAyahAsLastRead(); qs('loader')?.classList.add('hidden'); qs('view-list')?.classList.remove('hidden'); qs('view-detail')?.classList.add('hidden'); document.body.classList.remove('in-surah-detail'); }
+function showDetailView() { qs('loader')?.classList.add('hidden'); qs('view-detail')?.classList.remove('hidden'); document.body.classList.add('in-surah-detail'); if (window.innerWidth < 1024) qs('view-list')?.classList.add('hidden'); }
 function resetDetailScrollPosition() {
   const ayahList = qs('ayah-list');
   if (ayahList) ayahList.scrollTop = 0;
