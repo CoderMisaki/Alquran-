@@ -389,6 +389,7 @@
         }
 
         .continue-reading-card {
+            --swipe-ratio: 0;
             background: linear-gradient(135deg, var(--surface-color), var(--bg-color));
             border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color);
             border-radius: 12px; padding: 0.9rem 1.1rem; margin-bottom: 2rem;
@@ -398,6 +399,31 @@
             transform: translate3d(0, 0, 0);
             transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s ease;
             will-change: transform, opacity;
+            position: relative;
+        }
+
+        .continue-reading-card::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 42%;
+            pointer-events: none;
+            opacity: calc(var(--swipe-ratio) * 0.95);
+            background: linear-gradient(to left, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0));
+            backdrop-filter: blur(calc(var(--swipe-ratio) * 4px));
+            -webkit-backdrop-filter: blur(calc(var(--swipe-ratio) * 4px));
+            transition: opacity 0.2s ease;
+        }
+
+        body.theme-dark .continue-reading-card::after {
+            background: linear-gradient(to left, rgba(15, 25, 30, 0.35), rgba(15, 25, 30, 0));
+        }
+
+        .continue-reading-card:active,
+        .continue-reading-card.is-pressed {
+            transform: scale(0.985);
         }
 
         .cr-info { display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
@@ -622,7 +648,8 @@
         }
 
         .ayah-number-badge {
-            flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+            flex-shrink: 0; min-width: 64px; height: 36px; border-radius: 999px;
+            padding: 0 10px;
             border: 1px solid var(--border-color); display: flex; align-items: center;
             justify-content: center; font-size: 0.85rem; font-weight: 600;
             color: var(--text-main); background-color: var(--surface-color);
