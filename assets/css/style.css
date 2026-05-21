@@ -369,6 +369,16 @@
             pointer-events: none;
         }
 
+        .cr-swipe-out-left {
+            animation: swipeOutLeft 0.28s ease forwards;
+            pointer-events: none;
+        }
+
+        @keyframes swipeOutLeft {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-120%); }
+        }
+
         .continue-reading-card {
             background: linear-gradient(135deg, var(--surface-color), var(--bg-color));
             border: 1px solid var(--border-color); border-left: 4px solid var(--accent-color);

@@ -214,7 +214,7 @@ function applyLock() { const ayahs = Array.from(document.querySelectorAll('.ayah
 function unlockAyahs() { document.querySelectorAll('.ayah-item.hidden').forEach((n) => n.classList.remove('hidden')); resetLockState(); }
 function resetLockState() { state.isLocked = false; qs('icon-lock')?.classList.add('hidden'); qs('icon-unlock')?.classList.remove('hidden'); }
 
-function setupContinueReadingSwipe() { const banner = qs('continue-reading'); if (!banner) return; let x0 = null; banner.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true }); banner.addEventListener('touchend', (e) => { if (x0 == null) return; const d = e.changedTouches[0].clientX - x0; x0 = null; if (d < -60) { safeRemoveStorage('lastReadSurah'); safeRemoveStorage('lastReadAyah'); safeRemoveStorage('lastReadJuz'); banner.classList.add('hidden'); } }, { passive: true }); }
+function setupContinueReadingSwipe() { const banner = qs('continue-reading'); if (!banner) return; let x0 = null; banner.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true }); banner.addEventListener('touchend', (e) => { if (x0 == null) return; const d = e.changedTouches[0].clientX - x0; x0 = null; if (d < -60) { safeRemoveStorage('lastReadSurah'); safeRemoveStorage('lastReadAyah'); safeRemoveStorage('lastReadJuz'); banner.classList.remove('cr-swipe-out-left'); void banner.offsetWidth; banner.classList.add('cr-swipe-out-left'); setTimeout(() => banner.classList.add('hidden'), 280); } }, { passive: true }); }
 function setupPressFeedback() {
   const clearPressState = (el) => el?.classList.remove('is-pressed');
   document.addEventListener('pointerdown', (e) => {
@@ -230,7 +230,7 @@ function setupPressFeedback() {
   });
 }
 async function resumeReading() { const lr = getSafeLastRead(); if (!lr.surah) return; const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return; await fetchSurahDetail(lr.surah, meta); const target = document.querySelector(`.ayah-item[data-ayah="${lr.ayah || 1}"]`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-function checkLastRead() { const lr = getSafeLastRead(); const card = qs('continue-reading'); if (!card) return; if (!lr.surah || !lr.ayah) return card.classList.add('hidden'); const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return card.classList.add('hidden'); qs('cr-surah-name').textContent = meta.indoName || `Surah ${lr.surah}`; qs('cr-ayah-info').textContent = `Ayat ${lr.ayah}${lr.juz ? ` • Juz ${lr.juz}` : ''}`; card.classList.remove('hidden'); }
+function checkLastRead() { const lr = getSafeLastRead(); const card = qs('continue-reading'); if (!card) return; if (!lr.surah || !lr.ayah) return card.classList.add('hidden'); const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return card.classList.add('hidden'); const surahName = meta.indoName || meta.name || ''; qs('cr-surah-name').textContent = surahName ? `Surah ${surahName}` : 'Surah'; qs('cr-ayah-info').textContent = `${lr.ayah}${lr.juz ? ` • Juz ${lr.juz}` : ''}`; card.classList.remove('hidden', 'cr-swipe-out-left'); }
 
 function bindEvents() {
   qs('btn-open-juz')?.addEventListener('click', () => qs('modal-juz')?.classList.remove('hidden'));
