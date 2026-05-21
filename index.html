@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Al-Qur'an Indonesia</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.alquran.cloud https://raw.githubusercontent.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests;">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -29,7 +27,7 @@
                 </span>
             </button>
             <div class="header-right" id="header-right">
-            <button class="juz-filter-btn tap-effect" id="btn-open-juz" id="btn-open-juz">
+            <button class="juz-filter-btn tap-effect" id="btn-open-juz" type="button">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
             </button>
             <div class="search-container" id="search-container">
@@ -80,25 +78,25 @@
             
             <div class="sticky-back-wrapper">
                 <div class="back-btn-ui" id="back-btn-ui">
-                    <button class="back-main-btn tap-effect" id="btn-back-main">
+                    <button class="back-main-btn tap-effect" id="btn-back-main" type="button">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                         <span>Kembali</span>
                     </button>
-                    <button class="back-toggle-btn tap-effect" id="btn-back-toggle">
+                    <button class="back-toggle-btn tap-effect" id="btn-back-toggle" type="button">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                     </button>
                 </div>
             </div>
 
             <div class="detail-tools-row">
-                <button class="nav-surah-btn tap-effect" id="btn-prev-surah" id="btn-prev-surah">
+                <button class="nav-surah-btn tap-effect" id="btn-prev-surah" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 </button>
-                <button class="nav-surah-btn tap-effect" id="btn-next-surah" id="btn-next-surah">
+                <button class="nav-surah-btn tap-effect" id="btn-next-surah" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </button>
 
-                <button class="lock-btn tap-effect" id="lock-btn" id="lock-btn">
+                <button class="lock-btn tap-effect" id="lock-btn" type="button">
                     <svg id="icon-unlock" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
                     <svg id="icon-lock" class="hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                 </button>
@@ -125,8 +123,8 @@
                 <input type="number" id="input-end-ayah" placeholder="Akhir" min="1" inputmode="numeric">
             </div>
             <div class="modal-actions">
-                <button class="modal-btn btn-cancel tap-effect" id="btn-cancel-lock">Batal</button>
-                <button class="modal-btn btn-apply tap-effect" id="btn-apply-lock">Terapkan</button>
+                <button class="modal-btn btn-cancel tap-effect" id="btn-cancel-lock" type="button">Batal</button>
+                <button class="modal-btn btn-apply tap-effect" id="btn-apply-lock" type="button">Terapkan</button>
             </div>
         </div>
     </div>
@@ -137,8 +135,8 @@
             <p>Pilih Juz untuk menampilkan surah terkait.</p>
             <div class="juz-grid" id="juz-grid-container"></div>
             <div class="modal-actions">
-                <button class="modal-btn btn-cancel tap-effect" id="btn-reset-juz">Hapus Filter</button>
-                <button class="modal-btn btn-apply tap-effect" id="btn-close-juz">Tutup</button>
+                <button class="modal-btn btn-cancel tap-effect" id="btn-reset-juz" type="button">Hapus Filter</button>
+                <button class="modal-btn btn-apply tap-effect" id="btn-close-juz" type="button">Tutup</button>
             </div>
         </div>
     </div>

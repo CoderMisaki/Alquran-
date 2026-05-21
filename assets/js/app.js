@@ -1,47 +1,131 @@
-// security-hardened app
-function escapeHTML(str){if(str===null||str===undefined)return'';return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]||m));}
-function createTextElement(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;el.textContent=text==null?'':String(text);return el;}
-const isIntRange=(v,min,max)=>Number.isInteger(v)&&v>=min&&v<=max;
-function safeGetStorage(key){try{return localStorage.getItem(key);}catch{return null;}}
-function safeSetStorage(key,value){try{localStorage.setItem(key,String(value));}catch{}}
-function safeRemoveStorage(key){try{localStorage.removeItem(key);}catch{}}
-function debounce(func,delay){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>func.apply(this,a),delay);};}
-const API_BASE='https://api.alquran.cloud/v1';
-const FALLBACK_SURAH_LIST_URL='https://raw.githubusercontent.com/rioastamal/quran-json/master/surah.json';
-const FALLBACK_SURAH_DETAIL_BASE='https://raw.githubusercontent.com/rioastamal/quran-json/master/surah';
-const allowedOrigins=new Set(['https://api.alquran.cloud','https://raw.githubusercontent.com']);
-async function safeFetchJson(url,options={}){const u=new URL(url,location.origin);if(!allowedOrigins.has(u.origin))throw new Error('URL tidak diizinkan');const c=new AbortController();const to=setTimeout(()=>c.abort(),options.timeoutMs||10000);try{const r=await fetch(u.toString(),{method:'GET',credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',headers:{Accept:'application/json'},signal:c.signal});if(!r.ok)throw new Error(`HTTP ${r.status}`);try{return await r.json();}catch{throw new Error('JSON invalid');}}finally{clearTimeout(to);}}
-let currentZoomLevel=Math.min(100,Math.max(0,parseInt(safeGetStorage('quranZoomLevel')||'30',10)||30));
-const el={loader:document.getElementById('loader'),viewList:document.getElementById('view-list'),viewDetail:document.getElementById('view-detail'),surahGrid:document.getElementById('surah-grid'),searchInput:document.getElementById('search-input'),searchClear:document.getElementById('search-clear'),headerRight:document.getElementById('header-right'),surahHeaderDetail:document.getElementById('surah-header-detail'),ayahList:document.getElementById('ayah-list')};
-let allSurahs=[],currentOpenedSurah=null,activeJuzFilter=null,currentJuzData=null,isLocked=false;
-const indoSurahMeta = Array.from({length:115}).reduce((a,_,i)=>{a[i]={name:'',translation:''};return a;},{}); // fallback only
-function applyZoom(){document.documentElement.style.setProperty('--font-scale',0.7+(currentZoomLevel/100));const zv=document.getElementById('zoom-value');if(zv)zv.textContent=String(currentZoomLevel)}
-function handleZoomPress(type,change){currentZoomLevel=Math.min(100,Math.max(0,currentZoomLevel+change));applyZoom();safeSetStorage('quranZoomLevel',currentZoomLevel);document.getElementById(type==='out'?'btn-zoom-out':'btn-zoom-in')?.classList.add('pressed');setTimeout(()=>document.getElementById(type==='out'?'btn-zoom-out':'btn-zoom-in')?.classList.remove('pressed'),200)}
-function showLoader(){el.loader.classList.remove('hidden');el.viewList.classList.add('hidden');el.viewDetail.classList.add('hidden')}
-function hideLoader(){el.loader.classList.add('hidden')}
-function showListView(clear=true){hideLoader();el.viewList.classList.remove('hidden');el.viewDetail.classList.add('hidden');if(clear){el.searchInput.value='';el.searchClear.classList.add('hidden')}applySearchAndFilter(false)}
-function showDetailView(){hideLoader();el.viewDetail.classList.remove('hidden');if(window.innerWidth<1024)el.viewList.classList.add('hidden')}
-function createEmptyState(){const p=createTextElement('p','empty-state','Pencarian tidak ditemukan.');p.style.cssText='grid-column: 1/-1; text-align:center; color: var(--text-muted); padding: 2rem;';return p;}
-function validSurahNumber(n){return isIntRange(Number(n),1,114)}
-function validJuz(n){return isIntRange(Number(n),1,30)}
-function normalizeAyah(ayah){const n=Number(ayah?.numberInSurah);if(!Number.isInteger(n)||n<1)return null;return{numberInSurah:n,juz:validJuz(Number(ayah?.juz))?Number(ayah.juz):'',text:typeof ayah?.text==='string'?ayah.text:''};}
-function renderSurahList(surahs,animate=false){el.surahGrid.replaceChildren();if(!Array.isArray(surahs)||!surahs.length){el.surahGrid.appendChild(createEmptyState());return;}const frag=document.createDocumentFragment();surahs.forEach((s,i)=>{if(!validSurahNumber(s.number))return;const card=document.createElement('button');card.type='button';card.className=`surah-card ${animate?'animate-slide':''}`;if(animate)card.style.animationDelay=`${i*0.02}s`;card.addEventListener('click',()=>fetchSurahDetail(s.number,s));const left=createTextElement('div','surah-info-left','');const num=createTextElement('div','surah-number','');num.appendChild(createTextElement('span','',s.number));const det=createTextElement('div','surah-details','');det.appendChild(createTextElement('h3','',s.indoName||''));det.appendChild(createTextElement('p','',`${s.indoTranslation||''} • ${Number(s.numberOfAyahs)||0} Ayat`));left.append(num,det);card.append(left,createTextElement('div','surah-arabic-name',s.name||''));frag.appendChild(card);});el.surahGrid.appendChild(frag)}
-function renderJuzSurahList(list,animate=false){el.surahGrid.replaceChildren();if(!Array.isArray(list)||!list.length){el.surahGrid.appendChild(createEmptyState());return;}const frag=document.createDocumentFragment();list.forEach((item,i)=>{if(!validSurahNumber(item?.meta?.number))return;const card=document.createElement('button');card.type='button';card.className=`surah-card ${animate?'animate-slide':''}`;if(animate)card.style.animationDelay=`${i*0.02}s`;card.addEventListener('click',()=>{currentOpenedSurah=null;renderJuzSpecificSurahDetail(item.meta,item.ayahsAr,item.ayahsId,item.ayahsLat);showDetailView();});card.appendChild(createTextElement('div','surah-arabic-name',item.meta.name||''));frag.appendChild(card);});el.surahGrid.appendChild(frag)}
-function cleanBismillah(t,n){if(n===1||n===9)return t;const w=String(t||'').split(/\s+/);if(w.length>4&&w[0].replace(/[^\u0621-\u064A]/g,'')==='بسم')return w.slice(4).join(' ').trim();return String(t||'');}
-function renderDetailHeader(meta,text){el.surahHeaderDetail.replaceChildren(createTextElement('h2','',meta?.indoName||''),createTextElement('p','',text));if(meta.number!==1&&meta.number!==9){el.surahHeaderDetail.appendChild(createTextElement('div','bismillah','بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'));}}
-function renderAyahs(meta,ar,id,lat){el.ayahList.replaceChildren();const frag=document.createDocumentFragment();(Array.isArray(ar)?ar:[]).forEach((a,i)=>{const va=normalizeAyah(a),vid=normalizeAyah(id?.[i]),vlat=normalizeAyah(lat?.[i]);if(!va)return;const item=createTextElement('div','ayah-item','');item.dataset.ayah=String(va.numberInSurah);item.dataset.juz=String(va.juz||'');const arText=(i===0||va.numberInSurah===1)?cleanBismillah(va.text,meta.number):va.text;item.append(createTextElement('div','ayah-arabic',arText),createTextElement('div','ayah-latin',vlat?.text||''),createTextElement('div','ayah-indo',vid?.text||''));frag.appendChild(item);});el.ayahList.appendChild(frag)}
-function renderSurahDetail(meta,ar,id,lat){renderDetailHeader(meta,`Surah ke-${meta.number} dari 114 • ${meta.revelationType?.toLowerCase()==='meccan'?'Makkiyah':'Madaniyah'} • ${meta.numberOfAyahs||0} Ayat`);renderAyahs(meta,ar,id,lat)}
-function renderJuzSpecificSurahDetail(meta,ar,id,lat){renderDetailHeader(meta,`Juz ${activeJuzFilter||''} • Ayat ${meta.juzStartAyah||''} - ${meta.juzEndAyah||''}`);renderAyahs(meta,ar,id,lat)}
-async function fetchAllSurahs(){showLoader();try{let data;try{data=await safeFetchJson(`${API_BASE}/surah`);if(!(data.code===200&&Array.isArray(data.data)))throw new Error();data=data.data;}catch{data=await safeFetchJson(FALLBACK_SURAH_LIST_URL);}allSurahs=(Array.isArray(data)?data:[]).map(s=>({number:Number(s.number),name:s.name||'',indoName:s.englishName||s.name_latin||'',indoTranslation:s.englishNameTranslation||'',numberOfAyahs:Number(s.numberOfAyahs||s.number_of_ayah)||0,revelationType:s.revelationType||((s.place||'').toLowerCase()==='madinah'?'Medinan':'Meccan')})).filter(s=>validSurahNumber(s.number));showListView(true);}catch(e){hideLoader();}}
-async function fetchSurahDetail(n,meta){if(!validSurahNumber(Number(n)))return;showLoader();safeSetStorage('lastReadSurah',n);safeSetStorage('lastReadAyah',1);try{let ar=await safeFetchJson(`${API_BASE}/surah/${n}/quran-uthmani`),id=await safeFetchJson(`${API_BASE}/surah/${n}/id.indonesian`),lat=await safeFetchJson(`${API_BASE}/surah/${n}/en.transliteration`);if(!(ar.code===200&&id.code===200&&lat.code===200))throw new Error();currentOpenedSurah=n;renderSurahDetail(meta,ar.data.ayahs,id.data.ayahs,lat.data.ayahs);showDetailView();}catch{showListView();}}
-function applySearchAndFilter(){const key=el.searchInput.value.trim().toLowerCase();if(key)el.searchClear.classList.remove('hidden');else el.searchClear.classList.add('hidden');const src=(activeJuzFilter&&currentJuzData)?currentJuzData:allSurahs;const out=src.filter(s=>!key||String(s.number)===key||(s.indoName||'').toLowerCase().includes(key)||(s.indoTranslation||'').toLowerCase().includes(key));if(activeJuzFilter&&currentJuzData)renderJuzSurahList(out,false);else renderSurahList(out,false)}
-function clearSearch(){el.searchInput.value='';applySearchAndFilter();el.searchInput.focus();}
-function openJuzModal(){document.getElementById('modal-juz')?.classList.remove('hidden')}
-function closeModal(id){if(['modal-lock','modal-juz'].includes(id))document.getElementById(id)?.classList.add('hidden')}
-function resetJuzFilter(){activeJuzFilter=null;currentJuzData=null;showListView(true);closeModal('modal-juz')}
-function applyLock(){}
-function handleLockToggle(){}
-function navigateSurah(d){if(!currentOpenedSurah)return;const t=currentOpenedSurah+d;if(t>=1&&t<=114){const m=allSurahs.find(s=>s.number===t);if(m)fetchSurahDetail(t,m)}}
-function bindEvents(){document.getElementById('btn-open-juz')?.addEventListener('click',openJuzModal);el.searchClear.addEventListener('click',clearSearch);document.getElementById('btn-back-main')?.addEventListener('click',()=>showListView(false));document.getElementById('btn-back-toggle')?.addEventListener('click',()=>document.getElementById('back-btn-ui')?.classList.toggle('collapsed'));document.getElementById('btn-prev-surah')?.addEventListener('click',()=>navigateSurah(-1));document.getElementById('btn-next-surah')?.addEventListener('click',()=>navigateSurah(1));document.getElementById('lock-btn')?.addEventListener('click',handleLockToggle);document.getElementById('btn-zoom-out')?.addEventListener('click',()=>handleZoomPress('out',-10));document.getElementById('btn-zoom-in')?.addEventListener('click',()=>handleZoomPress('in',10));document.getElementById('btn-cancel-lock')?.addEventListener('click',()=>closeModal('modal-lock'));document.getElementById('btn-apply-lock')?.addEventListener('click',applyLock);document.getElementById('btn-reset-juz')?.addEventListener('click',resetJuzFilter);document.getElementById('btn-close-juz')?.addEventListener('click',()=>closeModal('modal-juz'));el.searchInput.addEventListener('input',debounce(applySearchAndFilter,250));}
-document.addEventListener('DOMContentLoaded',()=>{applyZoom();bindEvents();fetchAllSurahs();});
-if(typeof module!=='undefined'&&module.exports){module.exports={cleanBismillah,escapeHTML,safeFetchJson,createTextElement};}
+'use strict';
+
+const API_BASE = 'https://api.alquran.cloud/v1';
+const FALLBACK_SURAH_LIST_URL = 'https://raw.githubusercontent.com/rioastamal/quran-json/master/surah.json';
+const FALLBACK_SURAH_DETAIL_BASE = 'https://raw.githubusercontent.com/rioastamal/quran-json/master/surah';
+const ALLOWED_ORIGINS = new Set(['https://api.alquran.cloud', 'https://raw.githubusercontent.com']);
+
+const HAS_DOM = typeof document !== 'undefined';
+const HAS_WINDOW = typeof window !== 'undefined';
+
+function escapeHTML(str) {
+  if (str == null) return '';
+  return String(str).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
+function createTextElement(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  el.textContent = text == null ? '' : String(text);
+  return el;
+}
+const isIntRange = (value, min, max) => Number.isInteger(value) && value >= min && value <= max;
+const asPositiveInt = (value) => { const n = Number(value); return Number.isInteger(n) && n > 0 ? n : null; };
+
+function safeGetStorage(key) { try { return localStorage.getItem(key); } catch { return null; } }
+function safeSetStorage(key, value) { try { localStorage.setItem(key, String(value)); } catch {} }
+function safeRemoveStorage(key) { try { localStorage.removeItem(key); } catch {} }
+
+function getSafeTheme() { const v = safeGetStorage('quranTheme'); return v === 'dark' || v === 'light' ? v : 'light'; }
+function getSafeZoom() { const n = Number(safeGetStorage('quranZoomLevel')); return isIntRange(n, 0, 100) ? n : 30; }
+function getSafeLastRead() {
+  const s = Number(safeGetStorage('lastReadSurah')); const a = Number(safeGetStorage('lastReadAyah')); const j = Number(safeGetStorage('lastReadJuz'));
+  return { surah: isIntRange(s, 1, 114) ? s : null, ayah: asPositiveInt(a), juz: isIntRange(j, 1, 30) ? j : null };
+}
+
+async function safeFetchJson(url, timeoutMs = 10000) {
+  const parsed = new URL(url, HAS_WINDOW && window.location ? window.location.origin : 'http://localhost');
+  if (!ALLOWED_ORIGINS.has(parsed.origin)) throw new Error('URL tidak diizinkan');
+  const controller = new AbortController();
+  const timeoutId = (HAS_WINDOW ? window.setTimeout : setTimeout)(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(parsed.toString(), {
+      method: 'GET', signal: controller.signal, headers: { Accept: 'application/json' },
+      cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer'
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    if (error instanceof SyntaxError) throw new Error('JSON invalid');
+    throw error;
+  } finally { (HAS_WINDOW ? window.clearTimeout : clearTimeout)(timeoutId); }
+}
+
+const indoSurahMeta = {};
+for (let i = 1; i <= 114; i += 1) indoSurahMeta[i] = { indoName: `Surah ${i}`, indoTranslation: '' };
+
+let state = { allSurahs: [], currentOpenedSurah: null, activeJuzFilter: null, currentJuzData: null, isLocked: false, currentZoomLevel: getSafeZoom() };
+
+function qs(id) { return HAS_DOM ? document.getElementById(id) : null; }
+function validSurahNumber(n) { return isIntRange(Number(n), 1, 114); }
+function validJuz(n) { return isIntRange(Number(n), 1, 30); }
+
+function runThemeTransition(nextTheme) { applyTheme(nextTheme); }
+function applyTheme(theme) { if (!HAS_DOM) return; const t = theme === 'dark' ? 'dark' : 'light'; document.body.classList.remove('theme-light', 'theme-dark'); document.body.classList.add(`theme-${t}`); safeSetStorage('quranTheme', t); }
+function initThemeToggle() { const btn = qs('theme-toggle'); if (!btn) return; applyTheme(getSafeTheme()); btn.addEventListener('click', () => runThemeTransition(getSafeTheme() === 'dark' ? 'light' : 'dark')); }
+function applyZoom() { if (!HAS_DOM) return; document.documentElement.style.setProperty('--font-scale', String(0.7 + (state.currentZoomLevel / 100))); const z = qs('zoom-value'); if (z) z.textContent = String(state.currentZoomLevel); }
+function handleZoomPress(type, delta) { state.currentZoomLevel = Math.max(0, Math.min(100, state.currentZoomLevel + delta)); safeSetStorage('quranZoomLevel', state.currentZoomLevel); applyZoom(); const btn = qs(type === 'out' ? 'btn-zoom-out' : 'btn-zoom-in'); if (btn) { btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 150); } }
+
+function showToast(msg) { const toast = qs('toast'); const body = qs('toast-message'); if (!toast || !body) return; body.textContent = String(msg || ''); toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 2000); }
+function closeModal(id) { if (!['modal-lock', 'modal-juz'].includes(id)) return; const m = qs(id); if (m) m.classList.add('hidden'); }
+function showListView() { qs('loader')?.classList.add('hidden'); qs('view-list')?.classList.remove('hidden'); qs('view-detail')?.classList.add('hidden'); }
+function showDetailView() { qs('loader')?.classList.add('hidden'); qs('view-detail')?.classList.remove('hidden'); if (window.innerWidth < 1024) qs('view-list')?.classList.add('hidden'); }
+
+function cleanBismillah(text, surahNumber) { if (surahNumber === 1 || surahNumber === 9) return text; const words = String(text || '').trim().split(/\s+/); if (words.length > 4 && words[0].replace(/[^\u0621-\u064A]/g, '') === 'بسم') return words.slice(4).join(' ').trim(); return String(text || ''); }
+function normalizeAyah(a) { const n = asPositiveInt(a?.numberInSurah); if (!n) return null; return { numberInSurah: n, juz: validJuz(Number(a?.juz)) ? Number(a.juz) : null, text: typeof a?.text === 'string' ? a.text : '' }; }
+
+function renderSurahList(surahs) { const grid = qs('surah-grid'); if (!grid) return; const frag = document.createDocumentFragment(); grid.replaceChildren(); (Array.isArray(surahs) ? surahs : []).forEach((s) => { if (!validSurahNumber(s.number)) return; const b = createTextElement('button', 'surah-card', ''); b.type = 'button'; b.addEventListener('click', () => fetchSurahDetail(s.number, s)); const left = createTextElement('div', 'surah-info-left', ''); const num = createTextElement('div', 'surah-number', String(s.number)); const det = createTextElement('div', 'surah-details', ''); det.append(createTextElement('h3', '', s.indoName || ''), createTextElement('p', '', `${s.indoTranslation || ''} • ${s.numberOfAyahs || 0} Ayat`)); left.append(num, det); b.append(left, createTextElement('div', 'surah-arabic-name', s.name || '')); frag.appendChild(b); });
+  if (!frag.childNodes.length) frag.appendChild(createTextElement('p', 'empty-state', 'Pencarian tidak ditemukan.'));
+  grid.appendChild(frag);
+}
+function renderJuzSurahList(list) { renderSurahList((Array.isArray(list) ? list : []).map((x) => x.meta || x)); }
+function renderSurahDetail(meta, ar, id, lat) { renderJuzSpecificSurahDetail(meta, ar, id, lat); }
+function renderJuzSpecificSurahDetail(meta, ar, id, lat) { const head = qs('surah-header-detail'); const list = qs('ayah-list'); if (!head || !list) return; head.replaceChildren(createTextElement('h2', '', meta?.indoName || ''), createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)); list.replaceChildren(); const frag = document.createDocumentFragment(); const arArr = Array.isArray(ar) ? ar : []; arArr.forEach((a, idx) => { const va = normalizeAyah(a); if (!va) return; const vi = normalizeAyah(Array.isArray(id) ? id[idx] : null); const vl = normalizeAyah(Array.isArray(lat) ? lat[idx] : null); const item = createTextElement('div', 'ayah-item', ''); item.dataset.ayah = String(va.numberInSurah); if (va.juz) item.dataset.juz = String(va.juz); item.append(createTextElement('div', 'ayah-arabic', (idx === 0 || va.numberInSurah === 1) ? cleanBismillah(va.text, meta?.number) : va.text), createTextElement('div', 'ayah-latin', vl?.text || ''), createTextElement('div', 'ayah-indo', vi?.text || '')); frag.appendChild(item); }); list.appendChild(frag); }
+
+function applySearchAndFilter() { const key = (qs('search-input')?.value || '').trim().toLowerCase(); const src = state.activeJuzFilter && state.currentJuzData ? state.currentJuzData : state.allSurahs; const out = src.filter((s) => { const m = s.meta || s; return String(m.number) === key || (m.indoName || '').toLowerCase().includes(key) || (m.indoTranslation || '').toLowerCase().includes(key) || key === ''; }); if (state.activeJuzFilter && state.currentJuzData) renderJuzSurahList(out); else renderSurahList(out); }
+function clearSearch() { const i = qs('search-input'); if (i) i.value = ''; applySearchAndFilter(); }
+async function fetchAllSurahs() { try { let payload = await safeFetchJson(`${API_BASE}/surah`); let list = payload?.data; if (!Array.isArray(list)) list = await safeFetchJson(FALLBACK_SURAH_LIST_URL); state.allSurahs = (Array.isArray(list) ? list : []).map((s) => { const n = Number(s.number); const meta = indoSurahMeta[n] || { indoName: '', indoTranslation: '' }; return { number: n, name: typeof s.name === 'string' ? s.name : '', indoName: typeof s.englishName === 'string' ? s.englishName : meta.indoName, indoTranslation: typeof s.englishNameTranslation === 'string' ? s.englishNameTranslation : meta.indoTranslation, numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || 0, revelationType: typeof s.revelationType === 'string' ? s.revelationType : '' }; }).filter((s) => validSurahNumber(s.number)); renderSurahList(state.allSurahs); showListView(); } catch { showToast('Gagal memuat daftar surah.'); } }
+async function fetchSurahDetail(surahNumber, meta) { if (!validSurahNumber(Number(surahNumber))) return; safeSetStorage('lastReadSurah', surahNumber); safeSetStorage('lastReadAyah', 1); try { const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`)]); state.currentOpenedSurah = surahNumber; renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs); showDetailView(); updateNavButtonsVisibility(); } catch { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); } }
+
+function setupJuzGrid() { const c = qs('juz-grid-container'); if (!c) return; c.replaceChildren(); for (let i = 1; i <= 30; i += 1) { const b = createTextElement('button', 'modal-btn btn-apply', `Juz ${i}`); b.type = 'button'; b.addEventListener('click', () => selectJuz(i)); c.appendChild(b); } }
+function selectJuz(juz) { if (!validJuz(Number(juz))) return; fetchJuzAndShowCards(Number(juz)); }
+async function fetchJuzAndShowCards(juzNumber) { if (!validJuz(juzNumber)) return; const res = await safeFetchJson(`${API_BASE}/juz/${juzNumber}/quran-uthmani`); const ayahs = Array.isArray(res?.data?.ayahs) ? res.data.ayahs : []; const map = new Map(); ayahs.forEach((a) => { const s = Number(a?.surah?.number); const n = asPositiveInt(a?.numberInSurah); if (!validSurahNumber(s) || !n) return; if (!map.has(s)) map.set(s, { meta: { number: s, name: a.surah.name || '', indoName: a.surah.englishName || '', indoTranslation: a.surah.englishNameTranslation || '', numberOfAyahs: asPositiveInt(a.surah.numberOfAyahs) || 0 }, ayahsAr: [], ayahsId: [], ayahsLat: [] }); const rec = map.get(s); rec.ayahsAr.push({ numberInSurah: n, text: typeof a.text === 'string' ? a.text : '', juz: juzNumber }); rec.ayahsId.push({ numberInSurah: n, text: '', juz: juzNumber }); rec.ayahsLat.push({ numberInSurah: n, text: '', juz: juzNumber }); }); state.activeJuzFilter = juzNumber; state.currentJuzData = Array.from(map.values()); renderJuzSurahList(state.currentJuzData); closeModal('modal-juz'); showListView(); }
+function resetJuzFilter() { state.activeJuzFilter = null; state.currentJuzData = null; renderSurahList(state.allSurahs); closeModal('modal-juz'); }
+
+function updateNavButtonsVisibility() { const prev = qs('btn-prev-surah'); const next = qs('btn-next-surah'); if (!state.currentOpenedSurah) return; prev?.classList.toggle('hidden', state.currentOpenedSurah <= 1); next?.classList.toggle('hidden', state.currentOpenedSurah >= 114); }
+function navigateSurah(dir) { if (!state.currentOpenedSurah) return; const next = state.currentOpenedSurah + dir; if (!validSurahNumber(next)) return; const meta = state.allSurahs.find((s) => s.number === next); if (meta) fetchSurahDetail(next, meta); }
+
+function handleLockToggle() { if (state.isLocked) { unlockAyahs(); return; } qs('modal-lock')?.classList.remove('hidden'); }
+function applyLock() { const ayahs = Array.from(document.querySelectorAll('.ayah-item')); if (!ayahs.length) return showToast('Belum ada ayat.'); const start = Number(qs('input-start-ayah')?.value); const end = Number(qs('input-end-ayah')?.value); if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end < 1 || start > end || end > ayahs.length) return showToast('Rentang ayat tidak valid.'); ayahs.forEach((n) => { const x = Number(n.dataset.ayah); n.classList.toggle('hidden', !(x >= start && x <= end)); }); state.isLocked = true; qs('icon-lock')?.classList.remove('hidden'); qs('icon-unlock')?.classList.add('hidden'); closeModal('modal-lock'); }
+function unlockAyahs() { document.querySelectorAll('.ayah-item.hidden').forEach((n) => n.classList.remove('hidden')); resetLockState(); }
+function resetLockState() { state.isLocked = false; qs('icon-lock')?.classList.add('hidden'); qs('icon-unlock')?.classList.remove('hidden'); }
+
+function setupContinueReadingSwipe() { const banner = qs('continue-reading'); if (!banner) return; let x0 = null; banner.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true }); banner.addEventListener('touchend', (e) => { if (x0 == null) return; const d = e.changedTouches[0].clientX - x0; x0 = null; if (d < -60) { safeRemoveStorage('lastReadSurah'); safeRemoveStorage('lastReadAyah'); safeRemoveStorage('lastReadJuz'); banner.classList.add('hidden'); } }, { passive: true }); }
+async function resumeReading() { const lr = getSafeLastRead(); if (!lr.surah) return; const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return; await fetchSurahDetail(lr.surah, meta); const target = document.querySelector(`.ayah-item[data-ayah="${lr.ayah || 1}"]`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+function checkLastRead() { const lr = getSafeLastRead(); const card = qs('continue-reading'); if (!card) return; if (!lr.surah || !lr.ayah) return card.classList.add('hidden'); const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return card.classList.add('hidden'); qs('cr-surah-name').textContent = meta.indoName || `Surah ${lr.surah}`; qs('cr-ayah-info').textContent = `Ayat ${lr.ayah}${lr.juz ? ` • Juz ${lr.juz}` : ''}`; card.classList.remove('hidden'); }
+
+function bindEvents() {
+  qs('btn-open-juz')?.addEventListener('click', () => qs('modal-juz')?.classList.remove('hidden'));
+  qs('btn-close-juz')?.addEventListener('click', () => closeModal('modal-juz'));
+  qs('btn-reset-juz')?.addEventListener('click', resetJuzFilter);
+  qs('search-input')?.addEventListener('input', applySearchAndFilter);
+  qs('search-clear')?.addEventListener('click', clearSearch);
+  qs('btn-back-main')?.addEventListener('click', showListView);
+  qs('btn-prev-surah')?.addEventListener('click', () => navigateSurah(-1));
+  qs('btn-next-surah')?.addEventListener('click', () => navigateSurah(1));
+  qs('lock-btn')?.addEventListener('click', handleLockToggle);
+  qs('btn-cancel-lock')?.addEventListener('click', () => closeModal('modal-lock'));
+  qs('btn-apply-lock')?.addEventListener('click', applyLock);
+  qs('btn-zoom-out')?.addEventListener('click', () => handleZoomPress('out', -10));
+  qs('btn-zoom-in')?.addEventListener('click', () => handleZoomPress('in', 10));
+  qs('continue-reading')?.addEventListener('click', resumeReading);
+}
+
+if (HAS_DOM) {
+  document.addEventListener('DOMContentLoaded', () => {
+    initThemeToggle(); applyZoom(); setupJuzGrid(); setupContinueReadingSwipe(); bindEvents(); fetchAllSurahs().then(checkLastRead);
+  });
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { cleanBismillah, escapeHTML, createTextElement, safeFetchJson };
+}
