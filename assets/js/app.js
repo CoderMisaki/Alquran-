@@ -199,7 +199,7 @@ function renderJuzSpecificSurahDetail(meta, ar, id, lat) { const head = qs('sura
 function applySearchAndFilter() { const key = (qs('search-input')?.value || '').trim().toLowerCase(); const src = state.activeJuzFilter && state.currentJuzData ? state.currentJuzData : state.allSurahs; const out = src.filter((s) => { const m = s.meta || s; return String(m.number) === key || (m.indoName || '').toLowerCase().includes(key) || (m.indoTranslation || '').toLowerCase().includes(key) || key === ''; }); if (state.activeJuzFilter && state.currentJuzData) renderJuzSurahList(out); else renderSurahList(out); }
 function clearSearch() { const i = qs('search-input'); if (i) i.value = ''; applySearchAndFilter(); }
 async function fetchAllSurahs() { try { let payload = await safeFetchJson(`${API_BASE}/surah`); let list = payload?.data; if (!Array.isArray(list)) list = await safeFetchJson(FALLBACK_SURAH_LIST_URL); state.allSurahs = (Array.isArray(list) ? list : []).map((s) => { const n = Number(s.number); const meta = indoSurahMeta[n] || {}; return { number: n, name: typeof s.name === 'string' ? s.name : '', indoName: meta.name || s.englishName || `Surah ${n}`, indoTranslation: meta.translation || s.englishNameTranslation || '', numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || 0, revelationType: typeof s.revelationType === 'string' ? s.revelationType : '' }; }).filter((s) => validSurahNumber(s.number)); renderSurahList(state.allSurahs); showListView(); } catch { showToast('Gagal memuat daftar surah.'); } }
-async function fetchSurahDetail(surahNumber, meta) { if (!validSurahNumber(Number(surahNumber))) return; safeSetStorage('lastReadSurah', surahNumber); safeSetStorage('lastReadAyah', 1); try { const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`)]); state.currentOpenedSurah = surahNumber; renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs); showDetailView(); updateNavButtonsVisibility(); } catch { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); } }
+async function fetchSurahDetail(surahNumber, meta) { if (!validSurahNumber(Number(surahNumber))) return; safeSetStorage('lastReadSurah', surahNumber); safeSetStorage('lastReadAyah', 1); try { const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`)]); state.currentOpenedSurah = surahNumber; renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs); showDetailView(); updateNavButtonsVisibility(); checkLastRead(); } catch { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); checkLastRead(); } }
 
 function setupJuzGrid() { const c = qs('juz-grid-container'); if (!c) return; c.replaceChildren(); for (let i = 1; i <= 30; i += 1) { const b = createTextElement('button', 'juz-btn tap-effect', `Juz ${i}`); b.type = 'button'; b.addEventListener('click', () => selectJuz(i)); c.appendChild(b); } }
 function selectJuz(juz) { if (!validJuz(Number(juz))) return; fetchJuzAndShowCards(Number(juz)); }
@@ -214,7 +214,84 @@ function applyLock() { const ayahs = Array.from(document.querySelectorAll('.ayah
 function unlockAyahs() { document.querySelectorAll('.ayah-item.hidden').forEach((n) => n.classList.remove('hidden')); resetLockState(); }
 function resetLockState() { state.isLocked = false; qs('icon-lock')?.classList.add('hidden'); qs('icon-unlock')?.classList.remove('hidden'); }
 
-function setupContinueReadingSwipe() { const banner = qs('continue-reading'); if (!banner) return; let x0 = null; banner.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true }); banner.addEventListener('touchend', (e) => { if (x0 == null) return; const d = e.changedTouches[0].clientX - x0; x0 = null; if (d < -60) { safeRemoveStorage('lastReadSurah'); safeRemoveStorage('lastReadAyah'); safeRemoveStorage('lastReadJuz'); banner.classList.remove('cr-swipe-out-left'); void banner.offsetWidth; banner.classList.add('cr-swipe-out-left'); setTimeout(() => banner.classList.add('hidden'), 280); } }, { passive: true }); }
+function setupContinueReadingSwipe() {
+  const banner = qs('continue-reading');
+  if (!banner) return;
+
+  const SWIPE_LIMIT = 160;
+  const CLOSE_THRESHOLD = 0.62;
+  let startX = null;
+  let currentShift = 0;
+  let dragging = false;
+  let didMove = false;
+
+  const applyShift = (x) => {
+    currentShift = Math.max(-SWIPE_LIMIT, Math.min(0, x));
+    const ratio = Math.abs(currentShift) / SWIPE_LIMIT;
+    banner.style.transform = `translate3d(${currentShift}px, 0, 0)`;
+    banner.style.opacity = String(1 - (ratio * 0.28));
+  };
+
+  const resetCard = () => {
+    banner.classList.remove('cr-swiping');
+    banner.classList.add('cr-snap-back');
+    applyShift(0);
+    window.setTimeout(() => banner.classList.remove('cr-snap-back'), 260);
+  };
+
+  const clearCard = () => {
+    safeRemoveStorage('lastReadSurah');
+    safeRemoveStorage('lastReadAyah');
+    safeRemoveStorage('lastReadJuz');
+    banner.classList.remove('cr-snap-back');
+    banner.classList.add('cr-swipe-out-left');
+    window.setTimeout(() => {
+      banner.classList.add('hidden');
+      banner.classList.remove('cr-swipe-out-left');
+      banner.style.transform = '';
+      banner.style.opacity = '';
+      currentShift = 0;
+      checkLastRead();
+    }, 320);
+  };
+
+  banner.addEventListener('touchstart', (e) => {
+    if (!e.touches?.length) return;
+    startX = e.touches[0].clientX;
+    didMove = false;
+    dragging = true;
+    banner.classList.remove('cr-snap-back', 'cr-swipe-out-left');
+    banner.classList.add('cr-swiping');
+  }, { passive: true });
+
+  banner.addEventListener('touchmove', (e) => {
+    if (!dragging || startX == null || !e.touches?.length) return;
+    const delta = e.touches[0].clientX - startX;
+    if (delta < 0) {
+      didMove = true;
+      applyShift(delta);
+    } else {
+      applyShift(0);
+    }
+  }, { passive: true });
+
+  banner.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    banner.classList.remove('cr-swiping');
+    if (Math.abs(currentShift) >= SWIPE_LIMIT * CLOSE_THRESHOLD) clearCard();
+    else resetCard();
+    startX = null;
+  }, { passive: true });
+
+  banner.addEventListener('click', (e) => {
+    if (didMove) {
+      e.preventDefault();
+      e.stopPropagation();
+      didMove = false;
+    }
+  }, true);
+}
 function setupPressFeedback() {
   const clearPressState = (el) => el?.classList.remove('is-pressed');
   document.addEventListener('pointerdown', (e) => {

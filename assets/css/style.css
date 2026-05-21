@@ -369,8 +369,17 @@
             pointer-events: none;
         }
 
+
+        .cr-swiping {
+            transition: none !important;
+        }
+
+        .cr-snap-back {
+            transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s ease;
+        }
+
         .cr-swipe-out-left {
-            animation: swipeOutLeft 0.28s ease forwards;
+            animation: swipeOutLeft 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
             pointer-events: none;
         }
 
@@ -386,6 +395,9 @@
             display: flex; align-items: center; justify-content: space-between;
             cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             overflow: hidden; touch-action: pan-y;
+            transform: translate3d(0, 0, 0);
+            transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s ease;
+            will-change: transform, opacity;
         }
 
         .cr-info { display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
