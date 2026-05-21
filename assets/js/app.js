@@ -18,6 +18,73 @@ function createTextElement(tag, className, text) {
   el.textContent = text == null ? '' : String(text);
   return el;
 }
+
+const SURAH_AYAH_LIMITS = Object.freeze({
+  1: 7, 2: 286, 3: 200, 4: 176, 5: 120, 6: 165, 7: 206, 8: 75, 9: 129, 10: 109,
+  11: 123, 12: 111, 13: 43, 14: 52, 15: 99, 16: 128, 17: 111, 18: 110, 19: 98, 20: 135,
+  21: 112, 22: 78, 23: 118, 24: 64, 25: 77, 26: 227, 27: 93, 28: 88, 29: 69, 30: 60,
+  31: 34, 32: 30, 33: 73, 34: 54, 35: 45, 36: 83, 37: 182, 38: 88, 39: 75, 40: 85,
+  41: 54, 42: 53, 43: 89, 44: 59, 45: 37, 46: 35, 47: 38, 48: 29, 49: 18, 50: 45,
+  51: 60, 52: 49, 53: 62, 54: 55, 55: 78, 56: 96, 57: 29, 58: 22, 59: 24, 60: 13,
+  61: 14, 62: 11, 63: 11, 64: 18, 65: 12, 66: 12, 67: 30, 68: 52, 69: 52, 70: 44,
+  71: 28, 72: 28, 73: 20, 74: 56, 75: 40, 76: 31, 77: 50, 78: 40, 79: 46, 80: 42,
+  81: 29, 82: 19, 83: 36, 84: 25, 85: 22, 86: 17, 87: 19, 88: 26, 89: 30, 90: 20,
+  91: 15, 92: 21, 93: 11, 94: 8, 95: 8, 96: 19, 97: 5, 98: 8, 99: 8, 100: 11,
+  101: 11, 102: 8, 103: 3, 104: 9, 105: 5, 106: 4, 107: 7, 108: 3, 109: 6, 110: 3,
+  111: 5, 112: 4, 113: 5, 114: 6
+});
+
+const SAFE_STORAGE_DEFAULTS = Object.freeze({ zoom: 30, surah: null, ayah: null, juz: null });
+
+function parseBoundedInt(raw, min, max) {
+  const num = Number(raw);
+  return Number.isInteger(num) && num >= min && num <= max ? num : null;
+}
+
+function sanitizeLastReadPosition(surahRaw, ayahRaw) {
+  const surah = parseBoundedInt(surahRaw, 1, 114);
+  if (!surah) return { surah: SAFE_STORAGE_DEFAULTS.surah, ayah: SAFE_STORAGE_DEFAULTS.ayah };
+  const maxAyah = SURAH_AYAH_LIMITS[surah] || 286;
+  const ayah = parseBoundedInt(ayahRaw, 1, maxAyah);
+  if (!ayah) return { surah, ayah: 1 };
+  return { surah, ayah };
+}
+
+function sanitizeReadingPreferences() {
+  const zoom = parseBoundedInt(safeGetStorage('quranZoomLevel'), 0, 100) ?? SAFE_STORAGE_DEFAULTS.zoom;
+  const sanitizedRead = sanitizeLastReadPosition(safeGetStorage('lastReadSurah'), safeGetStorage('lastReadAyah'));
+  const juz = parseBoundedInt(safeGetStorage('lastReadJuz'), 1, 30) ?? SAFE_STORAGE_DEFAULTS.juz;
+
+  safeSetStorage('quranZoomLevel', zoom);
+  if (sanitizedRead.surah === null) {
+    safeRemoveStorage('lastReadSurah');
+    safeRemoveStorage('lastReadAyah');
+  } else {
+    safeSetStorage('lastReadSurah', sanitizedRead.surah);
+    safeSetStorage('lastReadAyah', sanitizedRead.ayah);
+  }
+  if (juz === null) safeRemoveStorage('lastReadJuz');
+  else safeSetStorage('lastReadJuz', juz);
+
+  return { zoom, ...sanitizedRead, juz };
+}
+
+function validateApiAyahArray(input, { maxArabicLength = 2000, maxTranslationLength = 4000 } = {}) {
+  if (!Array.isArray(input)) return [];
+  return input.map((item) => {
+    if (!item || typeof item !== 'object') return null;
+    const numberInSurah = parseBoundedInt(item.numberInSurah, 1, 286);
+    const text = typeof item.text === 'string' && item.text.length <= maxArabicLength ? item.text : '';
+    if (!numberInSurah) return null;
+    return {
+      numberInSurah,
+      text,
+      translation: typeof item.translation === 'string' && item.translation.length <= maxTranslationLength ? item.translation : '',
+      juz: parseBoundedInt(item.juz, 1, 30)
+    };
+  }).filter(Boolean);
+}
+
 const isIntRange = (value, min, max) => Number.isInteger(value) && value >= min && value <= max;
 const asPositiveInt = (value) => { const n = Number(value); return Number.isInteger(n) && n > 0 ? n : null; };
 
@@ -26,11 +93,8 @@ function safeSetStorage(key, value) { try { localStorage.setItem(key, String(val
 function safeRemoveStorage(key) { try { localStorage.removeItem(key); } catch {} }
 
 function getSafeTheme() { const v = safeGetStorage('quranTheme'); return v === 'dark' || v === 'light' ? v : 'light'; }
-function getSafeZoom() { const n = Number(safeGetStorage('quranZoomLevel')); return isIntRange(n, 0, 100) ? n : 30; }
-function getSafeLastRead() {
-  const s = Number(safeGetStorage('lastReadSurah')); const a = Number(safeGetStorage('lastReadAyah')); const j = Number(safeGetStorage('lastReadJuz'));
-  return { surah: isIntRange(s, 1, 114) ? s : null, ayah: asPositiveInt(a), juz: isIntRange(j, 1, 30) ? j : null };
-}
+function getSafeZoom() { return sanitizeReadingPreferences().zoom; }
+function getSafeLastRead() { const pref = sanitizeReadingPreferences(); return { surah: pref.surah, ayah: pref.ayah, juz: pref.juz }; }
 
 async function safeFetchJson(url, timeoutMs = 10000) {
   const parsed = new URL(url, HAS_WINDOW && window.location ? window.location.origin : 'http://localhost');
@@ -186,14 +250,19 @@ function showDetailView() { qs('loader')?.classList.add('hidden'); qs('view-deta
 function toggleBackButtonCollapse() { qs('back-btn-ui')?.classList.toggle('collapsed'); }
 
 function cleanBismillah(text, surahNumber) { if (surahNumber === 1 || surahNumber === 9) return text; const words = String(text || '').trim().split(/\s+/); if (words.length > 4 && words[0].replace(/[^\u0621-\u064A]/g, '') === 'بسم') return words.slice(4).join(' ').trim(); return String(text || ''); }
-function normalizeAyah(a) { const n = asPositiveInt(a?.numberInSurah); if (!n) return null; return { numberInSurah: n, juz: validJuz(Number(a?.juz)) ? Number(a.juz) : null, text: typeof a?.text === 'string' ? a.text : '' }; }
+function normalizeAyah(a) { const n = parseBoundedInt(a?.numberInSurah, 1, 286); if (!n) return null; return { numberInSurah: n, juz: validJuz(Number(a?.juz)) ? Number(a.juz) : null, text: typeof a?.text === 'string' ? a.text : '' }; }
 
 function renderSurahList(surahs) { const grid = qs('surah-grid'); if (!grid) return; const frag = document.createDocumentFragment(); grid.replaceChildren(); (Array.isArray(surahs) ? surahs : []).forEach((s) => { if (!validSurahNumber(s.number)) return; const b = createTextElement('button', 'surah-card tap-effect', ''); b.type = 'button'; b.addEventListener('click', () => fetchSurahDetail(s.number, s)); const left = createTextElement('div', 'surah-info-left', ''); const numberBox = document.createElement('div'); numberBox.className = 'surah-number'; const numberSpan = document.createElement('span'); numberSpan.textContent = String(s.number); const det = createTextElement('div', 'surah-details', ''); det.append(createTextElement('h3', '', s.indoName || ''), createTextElement('p', '', `${s.indoTranslation || ''} • ${s.numberOfAyahs || 0} Ayat`)); numberBox.appendChild(numberSpan); left.append(numberBox, det); b.append(left, createTextElement('div', 'surah-arabic-name', s.name || '')); frag.appendChild(b); });
   if (!frag.childNodes.length) frag.appendChild(createTextElement('p', 'empty-state', 'Pencarian tidak ditemukan.'));
   grid.appendChild(frag);
 }
 function renderJuzSurahList(list) { const mapped = (Array.isArray(list)?list:[]).map((item)=>{ const meta=item.meta||item; return { ...meta, juzStartAyah: meta.juzStartAyah || (item.ayahsAr?.[0]?.numberInSurah ?? '-'), juzEndAyah: meta.juzEndAyah || (item.ayahsAr?.[item.ayahsAr.length-1]?.numberInSurah ?? '-') }; }); const grid = qs('surah-grid'); if (!grid) return; grid.replaceChildren(); const frag = document.createDocumentFragment(); mapped.forEach((m)=>{ if (!validSurahNumber(m.number)) return; const b=createTextElement('button','surah-card tap-effect',''); b.type='button'; b.addEventListener('click',()=>{const src=(Array.isArray(list)?list:[]).find((x)=>(x.meta?.number||x.number)===m.number); if(src?.ayahsAr) { renderJuzSpecificSurahDetail(m, src.ayahsAr, src.ayahsId, src.ayahsLat); showDetailView(); } }); const left=createTextElement('div','surah-info-left',''); const nb=document.createElement('div'); nb.className='surah-number'; const sp=document.createElement('span'); sp.textContent=String(m.number); nb.appendChild(sp); const det=createTextElement('div','surah-details',''); det.append(createTextElement('h3','',m.indoName||`Surah ${m.number}`),createTextElement('p','',`${m.indoTranslation||''} • Ayat ${m.juzStartAyah}-${m.juzEndAyah}`)); left.append(nb,det); b.append(left,createTextElement('div','surah-arabic-name',m.name||'')); frag.appendChild(b); }); if(!frag.childNodes.length) frag.appendChild(createTextElement('p','empty-state','Pencarian tidak ditemukan.')); grid.appendChild(frag);} 
-function renderSurahDetail(meta, ar, id, lat) { renderJuzSpecificSurahDetail(meta, ar, id, lat); }
+function renderSurahDetail(meta, ar, id, lat) {
+  const ayahsAr = validateApiAyahArray(ar);
+  const ayahsId = validateApiAyahArray((Array.isArray(id) ? id : []).map((x) => ({ ...x, translation: x?.text })));
+  const ayahsLat = validateApiAyahArray((Array.isArray(lat) ? lat : []).map((x) => ({ ...x, translation: x?.text })));
+  renderJuzSpecificSurahDetail(meta, ayahsAr, ayahsId, ayahsLat);
+}
 function renderJuzSpecificSurahDetail(meta, ar, id, lat) { const head = qs('surah-header-detail'); const list = qs('ayah-list'); if (!head || !list) return; head.replaceChildren(createTextElement('h2', '', meta?.indoName || ''), createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)); list.replaceChildren(); const frag = document.createDocumentFragment(); const arArr = Array.isArray(ar) ? ar : []; arArr.forEach((a, idx) => { const va = normalizeAyah(a); if (!va) return; const vi = normalizeAyah(Array.isArray(id) ? id[idx] : null); const vl = normalizeAyah(Array.isArray(lat) ? lat[idx] : null); const item = createTextElement('div', 'ayah-item', ''); item.dataset.ayah = String(va.numberInSurah); if (va.juz) item.dataset.juz = String(va.juz); const ayahTop=createTextElement('div','ayah-top',''); const numberBadge=createTextElement('div','ayah-number-badge',`Ayat ${va.numberInSurah}`); const arabicDiv=createTextElement('div','ayah-arabic',(idx===0||va.numberInSurah===1)?cleanBismillah(va.text,meta?.number):va.text); ayahTop.append(numberBadge,arabicDiv); const translations=createTextElement('div','ayah-translations',''); const latinDiv=createTextElement('div','ayah-latin',vl?.text||''); const indoDiv=createTextElement('div','ayah-indo',vi?.text||''); translations.append(latinDiv,indoDiv); item.append(ayahTop,translations); frag.appendChild(item); }); list.appendChild(frag); }
 
 function applySearchAndFilter() { const key = (qs('search-input')?.value || '').trim().toLowerCase(); const src = state.activeJuzFilter && state.currentJuzData ? state.currentJuzData : state.allSurahs; const out = src.filter((s) => { const m = s.meta || s; return String(m.number) === key || (m.indoName || '').toLowerCase().includes(key) || (m.indoTranslation || '').toLowerCase().includes(key) || key === ''; }); if (state.activeJuzFilter && state.currentJuzData) renderJuzSurahList(out); else renderSurahList(out); }
@@ -203,7 +272,7 @@ async function fetchSurahDetail(surahNumber, meta) { if (!validSurahNumber(Numbe
 
 function setupJuzGrid() { const c = qs('juz-grid-container'); if (!c) return; c.replaceChildren(); for (let i = 1; i <= 30; i += 1) { const b = createTextElement('button', 'juz-btn tap-effect', `Juz ${i}`); b.type = 'button'; b.addEventListener('click', () => selectJuz(i)); c.appendChild(b); } }
 function selectJuz(juz) { if (!validJuz(Number(juz))) return; fetchJuzAndShowCards(Number(juz)); }
-async function fetchJuzAndShowCards(juzNumber) { if (!validJuz(juzNumber)) return; const res = await safeFetchJson(`${API_BASE}/juz/${juzNumber}/quran-uthmani`); const ayahs = Array.isArray(res?.data?.ayahs) ? res.data.ayahs : []; const map = new Map(); ayahs.forEach((a) => { const s = Number(a?.surah?.number); const n = asPositiveInt(a?.numberInSurah); if (!validSurahNumber(s) || !n) return; if (!map.has(s)) map.set(s, { meta: { number: s, name: a.surah.name || '', indoName: a.surah.englishName || '', indoTranslation: a.surah.englishNameTranslation || '', numberOfAyahs: asPositiveInt(a.surah.numberOfAyahs) || 0 }, ayahsAr: [], ayahsId: [], ayahsLat: [] }); const rec = map.get(s); rec.ayahsAr.push({ numberInSurah: n, text: typeof a.text === 'string' ? a.text : '', juz: juzNumber }); rec.ayahsId.push({ numberInSurah: n, text: '', juz: juzNumber }); rec.ayahsLat.push({ numberInSurah: n, text: '', juz: juzNumber }); }); state.activeJuzFilter = juzNumber; state.currentJuzData = Array.from(map.values()); renderJuzSurahList(state.currentJuzData); closeModal('modal-juz'); showListView(); }
+async function fetchJuzAndShowCards(juzNumber) { if (!validJuz(juzNumber)) return; const res = await safeFetchJson(`${API_BASE}/juz/${juzNumber}/quran-uthmani`); const ayahs = Array.isArray(res?.data?.ayahs) ? res.data.ayahs : []; const map = new Map(); ayahs.forEach((a) => { const s = Number(a?.surah?.number); const n = parseBoundedInt(a?.numberInSurah, 1, 286); if (!validSurahNumber(s) || !n) return; if (!map.has(s)) map.set(s, { meta: { number: s, name: a.surah.name || '', indoName: a.surah.englishName || '', indoTranslation: a.surah.englishNameTranslation || '', numberOfAyahs: asPositiveInt(a.surah.numberOfAyahs) || 0 }, ayahsAr: [], ayahsId: [], ayahsLat: [] }); const rec = map.get(s); rec.ayahsAr.push({ numberInSurah: n, text: typeof a.text === 'string' ? a.text : '', juz: juzNumber }); rec.ayahsId.push({ numberInSurah: n, text: '', juz: juzNumber }); rec.ayahsLat.push({ numberInSurah: n, text: '', juz: juzNumber }); }); state.activeJuzFilter = juzNumber; state.currentJuzData = Array.from(map.values()); renderJuzSurahList(state.currentJuzData); closeModal('modal-juz'); showListView(); }
 function resetJuzFilter() { state.activeJuzFilter = null; state.currentJuzData = null; renderSurahList(state.allSurahs); closeModal('modal-juz'); }
 
 function updateNavButtonsVisibility() { const prev = qs('btn-prev-surah'); const next = qs('btn-next-surah'); if (!state.currentOpenedSurah) return; prev?.classList.toggle('hidden', state.currentOpenedSurah <= 1); next?.classList.toggle('hidden', state.currentOpenedSurah >= 114); }
@@ -336,5 +405,5 @@ if (HAS_DOM) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { cleanBismillah, escapeHTML, createTextElement, safeFetchJson };
+  module.exports = { cleanBismillah, escapeHTML, createTextElement, safeFetchJson, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray };
 }
