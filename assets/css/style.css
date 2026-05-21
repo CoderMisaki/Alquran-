@@ -406,19 +406,19 @@
             content: "";
             position: absolute;
             top: 0;
-            right: 0;
+            left: 0;
             bottom: 0;
-            width: 42%;
+            width: calc(18% + (var(--swipe-ratio) * 62%));
             pointer-events: none;
-            opacity: calc(var(--swipe-ratio) * 0.95);
-            background: linear-gradient(to left, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0));
-            backdrop-filter: blur(calc(var(--swipe-ratio) * 4px));
-            -webkit-backdrop-filter: blur(calc(var(--swipe-ratio) * 4px));
-            transition: opacity 0.2s ease;
+            opacity: calc(0.16 + (var(--swipe-ratio) * 0.84));
+            background: linear-gradient(to right, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0));
+            backdrop-filter: blur(calc(1px + (var(--swipe-ratio) * 5px)));
+            -webkit-backdrop-filter: blur(calc(1px + (var(--swipe-ratio) * 5px)));
+            transition: width 0.16s linear, opacity 0.16s linear;
         }
 
         body.theme-dark .continue-reading-card::after {
-            background: linear-gradient(to left, rgba(15, 25, 30, 0.35), rgba(15, 25, 30, 0));
+            background: linear-gradient(to right, rgba(15, 25, 30, 0.45), rgba(15, 25, 30, 0));
         }
 
         .continue-reading-card:active,
