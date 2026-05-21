@@ -2071,3 +2071,47 @@ body.in-surah-detail .search-container {
         z-index: 130;
     }
 }
+
+/* === Back button reliability + responsive detail toolbar === */
+body.in-surah-detail .sticky-back-wrapper {
+    display: block !important;
+    position: fixed !important;
+    top: clamp(78px, 10vh, 112px);
+    left: max(12px, env(safe-area-inset-left));
+    right: auto;
+    width: auto;
+    z-index: 999;
+    pointer-events: none;
+}
+
+body.in-surah-detail .back-btn-ui {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto;
+    max-width: calc(100vw - 24px);
+}
+
+body.in-surah-detail .detail-tools-row {
+    margin-top: 0.35rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+@media (max-width: 1023px) {
+    body.in-surah-detail #view-detail {
+        padding-top: 3.1rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    body.in-surah-detail .sticky-back-wrapper {
+        top: 96px;
+        left: max(22px, env(safe-area-inset-left));
+    }
+
+    body.in-surah-detail #view-detail {
+        padding-top: 2.4rem;
+    }
+}
