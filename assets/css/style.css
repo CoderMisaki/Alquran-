@@ -772,7 +772,7 @@
             }
             .bismillah { font-size: calc(2rem * var(--font-scale)); }
             .juz-grid { grid-template-columns: repeat(4, 1fr); }
-            .sticky-back-wrapper { top: 125px; }
+            .sticky-back-wrapper { top: 136px; }
         }
 
 
@@ -1417,12 +1417,14 @@
     body.theme-dark.desktop-quran-detail .ayah-indo { color: #9aa6a6; }
 
     body.desktop-quran-detail .sticky-back-wrapper {
-        position: static;
+        position: sticky;
+        top: 92px;
         float: left;
-        height: auto;
+        height: 0;
         max-width: none;
         margin: 0;
-        pointer-events: auto;
+        pointer-events: none;
+        z-index: 120;
     }
 
     body.desktop-quran-detail .back-btn-ui {
