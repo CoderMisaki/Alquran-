@@ -50,8 +50,122 @@ async function safeFetchJson(url, timeoutMs = 10000) {
   } finally { (HAS_WINDOW ? window.clearTimeout : clearTimeout)(timeoutId); }
 }
 
-const indoSurahMeta = {};
-for (let i = 1; i <= 114; i += 1) indoSurahMeta[i] = { indoName: `Surah ${i}`, indoTranslation: '' };
+const indoSurahMeta = {
+  1: { name: "Al-Fatihah", translation: "Pembukaan" },
+  2: { name: "Al-Baqarah", translation: "Sapi" },
+  3: { name: "Ali Imran", translation: "Keluarga Imran" },
+  4: { name: "An-Nisa", translation: "Wanita" },
+  5: { name: "Al-Maidah", translation: "Hidangan" },
+  6: { name: "Al-Anam", translation: "Hewan Ternak" },
+  7: { name: "Al-Araf", translation: "Tempat Tertinggi" },
+  8: { name: "Al-Anfal", translation: "Rampasan Perang" },
+  9: { name: "At-Taubah", translation: "Pengampunan" },
+  10: { name: "Surah 10", translation: "" },
+  11: { name: "Surah 11", translation: "" },
+  12: { name: "Surah 12", translation: "" },
+  13: { name: "Surah 13", translation: "" },
+  14: { name: "Surah 14", translation: "" },
+  15: { name: "Surah 15", translation: "" },
+  16: { name: "Surah 16", translation: "" },
+  17: { name: "Surah 17", translation: "" },
+  18: { name: "Surah 18", translation: "" },
+  19: { name: "Surah 19", translation: "" },
+  20: { name: "Surah 20", translation: "" },
+  21: { name: "Surah 21", translation: "" },
+  22: { name: "Surah 22", translation: "" },
+  23: { name: "Surah 23", translation: "" },
+  24: { name: "Surah 24", translation: "" },
+  25: { name: "Surah 25", translation: "" },
+  26: { name: "Surah 26", translation: "" },
+  27: { name: "Surah 27", translation: "" },
+  28: { name: "Surah 28", translation: "" },
+  29: { name: "Surah 29", translation: "" },
+  30: { name: "Surah 30", translation: "" },
+  31: { name: "Surah 31", translation: "" },
+  32: { name: "Surah 32", translation: "" },
+  33: { name: "Surah 33", translation: "" },
+  34: { name: "Surah 34", translation: "" },
+  35: { name: "Surah 35", translation: "" },
+  36: { name: "Surah 36", translation: "" },
+  37: { name: "Surah 37", translation: "" },
+  38: { name: "Surah 38", translation: "" },
+  39: { name: "Surah 39", translation: "" },
+  40: { name: "Surah 40", translation: "" },
+  41: { name: "Surah 41", translation: "" },
+  42: { name: "Surah 42", translation: "" },
+  43: { name: "Surah 43", translation: "" },
+  44: { name: "Surah 44", translation: "" },
+  45: { name: "Surah 45", translation: "" },
+  46: { name: "Surah 46", translation: "" },
+  47: { name: "Surah 47", translation: "" },
+  48: { name: "Surah 48", translation: "" },
+  49: { name: "Surah 49", translation: "" },
+  50: { name: "Surah 50", translation: "" },
+  51: { name: "Surah 51", translation: "" },
+  52: { name: "Surah 52", translation: "" },
+  53: { name: "Surah 53", translation: "" },
+  54: { name: "Surah 54", translation: "" },
+  55: { name: "Surah 55", translation: "" },
+  56: { name: "Surah 56", translation: "" },
+  57: { name: "Surah 57", translation: "" },
+  58: { name: "Surah 58", translation: "" },
+  59: { name: "Surah 59", translation: "" },
+  60: { name: "Surah 60", translation: "" },
+  61: { name: "Surah 61", translation: "" },
+  62: { name: "Surah 62", translation: "" },
+  63: { name: "Surah 63", translation: "" },
+  64: { name: "Surah 64", translation: "" },
+  65: { name: "Surah 65", translation: "" },
+  66: { name: "Surah 66", translation: "" },
+  67: { name: "Surah 67", translation: "" },
+  68: { name: "Surah 68", translation: "" },
+  69: { name: "Surah 69", translation: "" },
+  70: { name: "Surah 70", translation: "" },
+  71: { name: "Surah 71", translation: "" },
+  72: { name: "Surah 72", translation: "" },
+  73: { name: "Surah 73", translation: "" },
+  74: { name: "Surah 74", translation: "" },
+  75: { name: "Surah 75", translation: "" },
+  76: { name: "Surah 76", translation: "" },
+  77: { name: "Surah 77", translation: "" },
+  78: { name: "Surah 78", translation: "" },
+  79: { name: "Surah 79", translation: "" },
+  80: { name: "Surah 80", translation: "" },
+  81: { name: "Surah 81", translation: "" },
+  82: { name: "Surah 82", translation: "" },
+  83: { name: "Surah 83", translation: "" },
+  84: { name: "Surah 84", translation: "" },
+  85: { name: "Surah 85", translation: "" },
+  86: { name: "Surah 86", translation: "" },
+  87: { name: "Surah 87", translation: "" },
+  88: { name: "Surah 88", translation: "" },
+  89: { name: "Surah 89", translation: "" },
+  90: { name: "Surah 90", translation: "" },
+  91: { name: "Surah 91", translation: "" },
+  92: { name: "Surah 92", translation: "" },
+  93: { name: "Surah 93", translation: "" },
+  94: { name: "Surah 94", translation: "" },
+  95: { name: "Surah 95", translation: "" },
+  96: { name: "Surah 96", translation: "" },
+  97: { name: "Surah 97", translation: "" },
+  98: { name: "Surah 98", translation: "" },
+  99: { name: "Surah 99", translation: "" },
+  100: { name: "Surah 100", translation: "" },
+  101: { name: "Surah 101", translation: "" },
+  102: { name: "Surah 102", translation: "" },
+  103: { name: "Surah 103", translation: "" },
+  104: { name: "Surah 104", translation: "" },
+  105: { name: "Surah 105", translation: "" },
+  106: { name: "Surah 106", translation: "" },
+  107: { name: "Surah 107", translation: "" },
+  108: { name: "Surah 108", translation: "" },
+  109: { name: "Surah 109", translation: "" },
+  110: { name: "Surah 110", translation: "" },
+  111: { name: "Surah 111", translation: "" },
+  112: { name: "Surah 112", translation: "" },
+  113: { name: "Surah 113", translation: "" },
+  114: { name: "An-Nas", translation: "Manusia" }
+};
 
 let state = { allSurahs: [], currentOpenedSurah: null, activeJuzFilter: null, currentJuzData: null, isLocked: false, currentZoomLevel: getSafeZoom() };
 
@@ -73,20 +187,20 @@ function showDetailView() { qs('loader')?.classList.add('hidden'); qs('view-deta
 function cleanBismillah(text, surahNumber) { if (surahNumber === 1 || surahNumber === 9) return text; const words = String(text || '').trim().split(/\s+/); if (words.length > 4 && words[0].replace(/[^\u0621-\u064A]/g, '') === 'بسم') return words.slice(4).join(' ').trim(); return String(text || ''); }
 function normalizeAyah(a) { const n = asPositiveInt(a?.numberInSurah); if (!n) return null; return { numberInSurah: n, juz: validJuz(Number(a?.juz)) ? Number(a.juz) : null, text: typeof a?.text === 'string' ? a.text : '' }; }
 
-function renderSurahList(surahs) { const grid = qs('surah-grid'); if (!grid) return; const frag = document.createDocumentFragment(); grid.replaceChildren(); (Array.isArray(surahs) ? surahs : []).forEach((s) => { if (!validSurahNumber(s.number)) return; const b = createTextElement('button', 'surah-card', ''); b.type = 'button'; b.addEventListener('click', () => fetchSurahDetail(s.number, s)); const left = createTextElement('div', 'surah-info-left', ''); const num = createTextElement('div', 'surah-number', String(s.number)); const det = createTextElement('div', 'surah-details', ''); det.append(createTextElement('h3', '', s.indoName || ''), createTextElement('p', '', `${s.indoTranslation || ''} • ${s.numberOfAyahs || 0} Ayat`)); left.append(num, det); b.append(left, createTextElement('div', 'surah-arabic-name', s.name || '')); frag.appendChild(b); });
+function renderSurahList(surahs) { const grid = qs('surah-grid'); if (!grid) return; const frag = document.createDocumentFragment(); grid.replaceChildren(); (Array.isArray(surahs) ? surahs : []).forEach((s) => { if (!validSurahNumber(s.number)) return; const b = createTextElement('button', 'surah-card tap-effect', ''); b.type = 'button'; b.addEventListener('click', () => fetchSurahDetail(s.number, s)); const left = createTextElement('div', 'surah-info-left', ''); const numberBox = document.createElement('div'); numberBox.className = 'surah-number'; const numberSpan = document.createElement('span'); numberSpan.textContent = String(s.number); const det = createTextElement('div', 'surah-details', ''); det.append(createTextElement('h3', '', s.indoName || ''), createTextElement('p', '', `${s.indoTranslation || ''} • ${s.numberOfAyahs || 0} Ayat`)); numberBox.appendChild(numberSpan); left.append(numberBox, det); b.append(left, createTextElement('div', 'surah-arabic-name', s.name || '')); frag.appendChild(b); });
   if (!frag.childNodes.length) frag.appendChild(createTextElement('p', 'empty-state', 'Pencarian tidak ditemukan.'));
   grid.appendChild(frag);
 }
-function renderJuzSurahList(list) { renderSurahList((Array.isArray(list) ? list : []).map((x) => x.meta || x)); }
+function renderJuzSurahList(list) { const mapped = (Array.isArray(list)?list:[]).map((item)=>{ const meta=item.meta||item; return { ...meta, juzStartAyah: meta.juzStartAyah || (item.ayahsAr?.[0]?.numberInSurah ?? '-'), juzEndAyah: meta.juzEndAyah || (item.ayahsAr?.[item.ayahsAr.length-1]?.numberInSurah ?? '-') }; }); const grid = qs('surah-grid'); if (!grid) return; grid.replaceChildren(); const frag = document.createDocumentFragment(); mapped.forEach((m)=>{ if (!validSurahNumber(m.number)) return; const b=createTextElement('button','surah-card tap-effect',''); b.type='button'; b.addEventListener('click',()=>{const src=(Array.isArray(list)?list:[]).find((x)=>(x.meta?.number||x.number)===m.number); if(src?.ayahsAr) { renderJuzSpecificSurahDetail(m, src.ayahsAr, src.ayahsId, src.ayahsLat); showDetailView(); } }); const left=createTextElement('div','surah-info-left',''); const nb=document.createElement('div'); nb.className='surah-number'; const sp=document.createElement('span'); sp.textContent=String(m.number); nb.appendChild(sp); const det=createTextElement('div','surah-details',''); det.append(createTextElement('h3','',m.indoName||`Surah ${m.number}`),createTextElement('p','',`${m.indoTranslation||''} • Ayat ${m.juzStartAyah}-${m.juzEndAyah}`)); left.append(nb,det); b.append(left,createTextElement('div','surah-arabic-name',m.name||'')); frag.appendChild(b); }); if(!frag.childNodes.length) frag.appendChild(createTextElement('p','empty-state','Pencarian tidak ditemukan.')); grid.appendChild(frag);} 
 function renderSurahDetail(meta, ar, id, lat) { renderJuzSpecificSurahDetail(meta, ar, id, lat); }
-function renderJuzSpecificSurahDetail(meta, ar, id, lat) { const head = qs('surah-header-detail'); const list = qs('ayah-list'); if (!head || !list) return; head.replaceChildren(createTextElement('h2', '', meta?.indoName || ''), createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)); list.replaceChildren(); const frag = document.createDocumentFragment(); const arArr = Array.isArray(ar) ? ar : []; arArr.forEach((a, idx) => { const va = normalizeAyah(a); if (!va) return; const vi = normalizeAyah(Array.isArray(id) ? id[idx] : null); const vl = normalizeAyah(Array.isArray(lat) ? lat[idx] : null); const item = createTextElement('div', 'ayah-item', ''); item.dataset.ayah = String(va.numberInSurah); if (va.juz) item.dataset.juz = String(va.juz); item.append(createTextElement('div', 'ayah-arabic', (idx === 0 || va.numberInSurah === 1) ? cleanBismillah(va.text, meta?.number) : va.text), createTextElement('div', 'ayah-latin', vl?.text || ''), createTextElement('div', 'ayah-indo', vi?.text || '')); frag.appendChild(item); }); list.appendChild(frag); }
+function renderJuzSpecificSurahDetail(meta, ar, id, lat) { const head = qs('surah-header-detail'); const list = qs('ayah-list'); if (!head || !list) return; head.replaceChildren(createTextElement('h2', '', meta?.indoName || ''), createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)); list.replaceChildren(); const frag = document.createDocumentFragment(); const arArr = Array.isArray(ar) ? ar : []; arArr.forEach((a, idx) => { const va = normalizeAyah(a); if (!va) return; const vi = normalizeAyah(Array.isArray(id) ? id[idx] : null); const vl = normalizeAyah(Array.isArray(lat) ? lat[idx] : null); const item = createTextElement('div', 'ayah-item', ''); item.dataset.ayah = String(va.numberInSurah); if (va.juz) item.dataset.juz = String(va.juz); const ayahTop=createTextElement('div','ayah-top',''); const numberBadge=createTextElement('div','ayah-number-badge',String(va.numberInSurah)); const arabicDiv=createTextElement('div','ayah-arabic',(idx===0||va.numberInSurah===1)?cleanBismillah(va.text,meta?.number):va.text); ayahTop.append(numberBadge,arabicDiv); const translations=createTextElement('div','ayah-translations',''); const latinDiv=createTextElement('div','ayah-latin',vl?.text||''); const indoDiv=createTextElement('div','ayah-indo',vi?.text||''); translations.append(latinDiv,indoDiv); item.append(ayahTop,translations); frag.appendChild(item); }); list.appendChild(frag); }
 
 function applySearchAndFilter() { const key = (qs('search-input')?.value || '').trim().toLowerCase(); const src = state.activeJuzFilter && state.currentJuzData ? state.currentJuzData : state.allSurahs; const out = src.filter((s) => { const m = s.meta || s; return String(m.number) === key || (m.indoName || '').toLowerCase().includes(key) || (m.indoTranslation || '').toLowerCase().includes(key) || key === ''; }); if (state.activeJuzFilter && state.currentJuzData) renderJuzSurahList(out); else renderSurahList(out); }
 function clearSearch() { const i = qs('search-input'); if (i) i.value = ''; applySearchAndFilter(); }
-async function fetchAllSurahs() { try { let payload = await safeFetchJson(`${API_BASE}/surah`); let list = payload?.data; if (!Array.isArray(list)) list = await safeFetchJson(FALLBACK_SURAH_LIST_URL); state.allSurahs = (Array.isArray(list) ? list : []).map((s) => { const n = Number(s.number); const meta = indoSurahMeta[n] || { indoName: '', indoTranslation: '' }; return { number: n, name: typeof s.name === 'string' ? s.name : '', indoName: typeof s.englishName === 'string' ? s.englishName : meta.indoName, indoTranslation: typeof s.englishNameTranslation === 'string' ? s.englishNameTranslation : meta.indoTranslation, numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || 0, revelationType: typeof s.revelationType === 'string' ? s.revelationType : '' }; }).filter((s) => validSurahNumber(s.number)); renderSurahList(state.allSurahs); showListView(); } catch { showToast('Gagal memuat daftar surah.'); } }
+async function fetchAllSurahs() { try { let payload = await safeFetchJson(`${API_BASE}/surah`); let list = payload?.data; if (!Array.isArray(list)) list = await safeFetchJson(FALLBACK_SURAH_LIST_URL); state.allSurahs = (Array.isArray(list) ? list : []).map((s) => { const n = Number(s.number); const meta = indoSurahMeta[n] || {}; return { number: n, name: typeof s.name === 'string' ? s.name : '', indoName: meta.name || s.englishName || `Surah ${n}`, indoTranslation: meta.translation || s.englishNameTranslation || '', numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || 0, revelationType: typeof s.revelationType === 'string' ? s.revelationType : '' }; }).filter((s) => validSurahNumber(s.number)); renderSurahList(state.allSurahs); showListView(); } catch { showToast('Gagal memuat daftar surah.'); } }
 async function fetchSurahDetail(surahNumber, meta) { if (!validSurahNumber(Number(surahNumber))) return; safeSetStorage('lastReadSurah', surahNumber); safeSetStorage('lastReadAyah', 1); try { const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`)]); state.currentOpenedSurah = surahNumber; renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs); showDetailView(); updateNavButtonsVisibility(); } catch { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); } }
 
-function setupJuzGrid() { const c = qs('juz-grid-container'); if (!c) return; c.replaceChildren(); for (let i = 1; i <= 30; i += 1) { const b = createTextElement('button', 'modal-btn btn-apply', `Juz ${i}`); b.type = 'button'; b.addEventListener('click', () => selectJuz(i)); c.appendChild(b); } }
+function setupJuzGrid() { const c = qs('juz-grid-container'); if (!c) return; c.replaceChildren(); for (let i = 1; i <= 30; i += 1) { const b = createTextElement('button', 'juz-btn tap-effect', `Juz ${i}`); b.type = 'button'; b.addEventListener('click', () => selectJuz(i)); c.appendChild(b); } }
 function selectJuz(juz) { if (!validJuz(Number(juz))) return; fetchJuzAndShowCards(Number(juz)); }
 async function fetchJuzAndShowCards(juzNumber) { if (!validJuz(juzNumber)) return; const res = await safeFetchJson(`${API_BASE}/juz/${juzNumber}/quran-uthmani`); const ayahs = Array.isArray(res?.data?.ayahs) ? res.data.ayahs : []; const map = new Map(); ayahs.forEach((a) => { const s = Number(a?.surah?.number); const n = asPositiveInt(a?.numberInSurah); if (!validSurahNumber(s) || !n) return; if (!map.has(s)) map.set(s, { meta: { number: s, name: a.surah.name || '', indoName: a.surah.englishName || '', indoTranslation: a.surah.englishNameTranslation || '', numberOfAyahs: asPositiveInt(a.surah.numberOfAyahs) || 0 }, ayahsAr: [], ayahsId: [], ayahsLat: [] }); const rec = map.get(s); rec.ayahsAr.push({ numberInSurah: n, text: typeof a.text === 'string' ? a.text : '', juz: juzNumber }); rec.ayahsId.push({ numberInSurah: n, text: '', juz: juzNumber }); rec.ayahsLat.push({ numberInSurah: n, text: '', juz: juzNumber }); }); state.activeJuzFilter = juzNumber; state.currentJuzData = Array.from(map.values()); renderJuzSurahList(state.currentJuzData); closeModal('modal-juz'); showListView(); }
 function resetJuzFilter() { state.activeJuzFilter = null; state.currentJuzData = null; renderSurahList(state.allSurahs); closeModal('modal-juz'); }
