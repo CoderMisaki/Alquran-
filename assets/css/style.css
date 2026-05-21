@@ -405,25 +405,29 @@
         .continue-reading-card::after {
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: calc(18% + (var(--swipe-ratio) * 62%));
+            inset: 0;
             pointer-events: none;
-            opacity: calc(0.16 + (var(--swipe-ratio) * 0.84));
-            background: linear-gradient(to right, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0));
-            backdrop-filter: blur(calc(1px + (var(--swipe-ratio) * 5px)));
-            -webkit-backdrop-filter: blur(calc(1px + (var(--swipe-ratio) * 5px)));
-            transition: width 0.16s linear, opacity 0.16s linear;
-        }
-
-        body.theme-dark .continue-reading-card::after {
-            background: linear-gradient(to right, rgba(15, 25, 30, 0.45), rgba(15, 25, 30, 0));
+            opacity: calc(0.08 + (var(--swipe-ratio) * 0.56));
+            backdrop-filter: blur(calc(0px + (var(--swipe-ratio) * 7px)));
+            -webkit-backdrop-filter: blur(calc(0px + (var(--swipe-ratio) * 7px)));
+            mask-image: linear-gradient(to right,
+                rgba(0, 0, 0, 0.95) 0%,
+                rgba(0, 0, 0, 0.86) 22%,
+                rgba(0, 0, 0, 0.44) 58%,
+                rgba(0, 0, 0, 0.12) 82%,
+                rgba(0, 0, 0, 0) 100%);
+            -webkit-mask-image: linear-gradient(to right,
+                rgba(0, 0, 0, 0.95) 0%,
+                rgba(0, 0, 0, 0.86) 22%,
+                rgba(0, 0, 0, 0.44) 58%,
+                rgba(0, 0, 0, 0.12) 82%,
+                rgba(0, 0, 0, 0) 100%);
+            transition: opacity 0.16s linear, backdrop-filter 0.16s linear, -webkit-backdrop-filter 0.16s linear;
         }
 
         .continue-reading-card:active,
         .continue-reading-card.is-pressed {
-            transform: scale(0.985);
+            transform: scale(0.975);
         }
 
         .cr-info { display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
@@ -1079,17 +1083,7 @@
     }
 
     body.theme-light .continue-reading-card::after {
-        content: "";
-        position: absolute;
-        inset: 0 0 0 auto;
-        width: 155px;
-        border-radius: inherit;
-        background:
-            radial-gradient(circle at 55% 45%, rgba(255,255,255,0.95) 0 18%, transparent 19%),
-            repeating-conic-gradient(from 20deg, rgba(22,143,134,.52) 0 9deg, rgba(201,173,98,.42) 9deg 15deg, transparent 15deg 23deg);
-        opacity: 0.75;
-        clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
-        z-index: -1;
+        z-index: 1;
     }
 
     body.theme-light .cr-label {
