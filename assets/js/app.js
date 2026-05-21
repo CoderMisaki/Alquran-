@@ -183,6 +183,7 @@ function showToast(msg) { const toast = qs('toast'); const body = qs('toast-mess
 function closeModal(id) { if (!['modal-lock', 'modal-juz'].includes(id)) return; const m = qs(id); if (m) m.classList.add('hidden'); }
 function showListView() { qs('loader')?.classList.add('hidden'); qs('view-list')?.classList.remove('hidden'); qs('view-detail')?.classList.add('hidden'); }
 function showDetailView() { qs('loader')?.classList.add('hidden'); qs('view-detail')?.classList.remove('hidden'); if (window.innerWidth < 1024) qs('view-list')?.classList.add('hidden'); }
+function toggleBackButtonCollapse() { qs('back-btn-ui')?.classList.toggle('collapsed'); }
 
 function cleanBismillah(text, surahNumber) { if (surahNumber === 1 || surahNumber === 9) return text; const words = String(text || '').trim().split(/\s+/); if (words.length > 4 && words[0].replace(/[^\u0621-\u064A]/g, '') === 'بسم') return words.slice(4).join(' ').trim(); return String(text || ''); }
 function normalizeAyah(a) { const n = asPositiveInt(a?.numberInSurah); if (!n) return null; return { numberInSurah: n, juz: validJuz(Number(a?.juz)) ? Number(a.juz) : null, text: typeof a?.text === 'string' ? a.text : '' }; }
@@ -214,6 +215,20 @@ function unlockAyahs() { document.querySelectorAll('.ayah-item.hidden').forEach(
 function resetLockState() { state.isLocked = false; qs('icon-lock')?.classList.add('hidden'); qs('icon-unlock')?.classList.remove('hidden'); }
 
 function setupContinueReadingSwipe() { const banner = qs('continue-reading'); if (!banner) return; let x0 = null; banner.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true }); banner.addEventListener('touchend', (e) => { if (x0 == null) return; const d = e.changedTouches[0].clientX - x0; x0 = null; if (d < -60) { safeRemoveStorage('lastReadSurah'); safeRemoveStorage('lastReadAyah'); safeRemoveStorage('lastReadJuz'); banner.classList.add('hidden'); } }, { passive: true }); }
+function setupPressFeedback() {
+  const clearPressState = (el) => el?.classList.remove('is-pressed');
+  document.addEventListener('pointerdown', (e) => {
+    const target = e.target instanceof Element ? e.target.closest('.tap-effect, button, .search-clear-btn, [role="button"]') : null;
+    if (!target || target.hasAttribute('disabled')) return;
+    target.classList.add('is-pressed');
+  }, { passive: true });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((evt) => {
+    document.addEventListener(evt, (e) => {
+      const target = e.target instanceof Element ? e.target.closest('.tap-effect, button, .search-clear-btn, [role="button"]') : null;
+      clearPressState(target);
+    }, { passive: true });
+  });
+}
 async function resumeReading() { const lr = getSafeLastRead(); if (!lr.surah) return; const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return; await fetchSurahDetail(lr.surah, meta); const target = document.querySelector(`.ayah-item[data-ayah="${lr.ayah || 1}"]`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 function checkLastRead() { const lr = getSafeLastRead(); const card = qs('continue-reading'); if (!card) return; if (!lr.surah || !lr.ayah) return card.classList.add('hidden'); const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return card.classList.add('hidden'); qs('cr-surah-name').textContent = meta.indoName || `Surah ${lr.surah}`; qs('cr-ayah-info').textContent = `Ayat ${lr.ayah}${lr.juz ? ` • Juz ${lr.juz}` : ''}`; card.classList.remove('hidden'); }
 
@@ -224,6 +239,7 @@ function bindEvents() {
   qs('search-input')?.addEventListener('input', applySearchAndFilter);
   qs('search-clear')?.addEventListener('click', clearSearch);
   qs('btn-back-main')?.addEventListener('click', showListView);
+  qs('btn-back-toggle')?.addEventListener('click', toggleBackButtonCollapse);
   qs('btn-prev-surah')?.addEventListener('click', () => navigateSurah(-1));
   qs('btn-next-surah')?.addEventListener('click', () => navigateSurah(1));
   qs('lock-btn')?.addEventListener('click', handleLockToggle);
@@ -236,7 +252,7 @@ function bindEvents() {
 
 if (HAS_DOM) {
   document.addEventListener('DOMContentLoaded', () => {
-    initThemeToggle(); applyZoom(); setupJuzGrid(); setupContinueReadingSwipe(); bindEvents(); fetchAllSurahs().then(checkLastRead);
+    initThemeToggle(); applyZoom(); setupJuzGrid(); setupContinueReadingSwipe(); setupPressFeedback(); bindEvents(); fetchAllSurahs().then(checkLastRead);
   });
 }
 

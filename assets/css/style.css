@@ -194,9 +194,16 @@
             transition: transform 0.05s ease !important;
         }
 
-        .tap-effect:active * {
+        .tap-effect:active *,
+        .is-pressed * {
             color: var(--bg-color) !important;
             stroke: var(--bg-color) !important;
+        }
+
+        .is-pressed {
+            transform: scale(0.96) !important;
+            opacity: 0.8;
+            transition: transform 0.05s ease !important;
         }
 
         header {
