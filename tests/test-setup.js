@@ -11,11 +11,13 @@ global.document = {
     },
     addEventListener: () => {}
   }),
-  addEventListener: () => {}
+  addEventListener: () => {},
+  createElement: (tag) => ({ tagName: tag.toUpperCase(), className: '', textContent: '', innerHTML: '', appendChild(){}, append(){}, setAttribute(){}, dataset:{} })
 };
 
 global.window = {
-  addEventListener: () => {}
+  addEventListener: () => {},
+  createElement: (tag) => ({ tagName: tag.toUpperCase(), className: '', textContent: '', innerHTML: '', appendChild(){}, append(){}, setAttribute(){}, dataset:{} })
 };
 
 global.localStorage = {
