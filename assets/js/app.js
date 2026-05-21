@@ -245,7 +245,7 @@ function handleZoomPress(type, delta) { state.currentZoomLevel = Math.max(0, Mat
 
 function showToast(msg) { const toast = qs('toast'); const body = qs('toast-message'); if (!toast || !body) return; body.textContent = String(msg || ''); toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 2000); }
 function closeModal(id) { if (!['modal-lock', 'modal-juz'].includes(id)) return; const m = qs(id); if (m) m.classList.add('hidden'); }
-function showListView() { qs('loader')?.classList.add('hidden'); qs('view-list')?.classList.remove('hidden'); qs('view-detail')?.classList.add('hidden'); }
+function showListView() { saveVisibleAyahAsLastRead(); qs('loader')?.classList.add('hidden'); qs('view-list')?.classList.remove('hidden'); qs('view-detail')?.classList.add('hidden'); }
 function showDetailView() { qs('loader')?.classList.add('hidden'); qs('view-detail')?.classList.remove('hidden'); if (window.innerWidth < 1024) qs('view-list')?.classList.add('hidden'); }
 function resetDetailScrollPosition() {
   const ayahList = qs('ayah-list');
@@ -253,6 +253,33 @@ function resetDetailScrollPosition() {
   if (HAS_WINDOW) window.scrollTo({ top: 0, behavior: 'auto' });
 }
 function toggleBackButtonCollapse() { qs('back-btn-ui')?.classList.toggle('collapsed'); }
+
+
+function updateLastReadFromAyah(ayahNumber) {
+  if (!state.currentOpenedSurah) return;
+  const ayah = parseBoundedInt(ayahNumber, 1, SURAH_AYAH_LIMITS[state.currentOpenedSurah] || 286);
+  if (!ayah) return;
+  safeSetStorage('lastReadSurah', state.currentOpenedSurah);
+  safeSetStorage('lastReadAyah', ayah);
+}
+
+function saveVisibleAyahAsLastRead() {
+  const items = Array.from(document.querySelectorAll('.ayah-item'));
+  if (!items.length) return;
+  const viewportMid = window.innerHeight * 0.35;
+  let chosen = null;
+  let minDist = Number.POSITIVE_INFINITY;
+  items.forEach((item) => {
+    const rect = item.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+    const dist = Math.abs(rect.top - viewportMid);
+    if (dist < minDist) {
+      minDist = dist;
+      chosen = item;
+    }
+  });
+  if (chosen) updateLastReadFromAyah(chosen.dataset.ayah);
+}
 
 function cleanBismillah(text, surahNumber) { if (surahNumber === 1 || surahNumber === 9) return text; const words = String(text || '').trim().split(/\s+/); if (words.length > 4 && words[0].replace(/[^\u0621-\u064A]/g, '') === 'بسم') return words.slice(4).join(' ').trim(); return String(text || ''); }
 function normalizeAyah(a) { const n = parseBoundedInt(a?.numberInSurah, 1, 286); if (!n) return null; return { numberInSurah: n, juz: validJuz(Number(a?.juz)) ? Number(a.juz) : null, text: typeof a?.text === 'string' ? a.text : '' }; }
@@ -268,12 +295,12 @@ function renderSurahDetail(meta, ar, id, lat) {
   const ayahsLat = validateApiAyahArray((Array.isArray(lat) ? lat : []).map((x) => ({ ...x, translation: x?.text })));
   renderJuzSpecificSurahDetail(meta, ayahsAr, ayahsId, ayahsLat);
 }
-function renderJuzSpecificSurahDetail(meta, ar, id, lat) { const head = qs('surah-header-detail'); const list = qs('ayah-list'); if (!head || !list) return; head.replaceChildren(createTextElement('h2', '', meta?.indoName || ''), createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)); list.replaceChildren(); const frag = document.createDocumentFragment(); const arArr = Array.isArray(ar) ? ar : []; arArr.forEach((a, idx) => { const va = normalizeAyah(a); if (!va) return; const vi = normalizeAyah(Array.isArray(id) ? id[idx] : null); const vl = normalizeAyah(Array.isArray(lat) ? lat[idx] : null); const item = createTextElement('div', 'ayah-item', ''); item.dataset.ayah = String(va.numberInSurah); if (va.juz) item.dataset.juz = String(va.juz); const ayahTop=createTextElement('div','ayah-top',''); const numberBadge=createTextElement('div','ayah-number-badge',`Ayat ${va.numberInSurah}`); const arabicDiv=createTextElement('div','ayah-arabic',(idx===0||va.numberInSurah===1)?cleanBismillah(va.text,meta?.number):va.text); ayahTop.append(numberBadge,arabicDiv); const translations=createTextElement('div','ayah-translations',''); const latinDiv=createTextElement('div','ayah-latin',vl?.text||''); const indoDiv=createTextElement('div','ayah-indo',vi?.text||''); translations.append(latinDiv,indoDiv); item.append(ayahTop,translations); frag.appendChild(item); }); list.appendChild(frag); }
+function renderJuzSpecificSurahDetail(meta, ar, id, lat) { const head = qs('surah-header-detail'); const list = qs('ayah-list'); if (!head || !list) return; head.replaceChildren(createTextElement('h2', '', meta?.indoName || ''), createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)); list.replaceChildren(); const frag = document.createDocumentFragment(); const arArr = Array.isArray(ar) ? ar : []; arArr.forEach((a, idx) => { const va = normalizeAyah(a); if (!va) return; const vi = normalizeAyah(Array.isArray(id) ? id[idx] : null); const vl = normalizeAyah(Array.isArray(lat) ? lat[idx] : null); const item = createTextElement('div', 'ayah-item', ''); item.dataset.ayah = String(va.numberInSurah); item.addEventListener('click', () => updateLastReadFromAyah(va.numberInSurah)); if (va.juz) item.dataset.juz = String(va.juz); const ayahTop=createTextElement('div','ayah-top',''); const numberBadge=createTextElement('div','ayah-number-badge',`Ayat ${va.numberInSurah}`); const arabicDiv=createTextElement('div','ayah-arabic',(idx===0||va.numberInSurah===1)?cleanBismillah(va.text,meta?.number):va.text); ayahTop.append(numberBadge,arabicDiv); const translations=createTextElement('div','ayah-translations',''); const latinDiv=createTextElement('div','ayah-latin',vl?.text||''); const indoDiv=createTextElement('div','ayah-indo',vi?.text||''); translations.append(latinDiv,indoDiv); item.append(ayahTop,translations); frag.appendChild(item); }); list.appendChild(frag); }
 
 function applySearchAndFilter() { const key = (qs('search-input')?.value || '').trim().toLowerCase(); const src = state.activeJuzFilter && state.currentJuzData ? state.currentJuzData : state.allSurahs; const out = src.filter((s) => { const m = s.meta || s; return String(m.number) === key || (m.indoName || '').toLowerCase().includes(key) || (m.indoTranslation || '').toLowerCase().includes(key) || key === ''; }); if (state.activeJuzFilter && state.currentJuzData) renderJuzSurahList(out); else renderSurahList(out); }
 function clearSearch() { const i = qs('search-input'); if (i) i.value = ''; applySearchAndFilter(); }
 async function fetchAllSurahs() { try { let payload = await safeFetchJson(`${API_BASE}/surah`); let list = payload?.data; if (!Array.isArray(list)) list = await safeFetchJson(FALLBACK_SURAH_LIST_URL); state.allSurahs = (Array.isArray(list) ? list : []).map((s) => { const n = Number(s.number); const meta = indoSurahMeta[n] || {}; return { number: n, name: typeof s.name === 'string' ? s.name : '', indoName: meta.name || s.englishName || `Surah ${n}`, indoTranslation: meta.translation || s.englishNameTranslation || '', numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || 0, revelationType: typeof s.revelationType === 'string' ? s.revelationType : '' }; }).filter((s) => validSurahNumber(s.number)); renderSurahList(state.allSurahs); showListView(); } catch { showToast('Gagal memuat daftar surah.'); } }
-async function fetchSurahDetail(surahNumber, meta) { if (!validSurahNumber(Number(surahNumber))) return; safeSetStorage('lastReadSurah', surahNumber); safeSetStorage('lastReadAyah', 1); try { const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`)]); state.currentOpenedSurah = surahNumber; renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs); showDetailView(); resetDetailScrollPosition(); updateNavButtonsVisibility(); checkLastRead(); } catch { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); resetDetailScrollPosition(); checkLastRead(); } }
+async function fetchSurahDetail(surahNumber, meta) { if (!validSurahNumber(Number(surahNumber))) return; const previousSurah = Number(safeGetStorage('lastReadSurah')); safeSetStorage('lastReadSurah', surahNumber); if (previousSurah !== Number(surahNumber)) safeSetStorage('lastReadAyah', 1); try { const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${surahNumber}/quran-uthmani`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/id.indonesian`), safeFetchJson(`${API_BASE}/surah/${surahNumber}/en.transliteration`)]); state.currentOpenedSurah = surahNumber; renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs); showDetailView(); resetDetailScrollPosition(); updateNavButtonsVisibility(); checkLastRead(); } catch { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${surahNumber}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); resetDetailScrollPosition(); checkLastRead(); } }
 
 function setupJuzGrid() { const c = qs('juz-grid-container'); if (!c) return; c.replaceChildren(); for (let i = 1; i <= 30; i += 1) { const b = createTextElement('button', 'juz-btn tap-effect', `Juz ${i}`); b.type = 'button'; b.addEventListener('click', () => selectJuz(i)); c.appendChild(b); } }
 function selectJuz(juz) { if (!validJuz(Number(juz))) return; fetchJuzAndShowCards(Number(juz)); }
@@ -401,7 +428,10 @@ function bindEvents() {
   qs('btn-zoom-out')?.addEventListener('click', () => handleZoomPress('out', -10));
   qs('btn-zoom-in')?.addEventListener('click', () => handleZoomPress('in', 10));
   qs('continue-reading')?.addEventListener('click', resumeReading);
+  if (HAS_WINDOW) window.addEventListener('scroll', saveVisibleAyahAsLastRead, { passive: true });
+  qs('ayah-list')?.addEventListener('scroll', saveVisibleAyahAsLastRead, { passive: true });
 }
+
 
 if (HAS_DOM) {
   document.addEventListener('DOMContentLoaded', () => {
