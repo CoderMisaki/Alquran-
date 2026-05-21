@@ -2054,3 +2054,20 @@
         }
 
         
+
+
+/* Hide search when reading a surah detail */
+body.in-surah-detail .search-container {
+    display: none !important;
+}
+
+/* Keep back button pinned while scrolling in detail view on mobile/tablet */
+@media (max-width: 1023px) {
+    body.in-surah-detail .sticky-back-wrapper {
+        position: fixed;
+        top: 84px;
+        left: 5%;
+        right: 5%;
+        z-index: 130;
+    }
+}
