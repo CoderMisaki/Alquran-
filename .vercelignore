@@ -1,0 +1,14 @@
+node_modules
+.env
+.env.*
+.vercel
+.DS_Store
+coverage
+playwright-report
+test-results
+.Jules
+.jules
+*.log
+tests
+*.test.js
+test-setup.js

@@ -1,0 +1,11 @@
+{
+  "name": "alquran-static-web",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node --test",
+    "security:audit": "npm audit --audit-level=critical",
+    "security:deps": "npm audit --production --audit-level=high",
+    "vercel-build": "npm run test && npm run security:audit && npm run security:deps"
+  }
+}
