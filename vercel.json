@@ -25,5 +25,14 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/.env", "destination": "/404.html" },
+    { "source": "/.env.local", "destination": "/404.html" },
+    { "source": "/.vercel/(.*)", "destination": "/404.html" },
+    { "source": "/node_modules/(.*)", "destination": "/404.html" },
+    { "source": "/coverage/(.*)", "destination": "/404.html" },
+    { "source": "/playwright-report/(.*)", "destination": "/404.html" },
+    { "source": "/test-results/(.*)", "destination": "/404.html" }
   ]
 }
