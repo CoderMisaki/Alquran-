@@ -446,6 +446,13 @@
             display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;
         }
 
+        .empty-state {
+            grid-column: 1 / -1;
+            margin: 1rem 0;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
          .surah-card {
             width: 100%;
             text-align: left;

@@ -37,6 +37,9 @@ const {
   indoSurahMeta,
   normalizeSearchText,
   matchesSurahSearch,
+  filterSurahsBySearch,
+  updateSearchClearVisibility,
+  clearSearch,
   sanitizeLastReadPosition,
   setupContinueReadingSwipe
 } = require('../assets/js/app.js');
@@ -66,6 +69,28 @@ test('search supports surah number and Ya-Sin aliases', () => {
 
 test('search normalization removes latin diacritics and light punctuation', () => {
   assert.strictEqual(normalizeSearchText("  Al—Baqarāh__  "), 'al baqarah');
+});
+
+test('search filters the active Juz list and preserves an empty result', () => {
+  const juzOne = [surah(1), surah(2)];
+  assert.deepStrictEqual(filterSurahsBySearch(juzOne, 'baqarah').map(({ number }) => number), [2]);
+  assert.deepStrictEqual(filterSurahsBySearch(juzOne, 'an-nas'), []);
+  assert.deepStrictEqual(filterSurahsBySearch(juzOne, '').map(({ number }) => number), [1, 2]);
+});
+
+test('clear search empties input and hides its clear button', () => {
+  const originalDocument = global.document;
+  const classes = new Set();
+  const input = { value: 'baqarah' };
+  const clearButton = { classList: { toggle: (value, enabled) => enabled ? classes.add(value) : classes.delete(value) } };
+  global.document = { ...originalDocument, getElementById: (id) => ({ 'search-input': input, 'search-clear': clearButton }[id] || null) };
+  try {
+    updateSearchClearVisibility(input.value);
+    assert.strictEqual(classes.has('hidden'), false);
+    clearSearch();
+    assert.strictEqual(input.value, '');
+    assert.strictEqual(classes.has('hidden'), true);
+  } finally { global.document = originalDocument; }
 });
 
 test('all 114 local surah metadata entries are named without placeholders', () => {
@@ -106,7 +131,7 @@ function createSwipeHarness() {
   global.window = { ...originalWindow, requestAnimationFrame: (fn) => { fn(); return 1; }, cancelAnimationFrame: () => {}, setTimeout: (fn) => { fn(); return 1; } };
   global.localStorage = { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, String(value)), removeItem: (key) => storage.delete(key) };
   const restore = () => { global.document = originalDocument; global.window = originalWindow; global.localStorage = originalStorage; };
-  return { card, classes, listeners, storage, restore };
+  return { card, classes, listeners, storage, styleValues, restore };
 }
 
 function dispatchSwipe(harness, fromX, toX, y = 10) {
@@ -150,9 +175,58 @@ test('last-read click without drag resumes reading', () => {
   } finally { harness.restore(); }
 });
 
+test('last-read swipe does not resume reading and clears transient styles and classes', () => {
+  const harness = createSwipeHarness();
+  let resumed = 0;
+  try {
+    harness.classes.add('is-pressed');
+    setupContinueReadingSwipe(() => { resumed += 1; });
+    dispatchSwipe(harness, 200, 70);
+    harness.listeners.get('click')({ preventDefault: () => {}, stopPropagation: () => {} });
+    assert.strictEqual(resumed, 0);
+    assert.strictEqual(harness.card.style.transform, '');
+    assert.strictEqual(harness.card.style.opacity, '');
+    assert.strictEqual(harness.styleValues.has('--swipe-ratio'), false);
+    for (const name of ['is-pressed', 'cr-swiping', 'cr-snap-back', 'cr-swipe-out-left']) assert.strictEqual(harness.classes.has(name), false);
+  } finally { harness.restore(); }
+});
+
+test('vertical last-read gesture keeps native scrolling behavior without swipe styles', () => {
+  const harness = createSwipeHarness();
+  try {
+    setupContinueReadingSwipe(() => {});
+    harness.listeners.get('pointerdown')({ pointerId: 1, button: 0, clientX: 200, clientY: 10 });
+    harness.listeners.get('pointermove')({ pointerId: 1, clientX: 198, clientY: 80 });
+    harness.listeners.get('pointerup')({ pointerId: 1, clientX: 198, clientY: 80 });
+    assert.strictEqual(harness.card.style.transform, '');
+    assert.strictEqual(harness.card.style.opacity, '');
+    assert.strictEqual(harness.classes.has('cr-swiping'), false);
+    assert.strictEqual(harness.storage.get('lastReadSurah'), '2');
+  } finally { harness.restore(); }
+});
+
+test('last-read swipe setup is safe when the card is absent', () => {
+  const originalDocument = global.document;
+  global.document = { ...originalDocument, getElementById: () => null };
+  try { assert.doesNotThrow(() => setupContinueReadingSwipe(() => {})); }
+  finally { global.document = originalDocument; }
+});
+
 test('style.css contains CSS only, without accidentally embedded JavaScript', () => {
   const css = fs.readFileSync(path.resolve(__dirname, '../assets/css/style.css'), 'utf8');
   assert.doesNotMatch(css, /\bfunction\s+[A-Za-z_$]/);
   assert.doesNotMatch(css, /\b(?:let|const|var)\s+[A-Za-z_$]/);
   assert.doesNotMatch(css, /document\.|localStorage|API_BASE/);
+  assert.doesNotMatch(css, /^(?:<<<<<<<|=======|>>>>>>>|PATH:)/m);
+  assert.doesNotMatch(css, /PATH:\s*assets\/js\/app\.js/);
+  assert.match(css, /\.empty-state\s*\{[^}]*grid-column:\s*1\s*\/\s*-1;/s);
+});
+
+test('app.js contains JavaScript only and target logic is not duplicated', () => {
+  const js = fs.readFileSync(path.resolve(__dirname, '../assets/js/app.js'), 'utf8');
+  assert.doesNotMatch(js, /^(?:<<<<<<<|=======|>>>>>>>|PATH:)/m);
+  assert.doesNotMatch(js, /^\s*[.#][A-Za-z_-][^\n{]*\{\s*$/m);
+  for (const name of ['bindEvents', 'setupContinueReadingSwipe', 'applySearchAndFilter']) {
+    assert.strictEqual((js.match(new RegExp(`function ${name}\\(`, 'g')) || []).length, 1, `${name} must have one declaration`);
+  }
 });

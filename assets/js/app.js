@@ -339,8 +339,23 @@ function renderSurahDetail(meta, ar, id, lat) {
 }
 function renderJuzSpecificSurahDetail(meta, ar, id, lat) { const head = qs('surah-header-detail'); const list = qs('ayah-list'); if (!head || !list) return; head.replaceChildren(createTextElement('h2', '', meta?.indoName || ''), createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)); list.replaceChildren(); const frag = document.createDocumentFragment(); const arArr = Array.isArray(ar) ? ar : []; arArr.forEach((a, idx) => { const va = normalizeAyah(a); if (!va) return; const vi = normalizeAyah(Array.isArray(id) ? id[idx] : null); const vl = normalizeAyah(Array.isArray(lat) ? lat[idx] : null); const item = createTextElement('div', 'ayah-item', ''); item.dataset.ayah = String(va.numberInSurah); item.addEventListener('click', () => updateLastReadFromAyah(va.numberInSurah, va.juz)); if (va.juz) item.dataset.juz = String(va.juz); const ayahTop=createTextElement('div','ayah-top',''); const numberBadge=createTextElement('div','ayah-number-badge',`Ayat ${va.numberInSurah}`); const arabicDiv=createTextElement('div','ayah-arabic',(idx===0||va.numberInSurah===1)?cleanBismillah(va.text,meta?.number):va.text); ayahTop.append(numberBadge,arabicDiv); const translations=createTextElement('div','ayah-translations',''); const latinDiv=createTextElement('div','ayah-latin',vl?.text||''); const indoDiv=createTextElement('div','ayah-indo',vi?.text||''); translations.append(latinDiv,indoDiv); item.append(ayahTop,translations); frag.appendChild(item); }); list.appendChild(frag); }
 
-function applySearchAndFilter() { const key = qs('search-input')?.value || ''; const src = state.activeJuzFilter && Array.isArray(state.currentJuzData) ? state.currentJuzData : state.allSurahs; const out = (Array.isArray(src) ? src : []).filter((surah) => matchesSurahSearch(surah, key)); if (state.activeJuzFilter && Array.isArray(state.currentJuzData)) renderJuzSurahList(out); else renderSurahList(out); }
-function clearSearch() { const i = qs('search-input'); if (i) i.value = ''; applySearchAndFilter(); }
+function filterSurahsBySearch(surahs, query) {
+  return (Array.isArray(surahs) ? surahs : []).filter((surah) => matchesSurahSearch(surah, query));
+}
+
+function updateSearchClearVisibility(query) {
+  qs('search-clear')?.classList.toggle('hidden', !String(query ?? '').trim());
+}
+
+function applySearchAndFilter() {
+  const key = qs('search-input')?.value || '';
+  const src = state.activeJuzFilter && Array.isArray(state.currentJuzData) ? state.currentJuzData : state.allSurahs;
+  const out = filterSurahsBySearch(src, key);
+  updateSearchClearVisibility(key);
+  if (state.activeJuzFilter && Array.isArray(state.currentJuzData)) renderJuzSurahList(out);
+  else renderSurahList(out);
+}
+function clearSearch() { const input = qs('search-input'); if (input) input.value = ''; applySearchAndFilter(); }
 async function fetchAllSurahs() { try { let payload = await safeFetchJson(`${API_BASE}/surah`); let list = payload?.data; if (!Array.isArray(list)) list = await safeFetchJson(FALLBACK_SURAH_LIST_URL); state.allSurahs = (Array.isArray(list) ? list : []).map((s) => { const n = Number(s.number); const meta = indoSurahMeta[n] || {}; return { number: n, name: typeof s.name === 'string' ? s.name : '', indoName: meta.name || s.englishName || '', indoTranslation: meta.translation || s.englishNameTranslation || '', englishName: typeof s.englishName === 'string' ? s.englishName : '', englishNameTranslation: typeof s.englishNameTranslation === 'string' ? s.englishNameTranslation : '', numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || SURAH_AYAH_LIMITS[n] || 0, revelationType: typeof s.revelationType === 'string' ? s.revelationType : '' }; }).filter((s) => validSurahNumber(s.number)); renderSurahList(state.allSurahs); showListView(); } catch { showToast('Gagal memuat daftar surah.'); } }
 async function fetchSurahDetail(surahNumber, meta) { const safeSurahNum = parseBoundedInt(surahNumber, 1, 114); if (!safeSurahNum) return showToast('Nomor surah tidak valid'); const previousSurah = Number(safeGetStorage('lastReadSurah')); safeSetStorage('lastReadSurah', safeSurahNum); if (previousSurah !== safeSurahNum) { safeSetStorage('lastReadAyah', 1); safeRemoveStorage('lastReadJuz'); } state.currentOpenedSurah = safeSurahNum; try { const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/quran-uthmani`), safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/id.indonesian`), safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/en.transliteration`)]); renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs); showDetailView(); resetDetailScrollPosition(); updateNavButtonsVisibility(); checkLastRead(); } catch { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${safeSurahNum}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); resetDetailScrollPosition(); checkLastRead(); } }
 
@@ -377,6 +392,7 @@ function setupContinueReadingSwipe(onResume = resumeReading) {
     banner.style.transform = '';
     banner.style.opacity = '';
     banner.style.removeProperty('--swipe-ratio');
+    banner.classList.remove('is-pressed');
     pendingShift = 0;
     currentShift = 0;
   };
@@ -522,5 +538,5 @@ if (HAS_DOM) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { cleanBismillah, escapeHTML, createTextElement, safeFetchJson, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray, indoSurahMeta, normalizeSearchText, getSurahSearchText, matchesSurahSearch, setupContinueReadingSwipe };
+  module.exports = { cleanBismillah, escapeHTML, createTextElement, safeFetchJson, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray, indoSurahMeta, normalizeSearchText, getSurahSearchText, matchesSurahSearch, filterSurahsBySearch, updateSearchClearVisibility, clearSearch, setupContinueReadingSwipe };
 }
