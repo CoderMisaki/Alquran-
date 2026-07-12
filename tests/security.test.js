@@ -104,3 +104,15 @@ test('validateApiAyahArray rejects malformed items and overlong translation', ()
   assert.strictEqual(list[1].translation, '');
   assert.strictEqual(list[1].juz, null);
 });
+
+test('validateApiAyahArray handles non-array input', () => {
+  const result1 = validateApiAyahArray(null);
+  const result2 = validateApiAyahArray(undefined);
+  const result3 = validateApiAyahArray({});
+  const result4 = validateApiAyahArray("not an array");
+
+  assert.deepStrictEqual(result1, []);
+  assert.deepStrictEqual(result2, []);
+  assert.deepStrictEqual(result3, []);
+  assert.deepStrictEqual(result4, []);
+});
