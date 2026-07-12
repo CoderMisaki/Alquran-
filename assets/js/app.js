@@ -330,7 +330,52 @@ function renderSurahList(surahs) { const grid = qs('surah-grid'); if (!grid) ret
   if (!frag.childNodes.length) frag.appendChild(createTextElement('p', 'empty-state', 'Pencarian tidak ditemukan.'));
   grid.appendChild(frag);
 }
-function renderJuzSurahList(list) { const mapped = (Array.isArray(list)?list:[]).map((item)=>{ const meta=item.meta||item; return { ...meta, juzStartAyah: meta.juzStartAyah || (item.ayahsAr?.[0]?.numberInSurah ?? '-'), juzEndAyah: meta.juzEndAyah || (item.ayahsAr?.[item.ayahsAr.length-1]?.numberInSurah ?? '-') }; }); const grid = qs('surah-grid'); if (!grid) return; grid.replaceChildren(); const frag = document.createDocumentFragment(); mapped.forEach((m)=>{ if (!validSurahNumber(m.number)) return; const b=createTextElement('button','surah-card tap-effect',''); b.type='button'; b.addEventListener('click',()=>{const src=(Array.isArray(list)?list:[]).find((x)=>(x.meta?.number||x.number)===m.number); if(src?.ayahsAr) { state.currentOpenedSurah = m.number; renderJuzSpecificSurahDetail(m, src.ayahsAr, src.ayahsId, src.ayahsLat); showDetailView(); updateNavButtonsVisibility(); } }); const left=createTextElement('div','surah-info-left',''); const nb=document.createElement('div'); nb.className='surah-number'; const sp=document.createElement('span'); sp.textContent=String(m.number); nb.appendChild(sp); const det=createTextElement('div','surah-details',''); det.append(createTextElement('h3','',m.indoName || indoSurahMeta[m.number]?.name || ''),createTextElement('p','',`${m.indoTranslation||''} • Ayat ${m.juzStartAyah}-${m.juzEndAyah}`)); left.append(nb,det); b.append(left,createTextElement('div','surah-arabic-name',m.name||'')); frag.appendChild(b); }); if(!frag.childNodes.length) frag.appendChild(createTextElement('p','empty-state','Pencarian tidak ditemukan.')); grid.appendChild(frag);}
+function renderJuzSurahList(list) {
+  const mapped = (Array.isArray(list) ? list : []).map((item) => {
+    const meta = item.meta || item;
+    return {
+      ...meta,
+      juzStartAyah: meta.juzStartAyah || (item.ayahsAr?.[0]?.numberInSurah ?? '-'),
+      juzEndAyah: meta.juzEndAyah || (item.ayahsAr?.[item.ayahsAr.length - 1]?.numberInSurah ?? '-')
+    };
+  });
+  const grid = qs('surah-grid');
+  if (!grid) return;
+  grid.replaceChildren();
+  const frag = document.createDocumentFragment();
+  mapped.forEach((m) => {
+    if (!validSurahNumber(m.number)) return;
+    const b = createTextElement('button', 'surah-card tap-effect', '');
+    b.type = 'button';
+    b.addEventListener('click', () => {
+      const src = (Array.isArray(list) ? list : []).find((x) => (x.meta?.number || x.number) === m.number);
+      if (src?.ayahsAr) {
+        state.currentOpenedSurah = m.number;
+        renderJuzSpecificSurahDetail(m, src.ayahsAr, src.ayahsId, src.ayahsLat);
+        showDetailView();
+        updateNavButtonsVisibility();
+      }
+    });
+    const left = createTextElement('div', 'surah-info-left', '');
+    const nb = document.createElement('div');
+    nb.className = 'surah-number';
+    const sp = document.createElement('span');
+    sp.textContent = String(m.number);
+    nb.appendChild(sp);
+    const det = createTextElement('div', 'surah-details', '');
+    det.append(
+      createTextElement('h3', '', m.indoName || indoSurahMeta[m.number]?.name || ''),
+      createTextElement('p', '', `${m.indoTranslation || ''} • Ayat ${m.juzStartAyah}-${m.juzEndAyah}`)
+    );
+    left.append(nb, det);
+    b.append(left, createTextElement('div', 'surah-arabic-name', m.name || ''));
+    frag.appendChild(b);
+  });
+  if (!frag.childNodes.length) {
+    frag.appendChild(createTextElement('p', 'empty-state', 'Pencarian tidak ditemukan.'));
+  }
+  grid.appendChild(frag);
+}
 function renderSurahDetail(meta, ar, id, lat) {
   const ayahsAr = validateApiAyahArray(ar);
   const ayahsId = validateApiAyahArray((Array.isArray(id) ? id : []).map((x) => ({ ...x, translation: x?.text })));
