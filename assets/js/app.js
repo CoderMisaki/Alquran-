@@ -415,8 +415,8 @@ function renderJuzSurahList(list) {
 }
 function renderSurahDetail(meta, ar, id, lat) {
   const ayahsAr = validateApiAyahArray(ar);
-  const ayahsId = validateApiAyahArray((Array.isArray(id) ? id : []).map((x) => ({ ...x, translation: x?.text })));
-  const ayahsLat = validateApiAyahArray((Array.isArray(lat) ? lat : []).map((x) => ({ ...x, translation: x?.text })));
+  const ayahsId = validateApiAyahArray(id);
+  const ayahsLat = validateApiAyahArray(lat);
   renderJuzSpecificSurahDetail(meta, ayahsAr, ayahsId, ayahsLat);
 }
 function renderJuzSpecificSurahDetail(meta, ar, id, lat) {
