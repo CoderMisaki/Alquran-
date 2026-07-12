@@ -78,6 +78,11 @@ test('search filters the active Juz list and preserves an empty result', () => {
   assert.deepStrictEqual(filterSurahsBySearch(juzOne, '').map(({ number }) => number), [1, 2]);
 });
 
+test('search filters handles non-array input gracefully', () => {
+  assert.deepStrictEqual(filterSurahsBySearch(null, 'baqarah'), []);
+  assert.deepStrictEqual(filterSurahsBySearch(undefined, 'baqarah'), []);
+});
+
 test('clear search empties input and hides its clear button', () => {
   const originalDocument = global.document;
   const classes = new Set();
