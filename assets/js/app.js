@@ -382,7 +382,48 @@ function renderSurahDetail(meta, ar, id, lat) {
   const ayahsLat = validateApiAyahArray((Array.isArray(lat) ? lat : []).map((x) => ({ ...x, translation: x?.text })));
   renderJuzSpecificSurahDetail(meta, ayahsAr, ayahsId, ayahsLat);
 }
-function renderJuzSpecificSurahDetail(meta, ar, id, lat) { const head = qs('surah-header-detail'); const list = qs('ayah-list'); if (!head || !list) return; head.replaceChildren(createTextElement('h2', '', meta?.indoName || ''), createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)); list.replaceChildren(); const frag = document.createDocumentFragment(); const arArr = Array.isArray(ar) ? ar : []; arArr.forEach((a, idx) => { const va = normalizeAyah(a); if (!va) return; const vi = normalizeAyah(Array.isArray(id) ? id[idx] : null); const vl = normalizeAyah(Array.isArray(lat) ? lat[idx] : null); const item = createTextElement('div', 'ayah-item', ''); item.dataset.ayah = String(va.numberInSurah); item.addEventListener('click', () => updateLastReadFromAyah(va.numberInSurah, va.juz)); if (va.juz) item.dataset.juz = String(va.juz); const ayahTop=createTextElement('div','ayah-top',''); const numberBadge=createTextElement('div','ayah-number-badge',`Ayat ${va.numberInSurah}`); const arabicDiv=createTextElement('div','ayah-arabic',(idx===0||va.numberInSurah===1)?cleanBismillah(va.text,meta?.number):va.text); ayahTop.append(numberBadge,arabicDiv); const translations=createTextElement('div','ayah-translations',''); const latinDiv=createTextElement('div','ayah-latin',vl?.text||''); const indoDiv=createTextElement('div','ayah-indo',vi?.text||''); translations.append(latinDiv,indoDiv); item.append(ayahTop,translations); frag.appendChild(item); }); list.appendChild(frag); }
+function renderJuzSpecificSurahDetail(meta, ar, id, lat) {
+  const head = qs('surah-header-detail');
+  const list = qs('ayah-list');
+  if (!head || !list) return;
+
+  head.replaceChildren(
+    createTextElement('h2', '', meta?.indoName || ''),
+    createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)
+  );
+  list.replaceChildren();
+
+  const frag = document.createDocumentFragment();
+  const arArr = Array.isArray(ar) ? ar : [];
+
+  arArr.forEach((a, idx) => {
+    const va = normalizeAyah(a);
+    if (!va) return;
+
+    const vi = normalizeAyah(Array.isArray(id) ? id[idx] : null);
+    const vl = normalizeAyah(Array.isArray(lat) ? lat[idx] : null);
+
+    const item = createTextElement('div', 'ayah-item', '');
+    item.dataset.ayah = String(va.numberInSurah);
+    item.addEventListener('click', () => updateLastReadFromAyah(va.numberInSurah, va.juz));
+    if (va.juz) item.dataset.juz = String(va.juz);
+
+    const ayahTop = createTextElement('div', 'ayah-top', '');
+    const numberBadge = createTextElement('div', 'ayah-number-badge', `Ayat ${va.numberInSurah}`);
+    const arabicDiv = createTextElement('div', 'ayah-arabic', (idx === 0 || va.numberInSurah === 1) ? cleanBismillah(va.text, meta?.number) : va.text);
+    ayahTop.append(numberBadge, arabicDiv);
+
+    const translations = createTextElement('div', 'ayah-translations', '');
+    const latinDiv = createTextElement('div', 'ayah-latin', vl?.text || '');
+    const indoDiv = createTextElement('div', 'ayah-indo', vi?.text || '');
+    translations.append(latinDiv, indoDiv);
+
+    item.append(ayahTop, translations);
+    frag.appendChild(item);
+  });
+
+  list.appendChild(frag);
+}
 
 function filterSurahsBySearch(surahs, query) {
   return (Array.isArray(surahs) ? surahs : []).filter((surah) => matchesSurahSearch(surah, query));
