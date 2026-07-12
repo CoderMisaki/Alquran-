@@ -326,8 +326,45 @@ function matchesSurahSearch(surah, query) {
   return searchText.includes(normalizedQuery) || searchText.includes(normalizedQuery.replace(/\s+/g, ''));
 }
 
-function renderSurahList(surahs) { const grid = qs('surah-grid'); if (!grid) return; const frag = document.createDocumentFragment(); grid.replaceChildren(); (Array.isArray(surahs) ? surahs : []).forEach((s) => { if (!validSurahNumber(s.number)) return; const b = createTextElement('button', 'surah-card tap-effect', ''); b.type = 'button'; b.addEventListener('click', () => fetchSurahDetail(s.number, s)); const left = createTextElement('div', 'surah-info-left', ''); const numberBox = document.createElement('div'); numberBox.className = 'surah-number'; const numberSpan = document.createElement('span'); numberSpan.textContent = String(s.number); const det = createTextElement('div', 'surah-details', ''); det.append(createTextElement('h3', '', s.indoName || ''), createTextElement('p', '', `${s.indoTranslation || ''} • ${s.numberOfAyahs || 0} Ayat`)); numberBox.appendChild(numberSpan); left.append(numberBox, det); b.append(left, createTextElement('div', 'surah-arabic-name', s.name || '')); frag.appendChild(b); });
-  if (!frag.childNodes.length) frag.appendChild(createTextElement('p', 'empty-state', 'Pencarian tidak ditemukan.'));
+function renderSurahList(surahs) {
+  const grid = qs('surah-grid');
+  if (!grid) return;
+
+  const frag = document.createDocumentFragment();
+  grid.replaceChildren();
+
+  (Array.isArray(surahs) ? surahs : []).forEach((s) => {
+    if (!validSurahNumber(s.number)) return;
+
+    const b = createTextElement('button', 'surah-card tap-effect', '');
+    b.type = 'button';
+    b.addEventListener('click', () => fetchSurahDetail(s.number, s));
+
+    const left = createTextElement('div', 'surah-info-left', '');
+
+    const numberBox = document.createElement('div');
+    numberBox.className = 'surah-number';
+
+    const numberSpan = document.createElement('span');
+    numberSpan.textContent = String(s.number);
+
+    const det = createTextElement('div', 'surah-details', '');
+    det.append(
+      createTextElement('h3', '', s.indoName || ''),
+      createTextElement('p', '', `${s.indoTranslation || ''} • ${s.numberOfAyahs || 0} Ayat`)
+    );
+
+    numberBox.appendChild(numberSpan);
+    left.append(numberBox, det);
+
+    b.append(left, createTextElement('div', 'surah-arabic-name', s.name || ''));
+    frag.appendChild(b);
+  });
+
+  if (!frag.childNodes.length) {
+    frag.appendChild(createTextElement('p', 'empty-state', 'Pencarian tidak ditemukan.'));
+  }
+
   grid.appendChild(frag);
 }
 function renderJuzSurahList(list) {
