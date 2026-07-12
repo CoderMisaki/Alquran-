@@ -231,7 +231,7 @@ const indoSurahMeta = {
   114: { name: 'An-Nas', translation: 'Manusia' }
 };
 
-let state = { allSurahs: [], currentOpenedSurah: null, activeJuzFilter: null, currentJuzData: null, isLocked: false, currentZoomLevel: getSafeZoom() };
+let state = { allSurahs: [], currentOpenedSurah: null, activeJuzFilter: null, currentJuzData: null, isLocked: false, cachedAyahItems: null, currentZoomLevel: getSafeZoom() };
 
 function qs(id) { return HAS_DOM ? document.getElementById(id) : null; }
 function validSurahNumber(n) { return isIntRange(Number(n), 1, 114); }
@@ -491,8 +491,8 @@ function updateNavButtonsVisibility() { const prev = qs('btn-prev-surah'); const
 function navigateSurah(dir) { if (!state.currentOpenedSurah) return; const next = state.currentOpenedSurah + dir; if (!validSurahNumber(next)) return; const meta = state.allSurahs.find((s) => s.number === next); if (meta) fetchSurahDetail(next, meta); }
 
 function handleLockToggle() { if (state.isLocked) { unlockAyahs(); return; } qs('modal-lock')?.classList.remove('hidden'); }
-function applyLock() { const ayahs = Array.from(document.querySelectorAll('.ayah-item')); if (!ayahs.length) return showToast('Belum ada ayat.'); const start = Number(qs('input-start-ayah')?.value); const end = Number(qs('input-end-ayah')?.value); if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end < 1 || start > end || end > ayahs.length) return showToast('Rentang ayat tidak valid.'); ayahs.forEach((n) => { const x = Number(n.dataset.ayah); n.classList.toggle('hidden', !(x >= start && x <= end)); }); state.isLocked = true; qs('icon-lock')?.classList.remove('hidden'); qs('icon-unlock')?.classList.add('hidden'); closeModal('modal-lock'); }
-function unlockAyahs() { document.querySelectorAll('.ayah-item.hidden').forEach((n) => n.classList.remove('hidden')); resetLockState(); }
+function applyLock() { if (!state.cachedAyahItems || !state.cachedAyahItems[0]?.isConnected) state.cachedAyahItems = Array.from(document.querySelectorAll('.ayah-item')); const ayahs = state.cachedAyahItems; if (!ayahs.length) return showToast('Belum ada ayat.'); const start = Number(qs('input-start-ayah')?.value); const end = Number(qs('input-end-ayah')?.value); if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end < 1 || start > end || end > ayahs.length) return showToast('Rentang ayat tidak valid.'); ayahs.forEach((n) => { const x = Number(n.dataset.ayah); n.classList.toggle('hidden', !(x >= start && x <= end)); }); state.isLocked = true; qs('icon-lock')?.classList.remove('hidden'); qs('icon-unlock')?.classList.add('hidden'); closeModal('modal-lock'); }
+function unlockAyahs() { if (!state.cachedAyahItems || !state.cachedAyahItems[0]?.isConnected) state.cachedAyahItems = Array.from(document.querySelectorAll('.ayah-item')); state.cachedAyahItems.forEach((n) => n.classList.remove('hidden')); resetLockState(); }
 function resetLockState() { state.isLocked = false; qs('icon-lock')?.classList.add('hidden'); qs('icon-unlock')?.classList.remove('hidden'); }
 
 function setupContinueReadingSwipe(onResume = resumeReading) {
