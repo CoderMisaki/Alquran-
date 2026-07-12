@@ -356,8 +356,69 @@ function applySearchAndFilter() {
   else renderSurahList(out);
 }
 function clearSearch() { const input = qs('search-input'); if (input) input.value = ''; applySearchAndFilter(); }
-async function fetchAllSurahs() { try { let payload = await safeFetchJson(`${API_BASE}/surah`); let list = payload?.data; if (!Array.isArray(list)) list = await safeFetchJson(FALLBACK_SURAH_LIST_URL); state.allSurahs = (Array.isArray(list) ? list : []).map((s) => { const n = Number(s.number); const meta = indoSurahMeta[n] || {}; return { number: n, name: typeof s.name === 'string' ? s.name : '', indoName: meta.name || s.englishName || '', indoTranslation: meta.translation || s.englishNameTranslation || '', englishName: typeof s.englishName === 'string' ? s.englishName : '', englishNameTranslation: typeof s.englishNameTranslation === 'string' ? s.englishNameTranslation : '', numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || SURAH_AYAH_LIMITS[n] || 0, revelationType: typeof s.revelationType === 'string' ? s.revelationType : '' }; }).filter((s) => validSurahNumber(s.number)); renderSurahList(state.allSurahs); showListView(); } catch { showToast('Gagal memuat daftar surah.'); } }
-async function fetchSurahDetail(surahNumber, meta) { const safeSurahNum = parseBoundedInt(surahNumber, 1, 114); if (!safeSurahNum) return showToast('Nomor surah tidak valid'); const previousSurah = Number(safeGetStorage('lastReadSurah')); safeSetStorage('lastReadSurah', safeSurahNum); if (previousSurah !== safeSurahNum) { safeSetStorage('lastReadAyah', 1); safeRemoveStorage('lastReadJuz'); } state.currentOpenedSurah = safeSurahNum; try { const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/quran-uthmani`), safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/id.indonesian`), safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/en.transliteration`)]); renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs); showDetailView(); resetDetailScrollPosition(); updateNavButtonsVisibility(); checkLastRead(); } catch { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${safeSurahNum}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); resetDetailScrollPosition(); checkLastRead(); } }
+async function fetchAllSurahs() {
+  try {
+    let payload = await safeFetchJson(`${API_BASE}/surah`);
+    let list = payload?.data;
+    if (!Array.isArray(list)) list = await safeFetchJson(FALLBACK_SURAH_LIST_URL);
+    state.allSurahs = (Array.isArray(list) ? list : [])
+      .map((s) => {
+        const n = Number(s.number);
+        const meta = indoSurahMeta[n] || {};
+        return {
+          number: n,
+          name: typeof s.name === 'string' ? s.name : '',
+          indoName: meta.name || s.englishName || '',
+          indoTranslation: meta.translation || s.englishNameTranslation || '',
+          englishName: typeof s.englishName === 'string' ? s.englishName : '',
+          englishNameTranslation: typeof s.englishNameTranslation === 'string' ? s.englishNameTranslation : '',
+          numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || SURAH_AYAH_LIMITS[n] || 0,
+          revelationType: typeof s.revelationType === 'string' ? s.revelationType : ''
+        };
+      })
+      .filter((s) => validSurahNumber(s.number));
+    renderSurahList(state.allSurahs);
+    showListView();
+  } catch {
+    showToast('Gagal memuat daftar surah.');
+  }
+}
+async function fetchSurahDetail(surahNumber, meta) {
+  const safeSurahNum = parseBoundedInt(surahNumber, 1, 114);
+  if (!safeSurahNum) return showToast('Nomor surah tidak valid');
+  const previousSurah = Number(safeGetStorage('lastReadSurah'));
+  safeSetStorage('lastReadSurah', safeSurahNum);
+  if (previousSurah !== safeSurahNum) {
+    safeSetStorage('lastReadAyah', 1);
+    safeRemoveStorage('lastReadJuz');
+  }
+  state.currentOpenedSurah = safeSurahNum;
+  try {
+    const [ar, id, lat] = await Promise.all([
+      safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/quran-uthmani`),
+      safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/id.indonesian`),
+      safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/en.transliteration`)
+    ]);
+    renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs);
+    showDetailView();
+    resetDetailScrollPosition();
+    updateNavButtonsVisibility();
+    checkLastRead();
+  } catch {
+    const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${safeSurahNum}.json`);
+    const ayahs = Array.isArray(fallback?.verses)
+      ? fallback.verses.map((v, i) => ({
+          numberInSurah: i + 1,
+          text: typeof v.text === 'string' ? v.text : '',
+          juz: null
+        }))
+      : [];
+    renderSurahDetail(meta, ayahs, ayahs, ayahs);
+    showDetailView();
+    resetDetailScrollPosition();
+    checkLastRead();
+  }
+}
 
 function setupJuzGrid() { const c = qs('juz-grid-container'); if (!c) return; c.replaceChildren(); for (let i = 1; i <= 30; i += 1) { const b = createTextElement('button', 'juz-btn tap-effect', `Juz ${i}`); b.type = 'button'; b.addEventListener('click', () => selectJuz(i)); c.appendChild(b); } }
 function selectJuz(juz) { if (!validJuz(Number(juz))) return; fetchJuzAndShowCards(Number(juz)); }

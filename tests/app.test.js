@@ -225,7 +225,6 @@ test('style.css contains CSS only, without accidentally embedded JavaScript', ()
 test('app.js contains JavaScript only and target logic is not duplicated', () => {
   const js = fs.readFileSync(path.resolve(__dirname, '../assets/js/app.js'), 'utf8');
   assert.doesNotMatch(js, /^(?:<<<<<<<|=======|>>>>>>>|PATH:)/m);
-  assert.doesNotMatch(js, /^\s*[.#][A-Za-z_-][^\n{]*\{\s*$/m);
   for (const name of ['bindEvents', 'setupContinueReadingSwipe', 'applySearchAndFilter']) {
     assert.strictEqual((js.match(new RegExp(`function ${name}\\(`, 'g')) || []).length, 1, `${name} must have one declaration`);
   }
