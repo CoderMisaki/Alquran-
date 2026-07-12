@@ -29,6 +29,10 @@ test('cleanBismillah', async (t) => {
     const text = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ';
     assert.strictEqual(cleanBismillah(text, 2), text);
   });
+
+  await t.test('returns empty string for null text', () => {
+    assert.strictEqual(cleanBismillah(null, 2), '');
+  });
 });
 
 const fs = require('node:fs');
