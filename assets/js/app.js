@@ -280,7 +280,7 @@ function saveVisibleAyahAsLastRead() {
       chosen = item;
     }
   });
-  if (chosen) updateLastReadFromAyah(chosen.dataset.ayah, chosen.dataset.juz);
+  if (chosen) { updateLastReadFromAyah(chosen.dataset.ayah, chosen.dataset.juz); checkLastRead(); }
 }
 
 function cleanBismillah(text, surahNumber) { if (surahNumber === 1 || surahNumber === 9) return text; const words = String(text || '').trim().split(/\s+/); if (words.length > 4 && words[0].replace(/[^\u0621-\u064A]/g, '') === 'بسم') return words.slice(4).join(' ').trim(); return String(text || ''); }
@@ -429,6 +429,10 @@ function renderJuzSpecificSurahDetail(meta, ar, id, lat) {
     createTextElement('p', '', `Surah ke-${meta?.number || ''} • ${meta?.numberOfAyahs || 0} Ayat`)
   );
   list.replaceChildren();
+
+  if (meta && meta.number !== 1 && meta.number !== 9) {
+    list.appendChild(createTextElement('div', 'bismillah', 'بسم الله الرحمن الرحيم'));
+  }
 
   const frag = document.createDocumentFragment();
   const arArr = Array.isArray(ar) ? ar : [];
