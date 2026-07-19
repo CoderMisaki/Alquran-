@@ -1,7 +1,7 @@
 require('./test-setup.js');
 const test = require('node:test');
 const assert = require('node:assert');
-const { cleanBismillah } = require('../assets/js/app.js');
+const { safeGetStorage, safeSetStorage, safeRemoveStorage, cleanBismillah } = require('../assets/js/app.js');
 
 test('cleanBismillah', async (t) => {
   await t.test('returns original text for surah 1', () => {
@@ -228,5 +228,77 @@ test('app.js contains JavaScript only and target logic is not duplicated', () =>
   assert.doesNotMatch(js, /^\s*[.#][A-Za-z_-][^\n{]*\{\s*$/m);
   for (const name of ['bindEvents', 'setupContinueReadingSwipe', 'applySearchAndFilter']) {
     assert.strictEqual((js.match(new RegExp(`function ${name}\\(`, 'g')) || []).length, 1, `${name} must have one declaration`);
+  }
+});
+
+test('safeGetStorage returns value when localStorage works', () => {
+  const originalGet = global.localStorage.getItem;
+  global.localStorage.getItem = (key) => key === 'test_key' ? 'test_val' : null;
+  try {
+    assert.strictEqual(safeGetStorage('test_key'), 'test_val');
+  } finally {
+    global.localStorage.getItem = originalGet;
+  }
+});
+
+test('safeGetStorage returns null and does not throw when localStorage fails', () => {
+  const originalGet = global.localStorage.getItem;
+  global.localStorage.getItem = () => { throw new Error('QuotaExceeded'); };
+  try {
+    assert.doesNotThrow(() => {
+      const val = safeGetStorage('test_key');
+      assert.strictEqual(val, null);
+    });
+  } finally {
+    global.localStorage.getItem = originalGet;
+  }
+});
+
+test('safeSetStorage sets value as string when localStorage works', () => {
+  const originalSet = global.localStorage.setItem;
+  let storedKey = null, storedVal = null;
+  global.localStorage.setItem = (key, val) => { storedKey = key; storedVal = val; };
+  try {
+    safeSetStorage('test_key', 123);
+    assert.strictEqual(storedKey, 'test_key');
+    assert.strictEqual(storedVal, '123'); // Should be stringified
+  } finally {
+    global.localStorage.setItem = originalSet;
+  }
+});
+
+test('safeSetStorage does not throw when localStorage fails', () => {
+  const originalSet = global.localStorage.setItem;
+  global.localStorage.setItem = () => { throw new Error('QuotaExceeded'); };
+  try {
+    assert.doesNotThrow(() => {
+      safeSetStorage('test_key', 'val');
+    });
+  } finally {
+    global.localStorage.setItem = originalSet;
+  }
+});
+
+test('safeRemoveStorage removes value when localStorage works', () => {
+  const originalRemove = global.localStorage.removeItem;
+  let removedKey = null;
+  global.localStorage.removeItem = (key) => { removedKey = key; };
+  try {
+    safeRemoveStorage('test_key');
+    assert.strictEqual(removedKey, 'test_key');
+  } finally {
+    global.localStorage.removeItem = originalRemove;
+  }
+});
+
+test('safeRemoveStorage does not throw when localStorage fails', () => {
+  const originalRemove = global.localStorage.removeItem;
+  global.localStorage.removeItem = () => { throw new Error('SecurityError'); };
+  try {
+    assert.doesNotThrow(() => {
+      safeRemoveStorage('test_key');
+    });
+  } finally {
+    global.localStorage.removeItem = originalRemove;
   }
 });
