@@ -8,10 +8,6 @@ const ALLOWED_ORIGINS = new Set(['https://api.alquran.cloud', 'https://raw.githu
 const HAS_DOM = typeof document !== 'undefined';
 const HAS_WINDOW = typeof window !== 'undefined';
 
-function escapeHTML(str) {
-  if (str == null) return '';
-  return String(str).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-}
 function createTextElement(tag, className, text) {
   const el = document.createElement(tag);
   if (className) el.className = className;
@@ -727,5 +723,5 @@ if (HAS_DOM) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { cleanBismillah, escapeHTML, createTextElement, safeFetchJson, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray, indoSurahMeta, normalizeSearchText, getSurahSearchText, matchesSurahSearch, filterSurahsBySearch, updateSearchClearVisibility, clearSearch, setupContinueReadingSwipe };
+  module.exports = { cleanBismillah, createTextElement, safeFetchJson, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray, indoSurahMeta, normalizeSearchText, getSurahSearchText, matchesSurahSearch, filterSurahsBySearch, updateSearchClearVisibility, clearSearch, setupContinueReadingSwipe };
 }
