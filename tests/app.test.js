@@ -1,7 +1,7 @@
 require('./test-setup.js');
 const test = require('node:test');
 const assert = require('node:assert');
-const { cleanBismillah } = require('../assets/js/app.js');
+const { cleanBismillah, parseBoundedInt } = require('../assets/js/app.js');
 
 test('cleanBismillah', async (t) => {
   await t.test('returns original text for surah 1', () => {
@@ -237,4 +237,50 @@ test('app.js contains JavaScript only and target logic is not duplicated', () =>
   for (const name of ['bindEvents', 'setupContinueReadingSwipe', 'applySearchAndFilter']) {
     assert.strictEqual((js.match(new RegExp(`function ${name}\\(`, 'g')) || []).length, 1, `${name} must have one declaration`);
   }
+});
+
+test('parseBoundedInt', async (t) => {
+  await t.test('returns number for valid string within bounds', () => {
+    assert.strictEqual(parseBoundedInt('5', 1, 10), 5);
+  });
+
+  await t.test('returns number for valid number within bounds', () => {
+    assert.strictEqual(parseBoundedInt(5, 1, 10), 5);
+  });
+
+  await t.test('returns number exactly at min boundary', () => {
+    assert.strictEqual(parseBoundedInt('1', 1, 10), 1);
+  });
+
+  await t.test('returns number exactly at max boundary', () => {
+    assert.strictEqual(parseBoundedInt('10', 1, 10), 10);
+  });
+
+  await t.test('returns null for number below min', () => {
+    assert.strictEqual(parseBoundedInt('0', 1, 10), null);
+  });
+
+  await t.test('returns null for number above max', () => {
+    assert.strictEqual(parseBoundedInt('11', 1, 10), null);
+  });
+
+  await t.test('returns null for floats', () => {
+    assert.strictEqual(parseBoundedInt('5.5', 1, 10), null);
+  });
+
+  await t.test('returns null for non-numeric strings', () => {
+    assert.strictEqual(parseBoundedInt('abc', 1, 10), null);
+  });
+
+  await t.test('returns null for empty string', () => {
+    assert.strictEqual(parseBoundedInt('', 1, 10), null);
+  });
+
+  await t.test('returns null for null', () => {
+    assert.strictEqual(parseBoundedInt(null, 1, 10), null);
+  });
+
+  await t.test('returns null for undefined', () => {
+    assert.strictEqual(parseBoundedInt(undefined, 1, 10), null);
+  });
 });

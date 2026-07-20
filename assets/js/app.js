@@ -617,5 +617,5 @@ if (HAS_DOM) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { cleanBismillah, createTextElement, safeFetchJson, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray, indoSurahMeta, normalizeSearchText, getSurahSearchText, matchesSurahSearch, filterSurahsBySearch, updateSearchClearVisibility, clearSearch, setupContinueReadingSwipe };
+  module.exports = { parseBoundedInt,  cleanBismillah, escapeHTML, createTextElement, safeFetchJson, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray, indoSurahMeta, normalizeSearchText, getSurahSearchText, matchesSurahSearch, filterSurahsBySearch, updateSearchClearVisibility, clearSearch, setupContinueReadingSwipe };
 }
