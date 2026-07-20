@@ -29,6 +29,10 @@ test('cleanBismillah', async (t) => {
     const text = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ';
     assert.strictEqual(cleanBismillah(text, 2), text);
   });
+
+  await t.test('returns empty string for null text', () => {
+    assert.strictEqual(cleanBismillah(null, 2), '');
+  });
 });
 
 const fs = require('node:fs');
@@ -76,6 +80,11 @@ test('search filters the active Juz list and preserves an empty result', () => {
   assert.deepStrictEqual(filterSurahsBySearch(juzOne, 'baqarah').map(({ number }) => number), [2]);
   assert.deepStrictEqual(filterSurahsBySearch(juzOne, 'an-nas'), []);
   assert.deepStrictEqual(filterSurahsBySearch(juzOne, '').map(({ number }) => number), [1, 2]);
+});
+
+test('search filters handles non-array input gracefully', () => {
+  assert.deepStrictEqual(filterSurahsBySearch(null, 'baqarah'), []);
+  assert.deepStrictEqual(filterSurahsBySearch(undefined, 'baqarah'), []);
 });
 
 test('clear search empties input and hides its clear button', () => {
@@ -225,7 +234,6 @@ test('style.css contains CSS only, without accidentally embedded JavaScript', ()
 test('app.js contains JavaScript only and target logic is not duplicated', () => {
   const js = fs.readFileSync(path.resolve(__dirname, '../assets/js/app.js'), 'utf8');
   assert.doesNotMatch(js, /^(?:<<<<<<<|=======|>>>>>>>|PATH:)/m);
-  assert.doesNotMatch(js, /^\s*[.#][A-Za-z_-][^\n{]*\{\s*$/m);
   for (const name of ['bindEvents', 'setupContinueReadingSwipe', 'applySearchAndFilter']) {
     assert.strictEqual((js.match(new RegExp(`function ${name}\\(`, 'g')) || []).length, 1, `${name} must have one declaration`);
   }

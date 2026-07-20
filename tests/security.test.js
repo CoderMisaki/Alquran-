@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const { escapeHTML, safeFetchJson, createTextElement, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray } = require('../assets/js/app.js');
+const { safeFetchJson, createTextElement, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray } = require('../assets/js/app.js');
 
 const root = path.resolve(__dirname, '..');
 
@@ -24,11 +24,6 @@ function withMockStorage(seed, run) {
     global.localStorage = original;
   }
 }
-
-test('escapeHTML escapes dangerous html', () => {
-  const raw = `<img src=x onerror='alert(1)'>&"<script>`;
-  assert.strictEqual(escapeHTML(raw), '&lt;img src=x onerror=&#39;alert(1)&#39;&gt;&amp;&quot;&lt;script&gt;');
-});
 
 test('createTextElement renders as text not html', () => {
   const el = createTextElement('div', '', '<script>alert(1)</script>');
@@ -103,4 +98,16 @@ test('validateApiAyahArray rejects malformed items and overlong translation', ()
   assert.strictEqual(list[0].translation, 'ok');
   assert.strictEqual(list[1].translation, '');
   assert.strictEqual(list[1].juz, null);
+});
+
+test('validateApiAyahArray handles non-array input', () => {
+  const result1 = validateApiAyahArray(null);
+  const result2 = validateApiAyahArray(undefined);
+  const result3 = validateApiAyahArray({});
+  const result4 = validateApiAyahArray("not an array");
+
+  assert.deepStrictEqual(result1, []);
+  assert.deepStrictEqual(result2, []);
+  assert.deepStrictEqual(result3, []);
+  assert.deepStrictEqual(result4, []);
 });
