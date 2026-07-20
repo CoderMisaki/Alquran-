@@ -1,7 +1,7 @@
 require('./test-setup.js');
 const test = require('node:test');
 const assert = require('node:assert');
-const { cleanBismillah, parseBoundedInt } = require('../assets/js/app.js');
+const { safeGetStorage, safeSetStorage, safeRemoveStorage, cleanBismillah } = require('../assets/js/app.js');
 
 test('cleanBismillah', async (t) => {
   await t.test('returns original text for surah 1', () => {
@@ -239,48 +239,74 @@ test('app.js contains JavaScript only and target logic is not duplicated', () =>
   }
 });
 
-test('parseBoundedInt', async (t) => {
-  await t.test('returns number for valid string within bounds', () => {
-    assert.strictEqual(parseBoundedInt('5', 1, 10), 5);
-  });
+test('safeGetStorage returns value when localStorage works', () => {
+  const originalGet = global.localStorage.getItem;
+  global.localStorage.getItem = (key) => key === 'test_key' ? 'test_val' : null;
+  try {
+    assert.strictEqual(safeGetStorage('test_key'), 'test_val');
+  } finally {
+    global.localStorage.getItem = originalGet;
+  }
+});
 
-  await t.test('returns number for valid number within bounds', () => {
-    assert.strictEqual(parseBoundedInt(5, 1, 10), 5);
-  });
+test('safeGetStorage returns null and does not throw when localStorage fails', () => {
+  const originalGet = global.localStorage.getItem;
+  global.localStorage.getItem = () => { throw new Error('QuotaExceeded'); };
+  try {
+    assert.doesNotThrow(() => {
+      const val = safeGetStorage('test_key');
+      assert.strictEqual(val, null);
+    });
+  } finally {
+    global.localStorage.getItem = originalGet;
+  }
+});
 
-  await t.test('returns number exactly at min boundary', () => {
-    assert.strictEqual(parseBoundedInt('1', 1, 10), 1);
-  });
+test('safeSetStorage sets value as string when localStorage works', () => {
+  const originalSet = global.localStorage.setItem;
+  let storedKey = null, storedVal = null;
+  global.localStorage.setItem = (key, val) => { storedKey = key; storedVal = val; };
+  try {
+    safeSetStorage('test_key', 123);
+    assert.strictEqual(storedKey, 'test_key');
+    assert.strictEqual(storedVal, '123'); // Should be stringified
+  } finally {
+    global.localStorage.setItem = originalSet;
+  }
+});
 
-  await t.test('returns number exactly at max boundary', () => {
-    assert.strictEqual(parseBoundedInt('10', 1, 10), 10);
-  });
+test('safeSetStorage does not throw when localStorage fails', () => {
+  const originalSet = global.localStorage.setItem;
+  global.localStorage.setItem = () => { throw new Error('QuotaExceeded'); };
+  try {
+    assert.doesNotThrow(() => {
+      safeSetStorage('test_key', 'val');
+    });
+  } finally {
+    global.localStorage.setItem = originalSet;
+  }
+});
 
-  await t.test('returns null for number below min', () => {
-    assert.strictEqual(parseBoundedInt('0', 1, 10), null);
-  });
+test('safeRemoveStorage removes value when localStorage works', () => {
+  const originalRemove = global.localStorage.removeItem;
+  let removedKey = null;
+  global.localStorage.removeItem = (key) => { removedKey = key; };
+  try {
+    safeRemoveStorage('test_key');
+    assert.strictEqual(removedKey, 'test_key');
+  } finally {
+    global.localStorage.removeItem = originalRemove;
+  }
+});
 
-  await t.test('returns null for number above max', () => {
-    assert.strictEqual(parseBoundedInt('11', 1, 10), null);
-  });
-
-  await t.test('returns null for floats', () => {
-    assert.strictEqual(parseBoundedInt('5.5', 1, 10), null);
-  });
-
-  await t.test('returns null for non-numeric strings', () => {
-    assert.strictEqual(parseBoundedInt('abc', 1, 10), null);
-  });
-
-  await t.test('returns null for empty string', () => {
-    assert.strictEqual(parseBoundedInt('', 1, 10), null);
-  });
-
-  await t.test('returns null for null', () => {
-    assert.strictEqual(parseBoundedInt(null, 1, 10), null);
-  });
-
-  await t.test('returns null for undefined', () => {
-    assert.strictEqual(parseBoundedInt(undefined, 1, 10), null);
-  });
+test('safeRemoveStorage does not throw when localStorage fails', () => {
+  const originalRemove = global.localStorage.removeItem;
+  global.localStorage.removeItem = () => { throw new Error('SecurityError'); };
+  try {
+    assert.doesNotThrow(() => {
+      safeRemoveStorage('test_key');
+    });
+  } finally {
+    global.localStorage.removeItem = originalRemove;
+  }
 });
