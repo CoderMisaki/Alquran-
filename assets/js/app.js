@@ -1,6 +1,14 @@
 'use strict';
 
 const API_BASE = 'https://api.alquran.cloud/v1';
+
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
 const FALLBACK_SURAH_LIST_URL = 'https://raw.githubusercontent.com/rioastamal/quran-json/master/surah.json';
 const FALLBACK_SURAH_DETAIL_BASE = 'https://raw.githubusercontent.com/rioastamal/quran-json/master/surah';
 const ALLOWED_ORIGINS = new Set(['https://api.alquran.cloud', 'https://raw.githubusercontent.com']);
@@ -227,6 +235,9 @@ const indoSurahMeta = {
   114: { name: 'An-Nas', translation: 'Manusia' }
 };
 
+let currentSurahAbortController = null;
+const surahDetailCache = new Map();
+let toastTimer = null;
 let state = { allSurahs: [], currentOpenedSurah: null, activeJuzFilter: null, currentJuzData: null, isLocked: false, cachedAyahItems: null, currentZoomLevel: getSafeZoom() };
 
 function qs(id) { return HAS_DOM ? document.getElementById(id) : null; }
@@ -236,10 +247,11 @@ function validJuz(n) { return isIntRange(Number(n), 1, 30); }
 function runThemeTransition(nextTheme) { applyTheme(nextTheme); }
 function applyTheme(theme) { if (!HAS_DOM) return; const t = theme === 'dark' ? 'dark' : 'light'; document.body.classList.remove('theme-light', 'theme-dark'); document.body.classList.add(`theme-${t}`); safeSetStorage('quranTheme', t); }
 function initThemeToggle() { const btn = qs('theme-toggle'); if (!btn) return; applyTheme(getSafeTheme()); btn.addEventListener('click', () => runThemeTransition(getSafeTheme() === 'dark' ? 'light' : 'dark')); }
-function applyZoom() { if (!HAS_DOM) return; document.documentElement.style.setProperty('--font-scale', String(0.7 + (state.currentZoomLevel / 100))); const z = qs('zoom-value'); if (z) z.textContent = String(state.currentZoomLevel); }
+function applyZoom() { if (!HAS_DOM) return; const ayahList = qs('ayah-list'); if (ayahList) ayahList.style.setProperty('--font-scale', String(0.7 + (state.currentZoomLevel / 100))); const z = qs('zoom-value'); if (z) z.textContent = String(state.currentZoomLevel); }
 function handleZoomPress(type, delta) { state.currentZoomLevel = Math.max(0, Math.min(100, state.currentZoomLevel + delta)); safeSetStorage('quranZoomLevel', state.currentZoomLevel); applyZoom(); const btn = qs(type === 'out' ? 'btn-zoom-out' : 'btn-zoom-in'); if (btn) { btn.classList.add('pressed'); setTimeout(() => btn.classList.remove('pressed'), 150); } }
 
-function showToast(msg) { const toast = qs('toast'); const body = qs('toast-message'); if (!toast || !body) return; body.textContent = String(msg || ''); toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 2000); }
+function showToast(msg) { const toast = qs('toast'); const body = qs('toast-message'); if (!toast || !body) return; body.textContent = String(msg || ''); toast.classList.remove('hidden'); clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.add('hidden'), 2000); }
 function closeModal(id) { if (!['modal-lock', 'modal-juz'].includes(id)) return; const m = qs(id); if (m) m.classList.add('hidden'); }
 function showListView() { saveVisibleAyahAsLastRead(); qs('loader')?.classList.add('hidden'); qs('view-list')?.classList.remove('hidden'); qs('view-detail')?.classList.add('hidden'); document.body.classList.remove('in-surah-detail'); }
 function showDetailView() { qs('loader')?.classList.add('hidden'); qs('view-detail')?.classList.remove('hidden'); document.body.classList.add('in-surah-detail'); if (window.innerWidth < 1024) qs('view-list')?.classList.add('hidden'); }
@@ -276,7 +288,11 @@ function saveVisibleAyahAsLastRead() {
       chosen = item;
     }
   });
-  if (chosen) { updateLastReadFromAyah(chosen.dataset.ayah, chosen.dataset.juz); checkLastRead(); }
+  if (chosen) { const oldAyah = getSafeLastRead().ayah;
+    updateLastReadFromAyah(chosen.dataset.ayah, chosen.dataset.juz);
+    if (oldAyah != chosen.dataset.ayah) {
+      checkLastRead();
+    } }
 }
 
 function cleanBismillah(text, surahNumber) { if (surahNumber === 1 || surahNumber === 9) return text; const words = String(text || '').trim().split(/\s+/); if (words.length > 4 && words[0].replace(/[^\u0621-\u064A]/g, '') === 'بسم') return words.slice(4).join(' ').trim(); return String(text || ''); }
@@ -409,7 +425,6 @@ function renderJuzSurahList(list) {
   }
   grid.appendChild(frag);
 }
-function renderJuzSurahList(list) { const mapped = (Array.isArray(list)?list:[]).map((item)=>{ const meta=item.meta||item; return { ...meta, juzStartAyah: meta.juzStartAyah || (item.ayahsAr?.[0]?.numberInSurah ?? '-'), juzEndAyah: meta.juzEndAyah || (item.ayahsAr?.[item.ayahsAr.length-1]?.numberInSurah ?? '-'), _src: item }; }); const grid = qs('surah-grid'); if (!grid) return; grid.replaceChildren(); const frag = document.createDocumentFragment(); mapped.forEach((m)=>{ if (!validSurahNumber(m.number)) return; const b=createTextElement('button','surah-card tap-effect',''); b.type='button'; b.addEventListener('click',()=>{const src=m._src; if(src?.ayahsAr) { state.currentOpenedSurah = m.number; renderJuzSpecificSurahDetail(m, src.ayahsAr, src.ayahsId, src.ayahsLat); showDetailView(); updateNavButtonsVisibility(); } }); const left=createTextElement('div','surah-info-left',''); const nb=document.createElement('div'); nb.className='surah-number'; const sp=document.createElement('span'); sp.textContent=String(m.number); nb.appendChild(sp); const det=createTextElement('div','surah-details',''); det.append(createTextElement('h3','',m.indoName || indoSurahMeta[m.number]?.name || ''),createTextElement('p','',`${m.indoTranslation||''} • Ayat ${m.juzStartAyah}-${m.juzEndAyah}`)); left.append(nb,det); b.append(left,createTextElement('div','surah-arabic-name',m.name||'')); frag.appendChild(b); }); if(!frag.childNodes.length) frag.appendChild(createTextElement('p','empty-state','Pencarian tidak ditemukan.')); grid.appendChild(frag);}
 function renderSurahDetail(meta, ar, id, lat) {
   const ayahsAr = validateApiAyahArray(ar);
   const ayahsId = validateApiAyahArray(id);
@@ -435,8 +450,71 @@ function applySearchAndFilter() {
   else renderSurahList(out);
 }
 function clearSearch() { const input = qs('search-input'); if (input) input.value = ''; applySearchAndFilter(); }
-async function fetchAllSurahs() { try { let payload = await safeFetchJson(`${API_BASE}/surah`); let list = payload?.data; if (!Array.isArray(list)) list = await safeFetchJson(FALLBACK_SURAH_LIST_URL); state.allSurahs = (Array.isArray(list) ? list : []).map((s) => { const n = Number(s.number); const meta = indoSurahMeta[n] || {}; return { number: n, name: typeof s.name === 'string' ? s.name : '', indoName: meta.name || s.englishName || '', indoTranslation: meta.translation || s.englishNameTranslation || '', englishName: typeof s.englishName === 'string' ? s.englishName : '', englishNameTranslation: typeof s.englishNameTranslation === 'string' ? s.englishNameTranslation : '', numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || SURAH_AYAH_LIMITS[n] || 0, revelationType: typeof s.revelationType === 'string' ? s.revelationType : '' }; }).filter((s) => validSurahNumber(s.number)); renderSurahList(state.allSurahs); showListView(); } catch { showToast('Gagal memuat daftar surah.'); } }
-async function fetchSurahDetail(surahNumber, meta) { const safeSurahNum = parseBoundedInt(surahNumber, 1, 114); if (!safeSurahNum) return showToast('Nomor surah tidak valid'); const previousSurah = Number(safeGetStorage('lastReadSurah')); safeSetStorage('lastReadSurah', safeSurahNum); if (previousSurah !== safeSurahNum) { safeSetStorage('lastReadAyah', 1); safeRemoveStorage('lastReadJuz'); } state.currentOpenedSurah = safeSurahNum; try { const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/quran-uthmani`), safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/id.indonesian`), safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/en.transliteration`)]); renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs); showDetailView(); resetDetailScrollPosition(); updateNavButtonsVisibility(); checkLastRead(); } catch { try { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${safeSurahNum}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); resetDetailScrollPosition(); checkLastRead(); } catch (err) { console.warn('Fallback fetch failed', err); showToast('Gagal memuat detail surah.'); } } }
+async function fetchAllSurahs() {
+  try {
+    let list = null;
+    try {
+      let payload = await safeFetchJson(`${API_BASE}/surah`);
+      list = payload?.data;
+    } catch (primaryErr) {
+      console.warn('Primary API failed, switching to fallback...', primaryErr);
+      let fallbackPayload = await safeFetchJson(FALLBACK_SURAH_LIST_URL);
+      list = Array.isArray(fallbackPayload) ? fallbackPayload : fallbackPayload?.data;
+    }
+
+    if (!Array.isArray(list)) {
+      throw new Error('Data surah tidak valid');
+    }
+
+    state.allSurahs = list.map((s) => {
+      const n = Number(s.number);
+      const meta = indoSurahMeta[n] || {};
+      return {
+        number: n,
+        name: typeof s.name === 'string' ? s.name : '',
+        indoName: meta.name || s.englishName || '',
+        indoTranslation: meta.translation || s.englishNameTranslation || '',
+        englishName: typeof s.englishName === 'string' ? s.englishName : '',
+        englishNameTranslation: typeof s.englishNameTranslation === 'string' ? s.englishNameTranslation : '',
+        numberOfAyahs: asPositiveInt(s.numberOfAyahs) || asPositiveInt(s.number_of_ayah) || SURAH_AYAH_LIMITS[n] || 0,
+        revelationType: typeof s.revelationType === 'string' ? s.revelationType : ''
+      };
+    }).filter((s) => validSurahNumber(s.number));
+
+    renderSurahList(state.allSurahs);
+    showListView();
+  } catch (err) {
+    qs('loader')?.classList.add('hidden');
+    showToast('Gagal memuat daftar surah.');
+  }
+}
+async function fetchSurahDetail(surahNumber, meta) { const safeSurahNum = parseBoundedInt(surahNumber, 1, 114); if (!safeSurahNum) return showToast('Nomor surah tidak valid'); const previousSurah = Number(safeGetStorage('lastReadSurah')); safeSetStorage('lastReadSurah', safeSurahNum); if (previousSurah !== safeSurahNum) { safeSetStorage('lastReadAyah', 1); safeRemoveStorage('lastReadJuz'); } state.currentOpenedSurah = safeSurahNum;
+  state.cachedAyahItems = null;
+  resetLockState();
+  if (currentSurahAbortController) {
+    currentSurahAbortController.abort();
+  }
+
+  if (surahDetailCache.has(safeSurahNum)) {
+    const cached = surahDetailCache.get(safeSurahNum);
+    renderSurahDetail(meta, cached.ar, cached.id, cached.lat);
+    showDetailView();
+    resetDetailScrollPosition();
+    updateNavButtonsVisibility();
+    checkLastRead();
+    return;
+  }
+
+  currentSurahAbortController = new AbortController();
+  const signal = currentSurahAbortController.signal;
+
+  try {
+ const [ar, id, lat] = await Promise.all([safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/quran-uthmani`, { signal }), safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/id.indonesian`, { signal }), safeFetchJson(`${API_BASE}/surah/${safeSurahNum}/en.transliteration`, { signal })]);
+    surahDetailCache.set(safeSurahNum, { ar: ar?.data?.ayahs, id: id?.data?.ayahs, lat: lat?.data?.ayahs });
+    renderSurahDetail(meta, ar?.data?.ayahs, id?.data?.ayahs, lat?.data?.ayahs);
+ showDetailView(); resetDetailScrollPosition(); updateNavButtonsVisibility(); checkLastRead(); } catch (err) {
+    if (err.name === 'AbortError') return;
+    try { const fallback = await safeFetchJson(`${FALLBACK_SURAH_DETAIL_BASE}/${safeSurahNum}.json`); const ayahs = Array.isArray(fallback?.verses) ? fallback.verses.map((v, i) => ({ numberInSurah: i + 1, text: typeof v.text === 'string' ? v.text : '', juz: null })) : []; renderSurahDetail(meta, ayahs, ayahs, ayahs); showDetailView(); resetDetailScrollPosition(); checkLastRead(); } catch (err) { console.warn('Fallback fetch failed', err); showToast('Gagal memuat detail surah.'); } } }
 
 function setupJuzGrid() { const c = qs('juz-grid-container'); if (!c) return; c.replaceChildren(); const frag = document.createDocumentFragment(); for (let i = 1; i <= 30; i += 1) { const b = createTextElement('button', 'juz-btn tap-effect', `Juz ${i}`); b.type = 'button'; b.addEventListener('click', () => selectJuz(i)); frag.appendChild(b); } c.appendChild(frag); }
 function selectJuz(juz) { if (!validJuz(Number(juz))) return; fetchJuzAndShowCards(Number(juz)); }
@@ -587,7 +665,11 @@ function setupPressFeedback() {
     }, { passive: true });
   });
 }
-async function resumeReading() { const lr = getSafeLastRead(); if (!lr.surah) return; const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return; await fetchSurahDetail(lr.surah, meta); const target = document.querySelector(`.ayah-item[data-ayah="${lr.ayah || 1}"]`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+async function resumeReading() { const lr = getSafeLastRead(); if (!lr.surah) return; const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return; await fetchSurahDetail(lr.surah, meta); const target = document.querySelector(`.ayah-item[data-ayah="${lr.ayah || 1}"]`); if (target) {
+    requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  } }
 function checkLastRead() { const lr = getSafeLastRead(); const card = qs('continue-reading'); if (!card) return; if (!lr.surah || !lr.ayah) return card.classList.add('hidden'); const meta = state.allSurahs.find((s) => s.number === lr.surah); if (!meta) return card.classList.add('hidden'); const surahName = meta.indoName || meta.name || ''; qs('cr-surah-name').textContent = surahName ? `Surah ${surahName}` : 'Surah'; qs('cr-ayah-info').textContent = `Ayat ${lr.ayah}${lr.juz ? ` • Juz ${lr.juz}` : ''}`; card.classList.remove('hidden', 'cr-swipe-out-left'); }
 
 function bindEvents() {
@@ -605,8 +687,9 @@ function bindEvents() {
   qs('btn-apply-lock')?.addEventListener('click', applyLock);
   qs('btn-zoom-out')?.addEventListener('click', () => handleZoomPress('out', -10));
   qs('btn-zoom-in')?.addEventListener('click', () => handleZoomPress('in', 10));
-  if (HAS_WINDOW) window.addEventListener('scroll', saveVisibleAyahAsLastRead, { passive: true });
-  qs('ayah-list')?.addEventListener('scroll', saveVisibleAyahAsLastRead, { passive: true });
+  const saveVisibleAyahDebounced = debounce(saveVisibleAyahAsLastRead, 150);
+  if (HAS_WINDOW) window.addEventListener('scroll', saveVisibleAyahDebounced, { passive: true });
+  qs('ayah-list')?.addEventListener('scroll', saveVisibleAyahDebounced, { passive: true });
 }
 
 
@@ -617,5 +700,5 @@ if (HAS_DOM) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { safeGetStorage, safeSetStorage, safeRemoveStorage, cleanBismillah, escapeHTML, createTextElement, safeFetchJson, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray, indoSurahMeta, normalizeSearchText, getSurahSearchText, matchesSurahSearch, filterSurahsBySearch, updateSearchClearVisibility, clearSearch, setupContinueReadingSwipe };
+  module.exports = { safeGetStorage, safeSetStorage, safeRemoveStorage, cleanBismillah, createTextElement, safeFetchJson, sanitizeReadingPreferences, sanitizeLastReadPosition, validateApiAyahArray, indoSurahMeta, normalizeSearchText, getSurahSearchText, matchesSurahSearch, filterSurahsBySearch, updateSearchClearVisibility, clearSearch, setupContinueReadingSwipe };
 }
